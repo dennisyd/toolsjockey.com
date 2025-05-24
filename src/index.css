@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-secondary text-primary dark:bg-primary dark:text-secondary;
+  }
+}
+
+@layer components {
+  .tool-card {
+    @apply bg-white dark:bg-primary-light rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center gap-2 cursor-pointer;
+  }
+  
+  .tool-icon {
+    @apply w-16 h-16 mb-2;
+  }
+  
+  .tool-title {
+    @apply text-center font-medium;
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-hover;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-dark text-primary hover:bg-secondary dark:bg-primary-light dark:text-secondary dark:hover:bg-primary;
+  }
+  
+  .container-app {
+    @apply max-w-6xl mx-auto px-4 py-6;
+  }
+}
