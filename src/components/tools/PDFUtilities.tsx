@@ -65,23 +65,6 @@ const PDFUtilities = () => {
     setIsProcessing(false);
   };
 
-  // Basic compression: remove metadata, use save() with default options
-  const handleCompress = async () => {
-    if (files.length === 0) return;
-    setIsProcessing(true);
-    const file = files[0];
-    const bytes = await file.arrayBuffer();
-    const pdf = await PDFDocument.load(bytes);
-    pdf.setTitle('');
-    pdf.setAuthor('');
-    pdf.setSubject('');
-    pdf.setKeywords([]);
-    const compressedBytes = await pdf.save();
-    const url = URL.createObjectURL(new Blob([compressedBytes], { type: 'application/pdf' }));
-    setResultUrl(url);
-    setIsProcessing(false);
-  };
-
   // Download all split PDFs as ZIP
   const handleDownloadAllSplits = async () => {
     const zip = new JSZip();
@@ -133,9 +116,6 @@ const PDFUtilities = () => {
                   disabled={files.length !== 1}
                   title="Page ranges (e.g., 1-2,4)"
                 />
-                <button className="btn btn-secondary" onClick={handleCompress} disabled={isProcessing || files.length !== 1}>
-                  Compress PDF
-                </button>
               </div>
               <div className="mb-4">
                 <ul className="text-xs text-gray-600 dark:text-gray-300">

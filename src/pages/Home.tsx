@@ -14,10 +14,59 @@ import {
 } from '@heroicons/react/24/outline';
 
 // Tool metadata for categories
-const TOOL_CATEGORIES = [
+type ToolMeta = {
+  id: string;
+  title: string;
+  path: string;
+  description?: string;
+  new?: boolean;
+  popular?: boolean;
+};
+
+type ToolCategory = {
+  id: string;
+  label: string;
+  tools: ToolMeta[];
+};
+
+const TOOL_CATEGORIES: ToolCategory[] = [
   {
-    id: 'document',
-    label: '📊 Document & Data Tools',
+    id: 'pdf',
+    label: '📄 PDF Tools',
+    tools: [
+      {
+        id: 'pdf-suite-dashboard',
+        title: 'PDF Suite (All PDF Tools)',
+        path: '/pdf-tools',
+        description: 'Access all PDF utilities: merge, split, compress, convert, and more.',
+        new: true,
+      },
+      {
+        id: 'batch-pdf-form-filler',
+        title: 'Batch PDF Form Filler',
+        path: '/tools/batch-pdf-form-filler',
+      },
+      // { id: 'pdf-splitter', title: 'PDF Splitter', path: '/tools/pdf-splitter' },
+      // { id: 'pdf-compressor', title: 'PDF Compressor', path: '/tools/pdf-compressor' },
+    ],
+  },
+  {
+    id: 'word',
+    label: '📝 Word & Document Tools',
+    tools: [
+      {
+        id: 'word-to-markdown',
+        title: 'Word to Markdown Converter',
+        path: '/tools/word-to-markdown',
+        new: true,
+      },
+      // { id: 'word-combiner', title: 'Word Combiner', path: '/tools/word-combiner' },
+      // { id: 'resume-formatter', title: 'Resume Formatter', path: '/tools/resume-formatter' },
+    ],
+  },
+  {
+    id: 'excelcsv',
+    label: '📊 Excel & CSV Tools',
     tools: [
       {
         id: 'excel-joiner',
@@ -41,22 +90,11 @@ const TOOL_CATEGORIES = [
         title: 'CSV Merger',
         path: '/tools/csv-merger',
       },
-      {
-        id: 'word-to-markdown',
-        title: 'Word to Markdown Converter',
-        path: '/tools/word-to-markdown',
-        new: true,
-      },
-      {
-        id: 'json-formatter',
-        title: 'JSON Formatter/Validator',
-        path: '/tools/json-formatter',
-      },
     ],
   },
   {
     id: 'image',
-    label: '🎨 Image Tools',
+    label: '🖼️ Image Tools',
     tools: [
       {
         id: 'image-sharpener',
@@ -75,20 +113,54 @@ const TOOL_CATEGORIES = [
         path: '/tools/image-compressor',
       },
       {
-        id: 'exif-remover',
-        title: 'EXIF Data Remover',
-        path: '/tools/exif-remover',
-      },
-      {
         id: 'watermark-adder',
         title: 'Watermark Adder',
         path: '/tools/watermark-adder',
+      },
+      // { id: 'image-color-picker', title: 'Image Color Picker', path: '/tools/image-color-picker' },
+    ],
+  },
+  {
+    id: 'color',
+    label: '🎨 Color & Design Tools',
+    tools: [
+      {
+        id: 'color-palette-generator',
+        title: 'Color Palette Extractor',
+        path: '/tools/color-palette-generator',
+      },
+      // { id: 'image-color-picker', title: 'Image Color Picker', path: '/tools/image-color-picker' },
+    ],
+  },
+  {
+    id: 'developer',
+    label: '⚙️ Developer Tools',
+    tools: [
+      {
+        id: 'json-formatter',
+        title: 'JSON Formatter/Validator',
+        path: '/tools/json-formatter',
+      },
+      {
+        id: 'hash-generator',
+        title: 'Hash Generator (MD5, SHA256)',
+        path: '/tools/hash-generator',
+      },
+      {
+        id: 'css-minifier',
+        title: 'CSS Minifier',
+        path: '/tools/css-minifier',
+      },
+      {
+        id: 'base64-encoder',
+        title: 'Base64 Encoder/Decoder',
+        path: '/tools/base64-encoder',
       },
     ],
   },
   {
     id: 'quick',
-    label: '⚡ Quick Utilities',
+    label: '🔑 Quick Utilities',
     tools: [
       {
         id: 'qr-code-generator',
@@ -106,47 +178,12 @@ const TOOL_CATEGORIES = [
         title: 'Text Case Converter',
         path: '/tools/text-case-converter',
       },
-      {
-        id: 'word-counter',
-        title: 'Word/Character Counter',
-        path: '/tools/word-counter',
-      },
-      {
-        id: 'color-palette-generator',
-        title: 'Color Palette Extractor',
-        path: '/tools/color-palette-generator',
-      },
-    ],
-  },
-  {
-    id: 'developer',
-    label: '💻 Developer Tools',
-    tools: [
-      {
-        id: 'base64-encoder',
-        title: 'Base64 Encoder/Decoder',
-        path: '/tools/base64-encoder',
-      },
-      {
-        id: 'css-minifier',
-        title: 'CSS Minifier',
-        path: '/tools/css-minifier',
-      },
-      {
-        id: 'hash-generator',
-        title: 'Hash Generator (MD5, SHA256)',
-        path: '/tools/hash-generator',
-      },
-      {
-        id: 'color-picker',
-        title: 'Color Picker/Converter',
-        path: '/tools/color-picker',
-      },
+      // { id: 'word-counter', title: 'Word/Character Counter', path: '/tools/word-counter' },
     ],
   },
   {
     id: 'converter',
-    label: '🔧 Converters',
+    label: '🌍 Converters',
     tools: [
       {
         id: 'unit-converter',
@@ -240,7 +277,7 @@ const Home = () => {
           <StarIcon className="w-6 h-6 text-yellow-400" /> Popular Tools
         </h2>
         <div className="flex flex-wrap gap-4">
-          {TOOL_CATEGORIES.flatMap(cat => cat.tools)
+          {(TOOL_CATEGORIES.flatMap(cat => cat.tools) as ToolMeta[])
             .filter(tool => tool.popular)
             .map(tool => (
               <Link
@@ -260,7 +297,7 @@ const Home = () => {
           <h2 className="text-2xl font-semibold mb-4">Recently Used</h2>
           <div className="flex flex-nowrap gap-3 overflow-x-auto pb-2">
             {recentlyUsedTools.map(toolId => {
-              const tool = TOOL_CATEGORIES.flatMap(cat => cat.tools).find(t => t.id === toolId);
+              const tool = (TOOL_CATEGORIES.flatMap(cat => cat.tools) as ToolMeta[]).find(t => t.id === toolId);
               if (!tool) return null;
               return (
                 <Link
@@ -321,6 +358,7 @@ const Home = () => {
                           className="tool-card flex flex-col items-start gap-2 relative"
                         >
                           <span className="font-medium text-lg">{tool.title}</span>
+                          {tool.description && <span className="text-xs text-gray-500 dark:text-gray-400">{tool.description}</span>}
                           {tool.new && <span className="text-xs text-green-600 bg-green-100 rounded px-2 py-0.5 absolute top-2 right-2">NEW</span>}
                           {tool.popular && <span className="text-xs text-yellow-700 bg-yellow-100 rounded px-2 py-0.5 absolute top-2 right-2">POPULAR</span>}
                         </Link>

@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
-import PasswordGenerator from '../../components/tools/PasswordGenerator';
+import WordCounter from '../../components/tools/WordCounter';
 import { Link } from 'react-router-dom';
 import AdSlot from '../../components/ads/AdSlot';
 import ToolIcon from '../../components/tools/ToolIcon';
 import SideNavAccordion from '../../components/tools/SideNavAccordion';
 
 const related = [
-  { title: 'Base64 Encoder/Decoder', path: '/tools/base64-encoder' },
-  { title: 'Hash Generator (MD5, SHA256)', path: '/tools/hash-generator' },
   { title: 'Text Case Converter', path: '/tools/text-case-converter' },
+  { title: 'Password Generator', path: '/tools/password-generator' },
+  { title: 'Base64 Encoder/Decoder', path: '/tools/base64-encoder' },
 ];
 
 const sideNavTools = [
@@ -19,9 +19,9 @@ const sideNavTools = [
   { id: 'word-counter', title: 'Word/Character Counter', path: '/tools/word-counter' },
 ];
 
-const PasswordGeneratorPage = () => {
+const WordCounterPage = () => {
   useEffect(() => {
-    document.title = 'Password Generator - ToolsJockey.com';
+    document.title = 'Word/Character Counter - ToolsJockey.com';
   }, []);
 
   return (
@@ -33,7 +33,7 @@ const PasswordGeneratorPage = () => {
           <span>&gt;</span>
           <span>Quick Utilities</span>
           <span>&gt;</span>
-          <b>Password Generator</b>
+          <b>Word/Character Counter</b>
         </nav>
       </div>
       {/* Responsive grid */}
@@ -42,7 +42,7 @@ const PasswordGeneratorPage = () => {
         <aside className="hidden md:block">
           <SideNavAccordion
             tools={sideNavTools}
-            currentId="password-generator"
+            currentId="word-counter"
             title="Other tools in this category"
           />
           {/* 300x250 ad below side-nav on md */}
@@ -54,10 +54,10 @@ const PasswordGeneratorPage = () => {
         <main className="min-w-0">
           <div className="bg-white dark:bg-primary-light rounded-lg shadow-md p-6">
             <div className="flex items-center gap-3 mb-4">
-              <ToolIcon tool="password-generator" className="h-6 w-6 text-orange-500" />
-              <h1 className="text-2xl font-bold">Password Generator</h1>
+              <ToolIcon tool="word-counter" className="h-6 w-6 text-orange-500" />
+              <h1 className="text-2xl font-bold">Word/Character Counter</h1>
             </div>
-            <PasswordGenerator />
+            <WordCounter />
           </div>
           {/* Related tools bar */}
           <div className="mt-6">
@@ -84,4 +84,4 @@ const PasswordGeneratorPage = () => {
   );
 };
 
-export default PasswordGeneratorPage; 
+export default WordCounterPage; 
