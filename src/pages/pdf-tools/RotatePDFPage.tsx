@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { PDFDocument, degrees } from 'pdf-lib';
+import PDFSuiteLayout from '../../components/layout/PDFSuiteLayout';
 
 const ROTATIONS = [0, 90, 180, 270];
 
@@ -92,111 +93,113 @@ const RotatePDFPage: React.FC = () => {
   };
 
   return (
-    <main className="container-app mx-auto px-2 md:px-0 py-8">
-      <h1 className="text-2xl font-bold mb-4">Rotate PDF Pages</h1>
-      <p className="text-gray-600 dark:text-gray-300 mb-8">Rotate all or selected pages in your PDF. Everything runs in your browser.</p>
-      <input
-        type="file"
-        accept="application/pdf"
-        ref={fileInputRef}
-        className="hidden"
-        onChange={e => handleFiles(e.target.files)}
-      />
-      <div
-        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
-        onClick={() => fileInputRef.current?.click()}
-        onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
-      >
-        <span className="text-gray-500">Drag & drop a PDF file here, or click to select</span>
-      </div>
-      {file && pageCount > 0 && (
-        <div className="mb-6">
-          <div className="flex flex-wrap gap-2 mb-4 items-center">
+    <PDFSuiteLayout title="Rotate PDF Pages">
+      <main className="container-app mx-auto px-2 md:px-0 py-8">
+        <h1 className="text-2xl font-bold mb-4">Rotate PDF Pages</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">Rotate all or selected pages in your PDF. Everything runs in your browser.</p>
+        <input
+          type="file"
+          accept="application/pdf"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={e => handleFiles(e.target.files)}
+        />
+        <div
+          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
+          onClick={() => fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+        >
+          <span className="text-gray-500">Drag & drop a PDF file here, or click to select</span>
+        </div>
+        {file && pageCount > 0 && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-2 mb-4 items-center">
+              <button
+                className="btn btn-primary"
+                onClick={handleRotate}
+                disabled={isProcessing || !file}
+              >
+                {isProcessing ? 'Rotating...' : 'Apply Rotation & Download'}
+              </button>
+              <span className="font-medium ml-4">Rotate all pages:</span>
+              {ROTATIONS.map(rot => (
+                <button
+                  key={rot}
+                  className={`px-3 py-1 rounded border ${globalRotation === rot ? 'bg-accent text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
+                  onClick={() => handleGlobalRotation(rot)}
+                  disabled={isProcessing}
+                >
+                  {rot}&deg;
+                </button>
+              ))}
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr>
+                    <th className="px-2 py-1 text-left">Page</th>
+                    <th className="px-2 py-1 text-left">Rotation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: pageCount }).map((_, idx) => (
+                    <tr key={idx} className="border-b last:border-b-0">
+                      <td className="px-2 py-1">{idx + 1}</td>
+                      <td className="px-2 py-1">
+                        <select
+                          className="border rounded px-2 py-1"
+                          value={rotations[idx]}
+                          onChange={e => handlePageRotation(idx, Number(e.target.value))}
+                          disabled={isProcessing}
+                        >
+                          {ROTATIONS.map(rot => (
+                            <option key={rot} value={rot}>{rot}&deg;</option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <button
-              className="btn btn-primary"
+              className="btn btn-primary mt-4"
               onClick={handleRotate}
               disabled={isProcessing || !file}
             >
               {isProcessing ? 'Rotating...' : 'Apply Rotation & Download'}
             </button>
-            <span className="font-medium ml-4">Rotate all pages:</span>
-            {ROTATIONS.map(rot => (
-              <button
-                key={rot}
-                className={`px-3 py-1 rounded border ${globalRotation === rot ? 'bg-accent text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
-                onClick={() => handleGlobalRotation(rot)}
-                disabled={isProcessing}
-              >
-                {rot}&deg;
-              </button>
-            ))}
+            {isProcessing && (
+              <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+                <div
+                  className="bg-accent h-3 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            )}
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr>
-                  <th className="px-2 py-1 text-left">Page</th>
-                  <th className="px-2 py-1 text-left">Rotation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.from({ length: pageCount }).map((_, idx) => (
-                  <tr key={idx} className="border-b last:border-b-0">
-                    <td className="px-2 py-1">{idx + 1}</td>
-                    <td className="px-2 py-1">
-                      <select
-                        className="border rounded px-2 py-1"
-                        value={rotations[idx]}
-                        onChange={e => handlePageRotation(idx, Number(e.target.value))}
-                        disabled={isProcessing}
-                      >
-                        {ROTATIONS.map(rot => (
-                          <option key={rot} value={rot}>{rot}&deg;</option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        )}
+        {file && pageCount === 0 && (
+          <div className="mb-6 text-red-600">This PDF has no pages.</div>
+        )}
+        {resultUrl && (
+          <div className="mb-4">
+            <a
+              href={resultUrl}
+              download={file ? file.name.replace(/\.pdf$/, '-rotated.pdf') : 'rotated.pdf'}
+              className="btn btn-success"
+              ref={downloadLinkRef}
+              style={{ display: 'none' }}
+            >
+              Download Rotated PDF
+            </a>
+            <div className="text-green-700 text-sm">Your rotated PDF is downloading...</div>
           </div>
-          <button
-            className="btn btn-primary mt-4"
-            onClick={handleRotate}
-            disabled={isProcessing || !file}
-          >
-            {isProcessing ? 'Rotating...' : 'Apply Rotation & Download'}
-          </button>
-          {isProcessing && (
-            <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-              <div
-                className="bg-accent h-3 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          )}
-        </div>
-      )}
-      {file && pageCount === 0 && (
-        <div className="mb-6 text-red-600">This PDF has no pages.</div>
-      )}
-      {resultUrl && (
-        <div className="mb-4">
-          <a
-            href={resultUrl}
-            download={file ? file.name.replace(/\.pdf$/, '-rotated.pdf') : 'rotated.pdf'}
-            className="btn btn-success"
-            ref={downloadLinkRef}
-            style={{ display: 'none' }}
-          >
-            Download Rotated PDF
-          </a>
-          <div className="text-green-700 text-sm">Your rotated PDF is downloading...</div>
-        </div>
-      )}
-      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-    </main>
+        )}
+        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+      </main>
+    </PDFSuiteLayout>
   );
 };
 

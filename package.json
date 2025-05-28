@@ -13,7 +13,9 @@
     "@hello-pangea/dnd": "^18.0.1",
     "@heroicons/react": "^2.2.0",
     "@neslinesli93/qpdf-wasm": "^0.2.0",
+    "@tensorflow/tfjs": "^4.22.0",
     "browser-image-compression": "^2.0.2",
+    "diff-match-patch": "^1.0.5",
     "docx": "^9.5.0",
     "framer-motion": "^12.12.2",
     "highlight.js": "^11.11.1",
@@ -28,11 +30,13 @@
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
     "react-router-dom": "^7.6.0",
+    "tesseract.js": "^6.0.1",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@types/diff-match-patch": "^1.0.36",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",

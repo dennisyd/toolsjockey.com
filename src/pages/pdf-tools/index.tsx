@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Header from '../../components/layout/Header';
 
 const CORE_TOOLS = [
   { title: 'Merge PDFs', path: '/merge-pdf', desc: 'Combine multiple PDF files into one.' },
@@ -26,34 +27,37 @@ const PDFSuiteDashboard: React.FC = () => {
   }, []);
 
   return (
-    <main className="container-app mx-auto px-2 md:px-0 py-8">
-      <h1 className="text-3xl font-bold mb-6">ToolsJockey PDF Suite</h1>
-      <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl">
-        All-in-one PDF tools: merge, split, compress, convert, sign, protect, and more. 100% client-side.
-      </p>
-      <section className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">Core Tools</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CORE_TOOLS.map(tool => (
-            <Link key={tool.path} to={tool.path} className="block p-5 rounded-lg shadow bg-white dark:bg-primary-light hover:bg-accent/10 transition-colors border border-slate-200 dark:border-slate-700">
-              <div className="font-bold text-lg mb-1">{tool.title}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{tool.desc}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-      <section>
-        <h2 className="text-2xl font-semibold mb-4">Bonus Tools</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {BONUS_TOOLS.map(tool => (
-            <Link key={tool.path} to={tool.path} className="block p-5 rounded-lg shadow bg-white dark:bg-primary-light hover:bg-accent/10 transition-colors border border-slate-200 dark:border-slate-700">
-              <div className="font-bold text-lg mb-1">{tool.title}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{tool.desc}</div>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </main>
+    <>
+      <Header />
+      <main className="container-app mx-auto px-2 md:px-0 py-8">
+        <h1 className="text-3xl font-bold mb-6">ToolsJockey PDF Suite</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl">
+          Merge, split, convert, reorder, watermark, and extract PDF content—all 100% client-side. No uploads, no privacy worries.
+        </p>
+        <section className="mb-10">
+          <h2 className="text-2xl font-semibold mb-4">Core Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {CORE_TOOLS.map(tool => (
+              <Link key={tool.path} to={tool.path} className="block p-5 rounded-lg shadow bg-white dark:bg-primary-light hover:bg-accent/10 transition-colors border border-slate-200 dark:border-slate-700">
+                <div className="font-bold text-lg mb-1">{tool.title}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{tool.desc}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Bonus Tools</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {BONUS_TOOLS.map(tool => (
+              <Link key={tool.path} to={tool.path} className="block p-5 rounded-lg shadow bg-white dark:bg-primary-light hover:bg-accent/10 transition-colors border border-slate-200 dark:border-slate-700">
+                <div className="font-bold text-lg mb-1">{tool.title}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{tool.desc}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      </main>
+    </>
   );
 };
 

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 import JSZip from 'jszip';
+import PDFSuiteLayout from '../../components/layout/PDFSuiteLayout';
 
 interface ImageResult {
   url: string;
@@ -125,98 +126,100 @@ const PDFToImagesPage: React.FC = () => {
   };
 
   return (
-    <main className="container-app mx-auto px-2 md:px-0 py-8">
-      <h1 className="text-2xl font-bold mb-4">Convert PDF to Images</h1>
-      <p className="text-gray-600 dark:text-gray-300 mb-2">Export PDF pages as PNG or JPEG files. Everything runs in your browser.</p>
-      <div className="mb-6">
-        <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded text-yellow-900 dark:text-yellow-100 text-sm">
-          <strong>Note:</strong> Each page will be rendered as a high-quality image. No server upload. Large PDFs may take longer to process.
-        </div>
-      </div>
-      <input
-        type="file"
-        accept="application/pdf"
-        ref={fileInputRef}
-        className="hidden"
-        onChange={e => handleFiles(e.target.files)}
-      />
-      <div
-        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
-        onClick={() => fileInputRef.current?.click()}
-        onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
-      >
-        <span className="text-gray-500">Drag & drop a PDF file here, or click to select</span>
-      </div>
-      {file && (
+    <PDFSuiteLayout title="Convert PDF to Images">
+      <div className="container-app mx-auto px-2 md:px-0 py-8">
+        <h1 className="text-2xl font-bold mb-4">Convert PDF to Images</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-2">Export PDF pages as PNG or JPEG files. Everything runs in your browser.</p>
         <div className="mb-6">
-          <div className="mb-2 text-green-700 dark:text-green-400 font-medium">"{file.name}" successfully uploaded.</div>
-          <div className="flex flex-wrap gap-3 mb-4 items-center">
-            <button
-              className="btn btn-primary text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-accent"
-              onClick={handleConvert}
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'Processing...' : 'Convert to Images'}
-            </button>
-            <label className="ml-4 font-medium text-gray-700 dark:text-gray-300">
-              Format:
-              <select
-                className="ml-2 border rounded px-2 py-1"
-                value={format}
-                onChange={e => setFormat(e.target.value as 'png' | 'jpeg')}
-                disabled={isProcessing}
-              >
-                <option value="png">PNG</option>
-                <option value="jpeg">JPEG</option>
-              </select>
-            </label>
-            {images.length > 0 && (
+          <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded text-yellow-900 dark:text-yellow-100 text-sm">
+            <strong>Note:</strong> Each page will be rendered as a high-quality image. No server upload. Large PDFs may take longer to process.
+          </div>
+        </div>
+        <input
+          type="file"
+          accept="application/pdf"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={e => handleFiles(e.target.files)}
+        />
+        <div
+          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
+          onClick={() => fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+        >
+          <span className="text-gray-500">Drag & drop a PDF file here, or click to select</span>
+        </div>
+        {file && (
+          <div className="mb-6">
+            <div className="mb-2 text-green-700 dark:text-green-400 font-medium">"{file.name}" successfully uploaded.</div>
+            <div className="flex flex-wrap gap-3 mb-4 items-center">
               <button
-                className="btn btn-success text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-                onClick={handleDownloadZip}
+                className="btn btn-primary text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                onClick={handleConvert}
                 disabled={isProcessing}
               >
-                Download All as ZIP
+                {isProcessing ? 'Processing...' : 'Convert to Images'}
               </button>
+              <label className="ml-4 font-medium text-gray-700 dark:text-gray-300">
+                Format:
+                <select
+                  className="ml-2 border rounded px-2 py-1"
+                  value={format}
+                  onChange={e => setFormat(e.target.value as 'png' | 'jpeg')}
+                  disabled={isProcessing}
+                >
+                  <option value="png">PNG</option>
+                  <option value="jpeg">JPEG</option>
+                </select>
+              </label>
+              {images.length > 0 && (
+                <button
+                  className="btn btn-success text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  onClick={handleDownloadZip}
+                  disabled={isProcessing}
+                >
+                  Download All as ZIP
+                </button>
+              )}
+            </div>
+            {isProcessing && (
+              <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+                <div
+                  className="bg-accent h-3 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
             )}
           </div>
-          {isProcessing && (
-            <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-              <div
-                className="bg-accent h-3 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              ></div>
+        )}
+        {images.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-2">Page Images</h2>
+            <div className="flex flex-wrap gap-6">
+              {images.map((img, idx) => (
+                <div key={img.url} className="flex flex-col items-center border rounded shadow bg-white dark:bg-slate-800 p-2">
+                  <img
+                    src={img.url}
+                    alt={`Page ${idx + 1}`}
+                    className="w-40 h-56 object-contain border mb-1 bg-slate-100 dark:bg-slate-700"
+                    draggable={false}
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-300 mb-1">Page {idx + 1}</span>
+                  <button
+                    className="btn btn-secondary btn-xs"
+                    onClick={() => handleDownloadImage(img.url, img.name)}
+                  >
+                    Download
+                  </button>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-      )}
-      {images.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-2">Page Images</h2>
-          <div className="flex flex-wrap gap-6">
-            {images.map((img, idx) => (
-              <div key={img.url} className="flex flex-col items-center border rounded shadow bg-white dark:bg-slate-800 p-2">
-                <img
-                  src={img.url}
-                  alt={`Page ${idx + 1}`}
-                  className="w-40 h-56 object-contain border mb-1 bg-slate-100 dark:bg-slate-700"
-                  draggable={false}
-                />
-                <span className="text-xs text-gray-600 dark:text-gray-300 mb-1">Page {idx + 1}</span>
-                <button
-                  className="btn btn-secondary btn-xs"
-                  onClick={() => handleDownloadImage(img.url, img.name)}
-                >
-                  Download
-                </button>
-              </div>
-            ))}
           </div>
-        </div>
-      )}
-      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-    </main>
+        )}
+        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+      </div>
+    </PDFSuiteLayout>
   );
 };
 

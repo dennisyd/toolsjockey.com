@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import UnitConverterPage from './pages/tools/UnitConverterPage';
+import CurrencyConverterPage from './pages/tools/CurrencyConverterPage';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -17,11 +19,10 @@ const EXIFRemoverPage = lazy(() => import('./pages/tools/EXIFRemoverPage'));
 const ImageFormatConverterPage = lazy(() => import('./pages/tools/ImageFormatConverterPage'));
 const CSVToolMergerPage = lazy(() => import('./pages/tools/CSVToolMergerPage'));
 const JSONFormatterPage = lazy(() => import('./pages/tools/JSONFormatterPage'));
-const BatchPDFFormFiller = lazy(() => import('./components/tools/BatchPDFFormFiller'));
+const BatchPDFFormFillerPage = lazy(() => import('./pages/tools/BatchPDFFormFillerPage'));
 const PDFSuiteDashboard = lazy(() => import('./pages/pdf-tools/index'));
 const MergePDFPage = lazy(() => import('./pages/pdf-tools/MergePDFPage'));
 const SplitPDFPage = lazy(() => import('./pages/pdf-tools/SplitPDFPage'));
-const CompressPDFPage = lazy(() => import('./pages/pdf-tools/CompressPDFPage'));
 const ReorderPDFPage = lazy(() => import('./pages/pdf-tools/ReorderPDFPage'));
 const RotatePDFPage = lazy(() => import('./pages/pdf-tools/RotatePDFPage'));
 const WatermarkPDFPage = lazy(() => import('./pages/pdf-tools/WatermarkPDFPage'));
@@ -30,8 +31,22 @@ const ImagesToPDFPage = lazy(() => import('./pages/pdf-tools/ImagesToPDFPage'));
 const ExtractTextPage = lazy(() => import('./pages/pdf-tools/ExtractTextPage'));
 const PDFToWordPage = lazy(() => import('./pages/pdf-tools/PDFToWordPage'));
 const DeletePagesPage = lazy(() => import('./pages/pdf-tools/DeletePagesPage'));
-const UnlockPDFPage = lazy(() => import('./pages/pdf-tools/UnlockPDFPage'));
 const EditMetadataPage = lazy(() => import('./pages/pdf-tools/EditMetadataPage'));
+const TextFromImagePage = lazy(() => import('./pages/tools/TextFromImagePage'));
+const HashGeneratorPage = lazy(() => import('./pages/tools/HashGeneratorPage'));
+const CSSMinifierPage = lazy(() => import('./pages/tools/CSSMinifierPage'));
+const Base64EncoderPage = lazy(() => import('./pages/tools/Base64EncoderPage'));
+const PasswordGeneratorPage = lazy(() => import('./pages/tools/PasswordGeneratorPage'));
+const TextCaseConverterPage = lazy(() => import('./pages/tools/TextCaseConverterPage'));
+const TextDiffViewerPage = lazy(() => import('./pages/tools/TextDiffViewerPage'));
+const ColumnFilterToolPage = lazy(() => import('./pages/tools/ColumnFilterToolPage'));
+const DuplicateRemoverToolPage = lazy(() => import('./pages/tools/DuplicateRemoverToolPage'));
+const MarkdownTableGeneratorPage = lazy(() => import('./pages/tools/MarkdownTableGeneratorPage'));
+const RegexTesterPage = lazy(() => import('./pages/tools/RegexTesterPage'));
+const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
+const ContrastChecker = lazy(() => import('./tools/colorDesign/ContrastChecker'));
+const GradientGenerator = lazy(() => import('./tools/colorDesign/GradientGenerator'));
+const ColorFormatConverter = lazy(() => import('./tools/colorDesign/ColorFormatConverter'));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -61,11 +76,28 @@ function App() {
             <Route path="tools/image-format-converter" element={<ImageFormatConverterPage />} />
             <Route path="tools/csv-merger" element={<CSVToolMergerPage />} />
             <Route path="tools/json-formatter" element={<JSONFormatterPage />} />
-            <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFiller />} />
+            <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
+            <Route path="tools/text-from-image" element={<TextFromImagePage />} />
+            <Route path="tools/unit-converter" element={<UnitConverterPage />} />
+            <Route path="tools/currency-converter" element={<CurrencyConverterPage />} />
+            <Route path="tools/hash-generator" element={<HashGeneratorPage />} />
+            <Route path="tools/css-minifier" element={<CSSMinifierPage />} />
+            <Route path="tools/base64-encoder" element={<Base64EncoderPage />} />
+            <Route path="tools/password-generator" element={<PasswordGeneratorPage />} />
+            <Route path="tools/text-case-converter" element={<TextCaseConverterPage />} />
+            <Route path="tools/text-diff" element={<TextDiffViewerPage />} />
+            <Route path="tools/column-filter" element={<ColumnFilterToolPage />} />
+            <Route path="tools/remove-duplicates" element={<DuplicateRemoverToolPage />} />
+            <Route path="tools/markdown-table-generator" element={<MarkdownTableGeneratorPage />} />
+            <Route path="tools/regex-tester" element={<RegexTesterPage />} />
+            <Route path="tools/color-picker" element={<ColorPickerTool />} />
+            <Route path="tools/contrast-checker" element={<ContrastChecker />} />
+            <Route path="tools/gradient-generator" element={<GradientGenerator />} />
+            <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
           </Route>
           <Route path="merge-pdf" element={<MergePDFPage />} />
           <Route path="split-pdf" element={<SplitPDFPage />} />
-          <Route path="compress-pdf" element={<CompressPDFPage />} />
+
           <Route path="reorder-pdf" element={<ReorderPDFPage />} />
           <Route path="rotate-pdf" element={<RotatePDFPage />} />
           <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
@@ -74,7 +106,6 @@ function App() {
           <Route path="extract-text" element={<ExtractTextPage />} />
           <Route path="pdf-to-word" element={<PDFToWordPage />} />
           <Route path="delete-pages" element={<DeletePagesPage />} />
-          <Route path="unlock-pdf" element={<UnlockPDFPage />} />
           <Route path="edit-metadata" element={<EditMetadataPage />} />
         </Routes>
       </Suspense>

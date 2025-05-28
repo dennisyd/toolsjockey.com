@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
+import PDFSuiteLayout from '../../components/layout/PDFSuiteLayout';
 
 const MergePDFPage: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -67,57 +68,59 @@ const MergePDFPage: React.FC = () => {
   };
 
   return (
-    <main className="container-app mx-auto px-2 md:px-0 py-8">
-      <h1 className="text-2xl font-bold mb-4">Merge PDFs</h1>
-      <p className="text-gray-600 dark:text-gray-300 mb-8">Combine multiple PDF files into one. Drag, drop, reorder, and download instantly.</p>
-      <input
-        type="file"
-        accept="application/pdf"
-        multiple
-        ref={fileInputRef}
-        className="hidden"
-        onChange={e => handleFiles(e.target.files)}
-      />
-      <div
-        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
-        onClick={() => fileInputRef.current?.click()}
-        onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
-      >
-        <span className="text-gray-500">Drag & drop PDF files here, or click to select</span>
-      </div>
-      {files.length > 0 && (
-        <div className="mb-6">
-          <div className="font-semibold mb-2">Files to merge:</div>
-          <ul className="mb-2">
-            {files.map((file, idx) => (
-              <li key={file.name + idx} className="flex items-center gap-2 mb-1">
-                <span className="truncate max-w-xs">{file.name}</span>
-                <button className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded" onClick={() => removeFile(idx)}>Remove</button>
-                <button className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 rounded" onClick={() => moveFile(idx, idx - 1)} disabled={idx === 0}>↑</button>
-                <button className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 rounded" onClick={() => moveFile(idx, idx + 1)} disabled={idx === files.length - 1}>↓</button>
-              </li>
-            ))}
-          </ul>
-          <button
-            className="btn btn-primary"
-            onClick={handleMerge}
-            disabled={isMerging || files.length < 2}
-          >
-            {isMerging ? 'Merging...' : 'Merge & Download'}
-          </button>
-          {isMerging && (
-            <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-              <div
-                className="bg-accent h-3 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          )}
+    <PDFSuiteLayout title="Merge PDFs">
+      <main className="container-app mx-auto px-2 md:px-0 py-8">
+        <h1 className="text-2xl font-bold mb-4">Merge PDFs</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8">Combine multiple PDF files into one. Drag, drop, reorder, and download instantly.</p>
+        <input
+          type="file"
+          accept="application/pdf"
+          multiple
+          ref={fileInputRef}
+          className="hidden"
+          onChange={e => handleFiles(e.target.files)}
+        />
+        <div
+          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
+          onClick={() => fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+        >
+          <span className="text-gray-500">Drag & drop PDF files here, or click to select</span>
         </div>
-      )}
-      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-    </main>
+        {files.length > 0 && (
+          <div className="mb-6">
+            <div className="font-semibold mb-2">Files to merge:</div>
+            <ul className="mb-2">
+              {files.map((file, idx) => (
+                <li key={file.name + idx} className="flex items-center gap-2 mb-1">
+                  <span className="truncate max-w-xs">{file.name}</span>
+                  <button className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded" onClick={() => removeFile(idx)}>Remove</button>
+                  <button className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 rounded" onClick={() => moveFile(idx, idx - 1)} disabled={idx === 0}>↑</button>
+                  <button className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 rounded" onClick={() => moveFile(idx, idx + 1)} disabled={idx === files.length - 1}>↓</button>
+                </li>
+              ))}
+            </ul>
+            <button
+              className="btn btn-primary"
+              onClick={handleMerge}
+              disabled={isMerging || files.length < 2}
+            >
+              {isMerging ? 'Merging...' : 'Merge & Download'}
+            </button>
+            {isMerging && (
+              <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+                <div
+                  className="bg-accent h-3 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            )}
+          </div>
+        )}
+        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+      </main>
+    </PDFSuiteLayout>
   );
 };
 

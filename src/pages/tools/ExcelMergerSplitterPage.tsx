@@ -1,16 +1,24 @@
 import { useEffect } from 'react';
 import ExcelMergerSplitter from '../../components/tools/ExcelMergerSplitter';
-import { useAppStore } from '../../store/useAppStore';
+import ToolPageLayout from '../../components/layout/ToolPageLayout';
+import { TableCellsIcon } from '@heroicons/react/24/outline';
 
 const ExcelMergerSplitterPage = () => {
-  const { addRecentlyUsedTool } = useAppStore();
-  
   useEffect(() => {
-    addRecentlyUsedTool('excel-merger-splitter' as any);
     document.title = 'Excel Merger & Splitter - ToolsJockey.com';
-  }, [addRecentlyUsedTool]);
+  }, []);
 
-  return <ExcelMergerSplitter />;
+  return (
+    <ToolPageLayout
+      toolId="excel-merger-splitter"
+      title="Excel Merger & Splitter"
+      icon={TableCellsIcon}
+      group="excelcsv"
+      relatedTools={['csv-merger', 'csv-to-json', 'word-to-markdown']}
+    >
+      <ExcelMergerSplitter />
+    </ToolPageLayout>
+  );
 };
 
 export default ExcelMergerSplitterPage; 
