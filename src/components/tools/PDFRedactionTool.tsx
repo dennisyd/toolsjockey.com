@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { REDACTION_PATTERNS } from './RedactionPatterns';
 import { detectSensitiveData } from './PDFRedactionEngine';
-import { extractTextFromPDF, applyRedactionsToPDF } from './PDFProcessor';
+import { extractTextFromPDF, applyRedactionsToPDF, mapDetectionsToCoords } from './PDFProcessor';
 import DonationHandler from './DonationHandler';
 
 // Extend RedactionMatch locally to include pageIndex for this tool's state
@@ -25,6 +25,7 @@ const PDFRedactionTool: React.FC = () => {
   const [redactedBlobs, setRedactedBlobs] = useState<Blob[]>([]);
   const [showDonation, setShowDonation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pageItems, setPageItems] = useState<any[][]>([]); // Per file, per page
 
   // Handle file upload
   const handleFiles = async (fileList: FileList | null) => {
@@ -59,17 +60,22 @@ const PDFRedactionTool: React.FC = () => {
     setProcessing(true);
     setError(null);
     const allDetections: RedactionMatchWithPage[][] = [];
+    const allPageItems: any[][] = [];
     for (const file of files) {
       const data = new Uint8Array(await file.arrayBuffer());
       const { pages } = await extractTextFromPDF(data);
       const fileDetections: RedactionMatchWithPage[] = [];
+      const filePageItems: any[] = [];
       for (const page of pages) {
         const matches = detectSensitiveData(page.text, REDACTION_PATTERNS);
         fileDetections.push(...matches.map(m => ({ ...m, pageIndex: page.pageIndex })));
+        filePageItems.push(page.items);
       }
       allDetections.push(fileDetections);
+      allPageItems.push(filePageItems);
     }
     setDetections(allDetections);
+    setPageItems(allPageItems);
     setProcessing(false);
   };
 
@@ -81,9 +87,15 @@ const PDFRedactionTool: React.FC = () => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const data = new Uint8Array(await file.arrayBuffer());
-      // For demo: stub redactions (real mapping needed)
-      const redactions = detections[i]?.map(d => ({ pageIndex: d.pageIndex, rect: { x: 100, y: 100, w: 200, h: 20 } })) || [];
-      const redactedBytes = await applyRedactionsToPDF(data, redactions);
+      // Map detections to coordinates
+      const coords = (detections[i] || [])
+        .map(d => {
+          const items = pageItems[i]?.[d.pageIndex] || [];
+          const mapped = mapDetectionsToCoords(items, [d]);
+          return mapped.length > 0 ? { pageIndex: d.pageIndex, rect: mapped[0].rect } : null;
+        })
+        .filter((c): c is { pageIndex: number; rect: { x: number; y: number; w: number; h: number } } => !!c);
+      const redactedBytes = await applyRedactionsToPDF(data, coords);
       blobs.push(new Blob([redactedBytes], { type: 'application/pdf' }));
     }
     setRedactedBlobs(blobs);

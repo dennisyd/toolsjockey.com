@@ -6,9 +6,9 @@ import type { RedactionMatch } from './PDFRedactionEngine';
 // (Assume window.pdfjsLib and window.PDFLib are available)
 
 /**
- * Extracts text from all pages of a PDF using PDF.js
+ * Extracts text and positions from all pages of a PDF using PDF.js, tracking start/end indices for each item
  * @param {Uint8Array} pdfData
- * @returns {Promise<{pages: {text: string, pageIndex: number}[]}>}
+ * @returns {Promise<{pages: {text: string, pageIndex: number, items: any[]}[]}>}
  */
 export async function extractTextFromPDF(pdfData: Uint8Array) {
   // @ts-ignore
@@ -17,26 +17,54 @@ export async function extractTextFromPDF(pdfData: Uint8Array) {
   for (let i = 0; i < pdf.numPages; i++) {
     const page = await pdf.getPage(i + 1);
     const content = await page.getTextContent();
-    const text = content.items.map((item: any) => item.str).join(' ');
-    pages.push({ text, pageIndex: i });
+    let text = '';
+    let idx = 0;
+    const itemsWithIndices = content.items.map((item: any) => {
+      const start = idx;
+      text += item.str;
+      idx += item.str.length;
+      return { ...item, start, end: idx };
+    });
+    pages.push({ text, pageIndex: i, items: itemsWithIndices });
   }
   return { pages };
 }
 
 /**
- * Maps detected matches to PDF coordinates (stub, needs refinement)
- * @param {any} pdfPage - PDF.js page object (unused)
+ * Maps detected matches to PDF coordinates using text item positions and text indices
+ * @param {any[]} items - PDF.js text items for the page (with start/end)
  * @param {RedactionMatch[]} matches
- * @returns {Promise<{match: RedactionMatch, rect: {x: number, y: number, w: number, h: number}}[]>}
+ * @returns {Array<{match: RedactionMatch, rect: {x: number, y: number, w: number, h: number}}>} 
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function mapDetectionsToCoords(_pdfPage: any, matches: RedactionMatch[]) {
-  // This is a complex task; here we stub with dummy rectangles
-  // In production, use text item positions from PDF.js
-  return matches.map(match => ({
-    match,
-    rect: { x: 100, y: 100, w: 200, h: 20 }, // Placeholder
-  }));
+export function mapDetectionsToCoords(items: any[], matches: RedactionMatch[]) {
+  const results: { match: RedactionMatch, rect: { x: number, y: number, w: number, h: number } }[] = [];
+  for (const match of matches) {
+    // Find all items whose text range overlaps with the match's range
+    const overlapping = items.filter((it: any) =>
+      (it.start < match.index + match.length) && (it.end > match.index)
+    );
+    if (overlapping.length > 0) {
+      // Compute bounding box covering all overlapping items
+      const xs = overlapping.map(it => it.transform[4]);
+      const ys = overlapping.map(it => it.transform[5]);
+      const ws = overlapping.map(it => it.width);
+      const hs = overlapping.map(it => it.height || 12);
+      const minX = Math.min(...xs);
+      const minY = Math.min(...ys);
+      const maxX = Math.max(...xs.map((x, i) => x + ws[i]));
+      const maxY = Math.max(...ys.map((y, i) => y + hs[i]));
+      results.push({
+        match,
+        rect: {
+          x: minX,
+          y: minY,
+          w: maxX - minX,
+          h: maxY - minY,
+        },
+      });
+    }
+  }
+  return results;
 }
 
 /**
@@ -61,9 +89,7 @@ export async function applyRedactionsToPDF(pdfData: Uint8Array, redactions: Arra
       borderColor: rgb(0, 0, 0),
       borderWidth: 0,
     });
-    // (Optional) Remove text objects if possible
   }
-  // Remove metadata (optional)
   pdfDoc.setTitle('Redacted PDF');
   pdfDoc.setSubject('Redacted');
   pdfDoc.setKeywords(['redacted']);
