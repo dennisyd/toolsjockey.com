@@ -13,9 +13,7 @@ const HeaderRotator = () => {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = false; // force animation for testing
 
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -34,10 +32,10 @@ const HeaderRotator = () => {
 
   return (
     <span
-      className="relative h-8 overflow-hidden font-semibold text-white whitespace-nowrap truncate min-w-0 select-none"
+      className="relative h-8 overflow-visible font-extrabold text-white whitespace-nowrap truncate min-w-0 select-none z-10"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ maxWidth: 320 }}
+      style={{ maxWidth: 400 }}
       aria-live="polite"
     >
       <AnimatePresence initial={false}>
@@ -47,7 +45,8 @@ const HeaderRotator = () => {
           animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
           exit={prefersReducedMotion ? undefined : { opacity: 0, y: -12 }}
           transition={{ duration: 0.45 }}
-          className="block absolute left-0 right-0 top-0 truncate"
+          className="block absolute left-0 right-0 top-0 truncate text-white text-lg md:text-2xl font-extrabold drop-shadow-lg"
+          style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}
         >
           {PHRASES[prefersReducedMotion ? 0 : index]}
         </motion.span>

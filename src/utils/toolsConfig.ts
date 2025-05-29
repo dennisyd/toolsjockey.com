@@ -11,7 +11,7 @@ import {
   PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 
-export type ToolBadge = 'NEW' | 'POPULAR' | 'UPDATED';
+export type ToolBadge = 'NEW' | 'POPULAR' | 'UPDATED' | 'POWER TOOL';
 
 export interface ToolMeta {
   id: string;
@@ -31,6 +31,7 @@ export const toolsConfig: ToolMeta[] = [
     path: '/tools/batch-pdf-form-filler',
     description: 'Fill PDF forms in bulk using spreadsheet data.',
     icon: DocumentDuplicateIcon,
+    badges: ['POWER TOOL'],
     group: 'pdf',
   },
   {
@@ -42,6 +43,15 @@ export const toolsConfig: ToolMeta[] = [
     badges: ['POPULAR'],
     group: 'pdf',
   },
+  {
+    id: 'pdf-redaction-tool',
+    title: 'PDF Text Redaction Tool',
+    path: '/tools/pdf-redaction-tool',
+    description: 'Detect and permanently redact sensitive data from PDFs, 100% client-side.',
+    icon: DocumentDuplicateIcon,
+    badges: ['NEW'],
+    group: 'pdf',
+  },
   // Word & Document Tools
   {
     id: 'word-to-markdown',
@@ -49,6 +59,24 @@ export const toolsConfig: ToolMeta[] = [
     path: '/tools/word-to-markdown',
     description: 'Convert Word documents (.docx) to Markdown format.',
     icon: PencilSquareIcon,
+    group: 'word',
+  },
+  {
+    id: 'markdown-table-generator',
+    title: 'Markdown Table Generator',
+    path: '/tools/markdown-table-generator',
+    description: 'Generate Markdown tables from CSV or tabular data.',
+    icon: CodeBracketIcon,
+    badges: ['NEW'],
+    group: 'word',
+  },
+  {
+    id: 'mail-merge-tool',
+    title: 'Mail Merge Tool',
+    path: '/tools/mail-merge-tool',
+    description: 'Merge CSV data with text templates to generate personalized documents, all client-side.',
+    icon: DocumentDuplicateIcon,
+    badges: ['NEW'],
     group: 'word',
   },
   // Excel & CSV Tools
@@ -90,6 +118,15 @@ export const toolsConfig: ToolMeta[] = [
     path: '/tools/remove-duplicates',
     description: 'Remove duplicate rows from CSV or Excel files.',
     icon: TableCellsIcon,
+    group: 'excelcsv',
+  },
+  {
+    id: 'excel-to-formats',
+    title: 'Excel to Everything Converter',
+    path: '/tools/excel-to-formats',
+    description: 'Convert Excel files to CSV, JSON, HTML, PDF, Google Sheets, and more. Batch, privacy-first, and pro-grade.',
+    icon: TableCellsIcon,
+    badges: ['NEW'],
     group: 'excelcsv',
   },
   // Image Tools
@@ -223,15 +260,6 @@ export const toolsConfig: ToolMeta[] = [
     title: 'Regex Tester',
     path: '/tools/regex-tester',
     description: 'Test and debug regular expressions.',
-    icon: CodeBracketIcon,
-    badges: ['NEW'],
-    group: 'developer',
-  },
-  {
-    id: 'markdown-table-generator',
-    title: 'Markdown Table Generator',
-    path: '/tools/markdown-table-generator',
-    description: 'Generate Markdown tables from CSV or tabular data.',
     icon: CodeBracketIcon,
     badges: ['NEW'],
     group: 'developer',

@@ -272,7 +272,7 @@ const BatchPDFFormFiller: React.FC = () => {
       </div>
       {/* Step 2: Upload Data */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-md p-6 flex flex-col gap-4">
-        <h2 className="text-xl font-bold mb-2">Step 2: Upload Data (CSV or Excel)</h2>
+        <h2 className="text-xl font-bold mb-2">Step 2: Upload Data (CSV* or Excel)</h2>
         <input
           type="file"
           accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
@@ -293,6 +293,7 @@ const BatchPDFFormFiller: React.FC = () => {
             <span>Drag & drop or click to select a CSV or Excel file</span>
           )}
         </div>
+        <div className="mt-2 text-xs text-accent"><b>*Tip:</b> If you edit your CSV in Excel, open it in a text editor after saving and remove any quotes from the header row before importing. This helps avoid import errors.</div>
         {dataError && <div className="text-red-600 text-sm">{dataError}</div>}
         {validationWarning && <div className="text-yellow-700 bg-yellow-100 rounded p-2 text-xs">{validationWarning}</div>}
         {columnNames.length > 0 && (

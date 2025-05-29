@@ -3,6 +3,13 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import UnitConverterPage from './pages/tools/UnitConverterPage';
 import CurrencyConverterPage from './pages/tools/CurrencyConverterPage';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import TutorialsIndex from './pages/TutorialsIndex';
+import TutorialPage from './pages/TutorialPage';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import ExcelToFormatsConverterPage from './pages/tools/ExcelToFormatsConverterPage';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -47,6 +54,12 @@ const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool')
 const ContrastChecker = lazy(() => import('./tools/colorDesign/ContrastChecker'));
 const GradientGenerator = lazy(() => import('./tools/colorDesign/GradientGenerator'));
 const ColorFormatConverter = lazy(() => import('./tools/colorDesign/ColorFormatConverter'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+// Blog pages
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogArticle = lazy(() => import('./pages/BlogArticle'));
+const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
+const PDFRedactionToolPage = lazy(() => import('./pages/tools/PDFRedactionToolPage'));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -63,6 +76,8 @@ function App() {
           <Route path="pdf-tools" element={<PDFSuiteDashboard />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
+            <Route path="blog" element={<Blog />} />
+            <Route path="blog/:id" element={<BlogArticle />} />
             <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
             <Route path="tools/qr-code-generator" element={<QRCodeGeneratorPage />} />
             <Route path="tools/image-compressor" element={<ImageCompressorPage />} />
@@ -94,19 +109,28 @@ function App() {
             <Route path="tools/contrast-checker" element={<ContrastChecker />} />
             <Route path="tools/gradient-generator" element={<GradientGenerator />} />
             <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
+            <Route path="faq" element={<FAQ />} />
+            <Route path="terms" element={<Terms />} />
+            <Route path="privacy" element={<Privacy />} />
+            <Route path="tutorials" element={<TutorialsIndex />} />
+            <Route path="tutorials/:id" element={<TutorialPage />} />
+            <Route path="about" element={<About />} />
+            <Route path="contact" element={<Contact />} />
+            <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
+            <Route path="tools/pdf-redaction-tool" element={<PDFRedactionToolPage />} />
+            <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
+            <Route path="merge-pdf" element={<MergePDFPage />} />
+            <Route path="split-pdf" element={<SplitPDFPage />} />
+            <Route path="reorder-pdf" element={<ReorderPDFPage />} />
+            <Route path="rotate-pdf" element={<RotatePDFPage />} />
+            <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
+            <Route path="pdf-to-images" element={<PDFToImagesPage />} />
+            <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
+            <Route path="extract-text" element={<ExtractTextPage />} />
+            <Route path="pdf-to-word" element={<PDFToWordPage />} />
+            <Route path="delete-pages" element={<DeletePagesPage />} />
+            <Route path="edit-metadata" element={<EditMetadataPage />} />
           </Route>
-          <Route path="merge-pdf" element={<MergePDFPage />} />
-          <Route path="split-pdf" element={<SplitPDFPage />} />
-
-          <Route path="reorder-pdf" element={<ReorderPDFPage />} />
-          <Route path="rotate-pdf" element={<RotatePDFPage />} />
-          <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
-          <Route path="pdf-to-images" element={<PDFToImagesPage />} />
-          <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
-          <Route path="extract-text" element={<ExtractTextPage />} />
-          <Route path="pdf-to-word" element={<PDFToWordPage />} />
-          <Route path="delete-pages" element={<DeletePagesPage />} />
-          <Route path="edit-metadata" element={<EditMetadataPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

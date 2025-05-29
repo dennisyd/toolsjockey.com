@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { toolsConfig } from '../../utils/toolsConfig';
 import Header from './Header';
+import Footer from './Footer';
 
 interface PDFSuiteLayoutProps {
   title: string;
@@ -64,6 +65,7 @@ const PDFSuiteLayout: React.FC<PDFSuiteLayoutProps> = ({ title, children }) => {
           Ad Space (728x90)
         </div>
       </div>
+      <Footer />
     </>
   );
 };

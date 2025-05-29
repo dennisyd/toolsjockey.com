@@ -37,3 +37,12 @@
     @apply max-w-6xl mx-auto px-4 py-6;
   }
 }
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-ticker {
+  display: inline-block;
+  animation: ticker 30s linear infinite;
+}

@@ -27,8 +27,10 @@ const CSVToolMerger = () => {
     accept: { 'text/csv': ['.csv'] },
     multiple: true,
     onDrop: async (acceptedFiles) => {
-      setFiles(acceptedFiles);
-      setFileNames(acceptedFiles.map(f => f.name));
+      // Append new files, avoid duplicates by name
+      const newFiles = [...files, ...acceptedFiles.filter(f => !files.some(existing => existing.name === f.name))];
+      setFiles(newFiles);
+      setFileNames(newFiles.map(f => f.name));
       setMergedCSV('');
       setMergedXLSX(null);
       setPreviewRows([]);
@@ -38,7 +40,7 @@ const CSVToolMerger = () => {
       const stats: { rows: number; cols: number; headers: string[] }[] = [];
       let headersRef: string[] | null = null;
       let mismatch = false;
-      for (const file of acceptedFiles) {
+      for (const file of newFiles) {
         const text = await file.text();
         const parsed = Papa.parse<string[]>(text, { header: false });
         const rows = parsed.data as string[][];

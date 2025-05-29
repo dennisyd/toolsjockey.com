@@ -13,7 +13,7 @@ const MarkdownTableGeneratorPage = () => {
       toolId="markdown-table-generator"
       title="Markdown Table Generator"
       icon={CodeBracketIcon}
-      group="developer"
+      group="word"
       relatedTools={['regex-tester', 'json-formatter', 'text-diff']}
     >
       <MarkdownTableGenerator />

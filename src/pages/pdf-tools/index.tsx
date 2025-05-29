@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
+import DonationBanner from '../../components/layout/DonationBanner';
 
 const CORE_TOOLS = [
   { title: 'Merge PDFs', path: '/merge-pdf', desc: 'Combine multiple PDF files into one.' },
@@ -31,7 +32,7 @@ const PDFSuiteDashboard: React.FC = () => {
       <Header />
       <main className="container-app mx-auto px-2 md:px-0 py-8">
         <h1 className="text-3xl font-bold mb-6">ToolsJockey PDF Suite</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-2xl">
+        <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-4xl">
           Merge, split, convert, reorder, watermark, and extract PDF content—all 100% client-side. No uploads, no privacy worries.
         </p>
         <section className="mb-10">
@@ -57,6 +58,7 @@ const PDFSuiteDashboard: React.FC = () => {
           </div>
         </section>
       </main>
+      <DonationBanner />
     </>
   );
 };
