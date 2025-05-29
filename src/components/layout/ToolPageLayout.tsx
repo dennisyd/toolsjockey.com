@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toolsConfig, toolGroups } from '../../utils/toolsConfig';
-import Footer from './Footer';
-import DonationBanner from './DonationBanner';
 
 interface ToolPageLayoutProps {
   toolId: string;
