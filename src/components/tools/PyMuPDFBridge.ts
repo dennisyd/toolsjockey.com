@@ -89,11 +89,50 @@ class PyMuPDFBridge implements PyMuPDFBridgeType {
     try {
       console.log("Initializing Pyodide...");
       
-      // Use window.loadPyodide from the global script
-      if (!window.loadPyodide) {
-        throw new Error("Pyodide loader not found. Make sure the Pyodide script is loaded in the HTML.");
+      // Check if window.loadPyodide is available, if not, wait for it
+      if (typeof window.loadPyodide !== 'function') {
+        console.log("loadPyodide not available yet, waiting...");
+        
+        // Wait for loadPyodide to become available (max 30 seconds)
+        for (let i = 0; i < 60; i++) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          if (typeof window.loadPyodide === 'function') {
+            console.log("loadPyodide became available after waiting");
+            break;
+          }
+          if (i % 10 === 0) {
+            console.log(`Still waiting for loadPyodide... (${i/2}s)`);
+          }
+        }
+        
+        // If still not available, try dynamically loading the script
+        if (typeof window.loadPyodide !== 'function') {
+          console.log("loadPyodide still not available, loading script dynamically");
+          
+          await new Promise<void>((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
+            script.onload = () => {
+              console.log("Pyodide script loaded dynamically");
+              resolve();
+            };
+            script.onerror = () => {
+              reject(new Error("Failed to load Pyodide script dynamically"));
+            };
+            document.head.appendChild(script);
+          });
+          
+          // Wait a bit more for initialization
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
       
+      // Final check before proceeding
+      if (typeof window.loadPyodide !== 'function') {
+        throw new Error("loadPyodide function not available after waiting and dynamic loading");
+      }
+      
+      console.log("loadPyodide is available, initializing...");
       const pyodide = await window.loadPyodide({
         indexURL: PYODIDE_CDN_URL,
         stdout: (text: string) => console.log("Pyodide stdout:", text),

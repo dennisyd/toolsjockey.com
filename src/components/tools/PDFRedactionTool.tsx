@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { REDACTION_PATTERNS, getPatternCategories } from './RedactionPatterns';
 import pyMuPDFBridge from './PyMuPDFBridge';
 import { useRedactionEngine } from './PDFRedactionEngine';
@@ -8,7 +8,7 @@ import type { RedactionMatchWithPage } from './types';
 
 const MAX_FILE_SIZE_MB = 50;
 
-// Add a debug flag at the top of the file
+// Enable debug mode for development
 const DEBUG_MODE = true;
 
 /**
@@ -40,12 +40,13 @@ const CompatibilityNotice: React.FC = () => {
   );
 };
 
-// Update the PyMuPDFLoader component to use the new bridge
+// Update the PyMuPDFLoader component to include a retry button
 const PyMuPDFLoader: React.FC<{
   isLoading: boolean;
   progress: number;
   error: string | null;
-}> = ({ isLoading, progress, error }) => {
+  onRetry: () => void;
+}> = ({ isLoading, progress, error, onRetry }) => {
   if (!isLoading && !error) return null;
   
   return (
@@ -79,6 +80,22 @@ const PyMuPDFLoader: React.FC<{
               The application will automatically fall back to basic JavaScript redaction. 
               For best results, consider using the desktop version of this tool.
             </p>
+            
+            <div className="flex gap-2 mt-4">
+              <button 
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex-1"
+                onClick={() => window.location.reload()}
+              >
+                Reload Page
+              </button>
+              
+              <button 
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex-1"
+                onClick={onRetry}
+              >
+                Retry Loading
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -97,15 +114,6 @@ const PyMuPDFLoader: React.FC<{
               <p className="text-xs text-gray-500 mt-2">Using Pyodide v0.23.4 from CDN</p>
             )}
           </>
-        )}
-        
-        {error && (
-          <button 
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-            onClick={() => window.location.reload()}
-          >
-            Reload Page
-          </button>
         )}
       </div>
     </div>
@@ -135,6 +143,27 @@ const PDFRedactionTool: React.FC = () => {
 
   // Get extraction and redaction functions from the hook
   const { redactPDF, extractTextFromPDF } = useRedactionEngine();
+
+  // Add console logs at the beginning of the component to check for Pyodide availability
+  useEffect(() => {
+    console.log("Checking Pyodide availability...");
+    console.log("window.loadPyodide exists:", typeof window.loadPyodide === 'function');
+    console.log("DEBUG_MODE enabled:", DEBUG_MODE);
+    
+    // Try loading PyMuPDF right away
+    const initPyMuPDF = async () => {
+      try {
+        console.log("Attempting to initialize PyMuPDF...");
+        await pyMuPDFBridge.loadPyMuPDF();
+        console.log("PyMuPDF initialized successfully!");
+      } catch (error) {
+        console.error("Failed to initialize PyMuPDF:", error);
+        setPyMuPDFError(error instanceof Error ? error.message : String(error));
+      }
+    };
+
+    initPyMuPDF();
+  }, []);
 
   // Handle file upload
   const handleFiles = async (fileList: FileList | null) => {
@@ -275,6 +304,23 @@ const PDFRedactionTool: React.FC = () => {
       ...enabledPatterns,
       [key]: !enabledPatterns[key]
     });
+  };
+
+  // Add a button to retry loading PyMuPDF if it failed
+  const retryPyMuPDFLoading = async () => {
+    console.log("Retrying PyMuPDF loading...");
+    setPyMuPDFError(null);
+    setPyMuPDFIsLoading(true);
+    
+    try {
+      await pyMuPDFBridge.loadPyMuPDF();
+      console.log("PyMuPDF loaded successfully on retry!");
+    } catch (error) {
+      console.error("Failed to load PyMuPDF on retry:", error);
+      setPyMuPDFError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPyMuPDFIsLoading(false);
+    }
   };
 
   // Function to handle redaction with PyMuPDF
@@ -627,6 +673,7 @@ const PDFRedactionTool: React.FC = () => {
         isLoading={pyMuPDFIsLoading} 
         progress={pyMuPDFLoadProgress}
         error={pyMuPDFError}
+        onRetry={retryPyMuPDFLoading}
       />
 
       {/* Restore pattern selection UI */}
