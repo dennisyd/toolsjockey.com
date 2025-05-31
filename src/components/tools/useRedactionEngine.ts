@@ -37,9 +37,16 @@ export const useRedactionEngine = () => {
         console.log("Using PyMuPDF for redaction");
         // Convert ArrayBuffer to Uint8Array for PyMuPDF
         const uint8Array = new Uint8Array(pdfBytes);
-        const result = await pyMuPDFBridge.redactPDF(uint8Array, patternsToRedact);
-        console.log("PyMuPDF redaction completed successfully");
-        return result;
+        
+        try {
+          const result = await pyMuPDFBridge.redactPDF(uint8Array, patternsToRedact);
+          console.log("PyMuPDF redaction completed successfully");
+          return result.buffer;
+        } catch (redactError) {
+          console.error("PyMuPDF redaction failed:", redactError);
+          console.log("Falling back to JavaScript redaction due to PyMuPDF error");
+          throw redactError;
+        }
       } else {
         throw new Error("PyMuPDF not loaded after load attempt");
       }

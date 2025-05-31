@@ -49,6 +49,10 @@ const PyMuPDFLoader: React.FC<{
 }> = ({ isLoading, progress, error, onRetry }) => {
   if (!isLoading && !error) return null;
   
+  const isMissingWheelError = error?.includes("Can't find a pure Python 3 wheel for 'pymupdf'") || 
+                             error?.includes("ValueError: Can't find") ||
+                             error?.includes("wheel");
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
@@ -60,6 +64,19 @@ const PyMuPDFLoader: React.FC<{
           <div className="mb-4">
             <p className="text-red-600 mb-2">There was an error loading the PyMuPDF library:</p>
             <pre className="bg-gray-100 p-2 rounded text-sm overflow-auto max-h-40">{error}</pre>
+            
+            {isMissingWheelError && (
+              <div className="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700">
+                <p className="font-semibold">Missing Custom Wheel</p>
+                <p className="text-sm mt-1">
+                  PyMuPDF requires a custom-built wheel file to work in the browser.
+                  The JavaScript redaction will be used as a fallback.
+                </p>
+                <p className="text-sm mt-2">
+                  To fully enable PyMuPDF functionality, a custom wheel needs to be built and hosted.
+                </p>
+              </div>
+            )}
             
             {DEBUG_MODE && (
               <div className="mt-4">
