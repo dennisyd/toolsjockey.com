@@ -14,6 +14,7 @@ const CurrencyConverter: React.FC = () => {
   const [usingFallback, setUsingFallback] = useState(false);
   const [fromFilter, setFromFilter] = useState('');
   const [toFilter, setToFilter] = useState('');
+  const [exchangeRates, setExchangeRates] = useState<Record<string, Record<string, number>>>({});
 
   // Fetch currency list and rates
   useEffect(() => {
@@ -37,7 +38,11 @@ const CurrencyConverter: React.FC = () => {
             return res.json();
           })
           .then(data => {
-            setCurrencies([data.base, ...Object.keys(data.rates)].sort());
+            // Make sure base currency is included in the list
+            const currencyList = [data.base, ...Object.keys(data.rates)]
+              .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+              .sort();
+            setCurrencies(currencyList);
             setLoading(false);
             setUsingFallback(true);
           })
@@ -62,34 +67,59 @@ const CurrencyConverter: React.FC = () => {
         setResult(num.toString());
         return;
       }
+      
+      // Check if we already have cached rates
+      if (exchangeRates[from]?.[to] && Date.now() - exchangeRates[from].timestamp < 3600000) {
+        setResult((num * exchangeRates[from][to]).toFixed(4));
+        return;
+      }
+      
       setLoading(true);
       try {
         let rate: number | null = null;
         if (!usingFallback) {
           // Try exchangerate.host
           const res = await fetch(`${API_URL}?base=${from}&symbols=${to}`);
+          if (!res.ok) throw new Error("API request failed");
           const data = await res.json();
           if (data.rates && data.rates[to]) {
             rate = data.rates[to];
+            // Cache the rate
+            setExchangeRates(prev => ({
+              ...prev,
+              [from]: { ...prev[from], [to]: rate as number, timestamp: Date.now() }
+            }));
           } else {
-            throw new Error();
+            throw new Error("Missing rate data");
           }
         } else {
-          // Use Frankfurter
+          // Use Frankfurter API
+          // The format should be: https://api.frankfurter.app/latest?from=USD&to=EUR
           const res = await fetch(`${FALLBACK_API_URL}?from=${from}&to=${to}`);
+          if (!res.ok) throw new Error("Fallback API request failed");
           const data = await res.json();
+          
           if (data.rates && data.rates[to]) {
             rate = data.rates[to];
+            // Cache the rate
+            setExchangeRates(prev => ({
+              ...prev,
+              [from]: { ...prev[from], [to]: rate as number, timestamp: Date.now() }
+            }));
           } else {
-            throw new Error();
+            throw new Error("Missing rate data from fallback API");
           }
         }
-        setResult((num * (rate as number)).toFixed(4));
-      } catch {
-        setError('Failed to fetch conversion rate.');
+        
+        if (rate !== null) {
+          setResult((num * rate).toFixed(4));
+        }
+      } catch (err) {
+        setError(`Failed to fetch conversion rate: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
       setLoading(false);
     };
+    
     if (amount && from && to && currencies.length > 0) {
       convert();
     } else {
@@ -97,6 +127,12 @@ const CurrencyConverter: React.FC = () => {
     }
     // eslint-disable-next-line
   }, [amount, from, to, usingFallback]);
+
+  // Function to swap currencies
+  const handleSwap = () => {
+    setFrom(to);
+    setTo(from);
+  };
 
   // Filtered currency lists
   const filteredFrom = currencies.filter(cur => cur.toLowerCase().includes(fromFilter.toLowerCase()));
@@ -127,7 +163,13 @@ const CurrencyConverter: React.FC = () => {
             ))}
           </select>
         </div>
-        <span className="self-center">→</span>
+        <button 
+          onClick={handleSwap}
+          className="self-center p-2 rounded-full border hover:bg-gray-100 transition"
+          aria-label="Swap currencies"
+        >
+          ↔
+        </button>
         <div className="flex flex-col flex-1">
           <input
             type="text"
@@ -155,4 +197,4 @@ const CurrencyConverter: React.FC = () => {
   );
 };
 
-export default CurrencyConverter; 
+export default CurrencyConverter;

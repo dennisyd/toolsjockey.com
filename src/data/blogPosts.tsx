@@ -207,29 +207,5 @@ export const blogPosts = [
       </>
     ),
   },
-  {
-    id: 'pdf-redaction-tool',
-    title: 'PDF Text Redaction Tool: Securely Remove Sensitive Information',
-    category: 'PDF TOOLS',
-    date: 'June 22, 2025',
-    author: 'ToolsJockey Team',
-    readTime: '2 min read',
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-    excerpt: "Redact sensitive text from PDFs instantly—right in your browser. No uploads, no leaks.",
-    content: (
-      <>
-        <p>
-          Our new <b>PDF Text Redaction Tool</b> lets you securely remove sensitive information from PDF files. All redaction is performed locally in your browser for maximum privacy.
-        </p>
-        <ul className="list-disc pl-6 mt-2 space-y-1">
-          <li>Highlight and redact any text in your PDF</li>
-          <li>Download a new, redacted PDF instantly</li>
-          <li>All processing is 100% client-side—your files never leave your device</li>
-        </ul>
-        <p className="mt-3">
-          Try the <b>PDF Redaction Tool</b> now for secure, private document editing.
-        </p>
-      </>
-    ),
-  },
+
 ]; 

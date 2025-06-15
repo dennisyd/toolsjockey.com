@@ -43,15 +43,7 @@ export const toolsConfig: ToolMeta[] = [
     badges: ['POPULAR'],
     group: 'pdf',
   },
-  {
-    id: 'pdf-redaction-tool',
-    title: 'PDF Text Redaction Tool',
-    path: '/tools/pdf-redaction-tool',
-    description: 'Detect and permanently redact sensitive data from PDFs, 100% client-side.',
-    icon: DocumentDuplicateIcon,
-    badges: ['NEW'],
-    group: 'pdf',
-  },
+
   // Word & Document Tools
   {
     id: 'word-to-markdown',
