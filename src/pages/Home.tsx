@@ -124,13 +124,26 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Excel to Everything Converter featured card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-4 mb-6">
-        <span className="text-4xl">📤</span>
-        <div className="flex-1">
-          <div className="font-bold text-lg">Excel to Everything Converter</div>
-          <div className="text-sm text-gray-600 mb-2">Convert Excel files to CSV, JSON, HTML, PDF, Google Sheets, and more. Batch, privacy-first, and pro-grade.</div>
-          <a href="/tools/excel-to-formats" className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition">Try Now</a>
+      {/* Featured Tools Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Excel to Everything Converter featured card */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center gap-4">
+          <span className="text-4xl">📤</span>
+          <div className="flex-1">
+            <div className="font-bold text-lg">Excel to Everything Converter</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Convert Excel files to CSV, JSON, HTML, PDF, Google Sheets, and more. Batch, privacy-first, and pro-grade.</div>
+            <a href="/tools/excel-to-formats" className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition">Try Now</a>
+          </div>
+        </div>
+
+        {/* Video Tools Suite featured card */}
+        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 flex items-center gap-4">
+          <span className="text-4xl">🎬</span>
+          <div className="flex-1">
+            <div className="font-bold text-lg">New: Video Tools Suite</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Process videos right in your browser! Clip, compress, convert to GIF, extract frames, merge videos, and extract audio.</div>
+            <a href="/tools/video-clipper" className="inline-block bg-purple-600 text-white px-4 py-2 rounded font-semibold hover:bg-purple-700 transition">Try Now</a>
+          </div>
         </div>
       </div>
 

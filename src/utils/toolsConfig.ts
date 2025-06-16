@@ -9,6 +9,12 @@ import {
   EyeDropperIcon,
   KeyIcon,
   PencilSquareIcon,
+  FilmIcon,
+  ScissorsIcon,
+  ArchiveBoxIcon,
+  CameraIcon,
+  ArrowsUpDownIcon,
+  SpeakerWaveIcon,
 } from '@heroicons/react/24/outline';
 
 export type ToolBadge = 'NEW' | 'POPULAR' | 'UPDATED' | 'POWER TOOL';
@@ -71,6 +77,72 @@ export const toolsConfig: ToolMeta[] = [
     badges: ['NEW'],
     group: 'word',
   },
+  
+  // Video Tools
+  {
+    id: 'video-converter',
+    title: 'Video Converter',
+    path: '/tools/video-converter',
+    description: 'Convert videos between formats (MP4, WebM, AVI, etc.) entirely in your browser.',
+    icon: FilmIcon,
+    badges: ['NEW', 'POWER TOOL'],
+    group: 'video',
+  },
+  {
+    id: 'video-clipper',
+    title: 'Video Clipper',
+    path: '/tools/video-clipper',
+    description: 'Trim and cut videos with frame-accurate precision.',
+    icon: ScissorsIcon,
+    badges: ['NEW'],
+    group: 'video',
+  },
+  {
+    id: 'video-compressor',
+    title: 'Video Compressor',
+    path: '/tools/video-compressor',
+    description: 'Reduce video file size while maintaining quality.',
+    icon: ArchiveBoxIcon,
+    badges: ['NEW'],
+    group: 'video',
+  },
+  {
+    id: 'video-to-gif',
+    title: 'Video to GIF',
+    path: '/tools/video-to-gif',
+    description: 'Convert video clips to animated GIFs with customizable settings.',
+    icon: FilmIcon,
+    badges: ['NEW'],
+    group: 'video',
+  },
+  {
+    id: 'frame-extractor',
+    title: 'Frame Extractor',
+    path: '/tools/frame-extractor',
+    description: 'Extract still images from videos at specific timestamps.',
+    icon: CameraIcon,
+    badges: ['NEW'],
+    group: 'video',
+  },
+  {
+    id: 'video-merger',
+    title: 'Video Merger',
+    path: '/tools/video-merger',
+    description: 'Combine multiple videos into a single file.',
+    icon: ArrowsUpDownIcon,
+    badges: ['NEW'],
+    group: 'video',
+  },
+  {
+    id: 'audio-extractor',
+    title: 'Audio Extractor',
+    path: '/tools/audio-extractor',
+    description: 'Extract audio tracks from videos in multiple formats.',
+    icon: SpeakerWaveIcon,
+    badges: ['NEW'],
+    group: 'video',
+  },
+  
   // Excel & CSV Tools
   {
     id: 'excel-merger-splitter',
@@ -312,6 +384,7 @@ export const toolsConfig: ToolMeta[] = [
 export const toolGroups = [
   { id: 'pdf', label: '📄 PDF Tools', icon: DocumentDuplicateIcon },
   { id: 'word', label: '📝 Word & Document Tools', icon: PencilSquareIcon },
+  { id: 'video', label: '🎬 Video Tools', icon: FilmIcon },
   { id: 'excelcsv', label: '📊 Excel & CSV Tools', icon: TableCellsIcon },
   { id: 'image', label: '🖼️ Image Tools', icon: PhotoIcon },
   { id: 'color', label: '🎨 Color & Design Tools', icon: EyeDropperIcon },

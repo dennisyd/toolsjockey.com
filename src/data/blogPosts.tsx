@@ -5,7 +5,7 @@ export const blogPosts = [
     title: 'Welcome to ToolsJockey: Your All-in-One Online Toolbox',
     category: 'FEATURED',
     date: 'May 20, 2025',
-    author: 'The ToolsJockey Team',
+    author: 'ToolsJockey Team',
     readTime: '4 min read',
     image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80",
     excerpt: `Discover why ToolsJockey.com is the ultimate privacy-first, client-only web app for all your productivity, file, and developer needs. Explore our suite of free tools—no sign-up, no uploads, just instant results.`,
@@ -30,6 +30,98 @@ export const blogPosts = [
         </ul>
         <p className="mt-3">
           We're always adding new tools and features. <b>Bookmark ToolsJockey.com</b> and supercharge your workflow—no matter what device you're on!
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'video-converter',
+    title: 'Privacy-First Video Converter: Convert Video Files Without Uploading Them',
+    category: 'VIDEO TOOLS',
+    date: 'June 24, 2025',
+    author: 'ToolsJockey Team',
+    readTime: '3 min read',
+    image: "https://images.unsplash.com/photo-1535016120720-40c646be5580?auto=format&fit=crop&w=600&q=80",
+    excerpt: "Convert videos between formats without ever uploading your files. Our browser-based Video Converter uses FFmpeg.wasm to process videos locally with professional quality.",
+    content: (
+      <>
+        <p>
+          We're excited to announce our new <b>Video Converter</b>—a powerful, completely local video conversion tool that runs 100% in your browser.
+        </p>
+        
+        <h3 className="mt-6 mb-2 text-xl font-bold">Features and Capabilities</h3>
+        <ul className="list-disc pl-6 mt-2 space-y-1">
+          <li><b>Privacy-First:</b> Your videos never leave your device—all processing happens locally.</li>
+          <li><b>Multiple Formats:</b> Convert between MP4, WebM, AVI, MOV, MKV, and more.</li>
+          <li><b>Quality Options:</b> Choose from preset quality levels (Low, Medium, High) or customize your settings.</li>
+          <li><b>Advanced Controls:</b> Fine-tune codecs, bitrates, resolution, and framerate for professional results.</li>
+          <li><b>Batch Processing:</b> Convert multiple videos in a single session.</li>
+        </ul>
+
+        <h3 className="mt-6 mb-2 text-xl font-bold">How It Works</h3>
+        <p>
+          Our Video Converter uses FFmpeg.wasm, a WebAssembly port of the popular FFmpeg library, bringing professional-grade video processing directly to your browser. This eliminates the need to install complex software or upload your sensitive videos to third-party servers.
+        </p>
+
+        <h3 className="mt-6 mb-2 text-xl font-bold">Perfect For...</h3>
+        <ul className="list-disc pl-6 mt-2 space-y-1">
+          <li>Content creators needing quick format conversions</li>
+          <li>Professionals working with sensitive or confidential video material</li>
+          <li>Anyone wanting to optimize videos for specific platforms or devices</li>
+          <li>Users who need video conversion but can't install desktop software</li>
+        </ul>
+
+        <p className="mt-4">
+          <b>Try it now:</b> Visit the <a href="/tools/video-converter" className="text-blue-600 hover:underline">Video Converter</a> and experience the power of local video processing—no uploads, no waiting, no privacy concerns.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'audio-extractor',
+    title: 'Extract Audio from Videos with Our New Browser-Based Tool',
+    category: 'AUDIO TOOLS',
+    date: 'June 28, 2025',
+    author: 'ToolsJockey Team',
+    readTime: '3 min read',
+    image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80",
+    excerpt: "Easily extract audio tracks from videos in multiple formats without uploading your files. Our new Audio Extractor tool processes everything locally in your browser.",
+    content: (
+      <>
+        <p>
+          We're excited to introduce our new <b>Audio Extractor</b> tool—the latest addition to our video processing suite. This powerful tool allows you to extract audio tracks from any video file, all processed locally in your browser for maximum privacy and speed.
+        </p>
+        
+        <h3 className="mt-6 mb-2 text-xl font-bold">Key Features</h3>
+        <ul className="list-disc pl-6 mt-2 space-y-1">
+          <li><b>Multiple Audio Formats:</b> Extract audio as MP3, WAV, AAC, or OGG Vorbis</li>
+          <li><b>Quality Control:</b> Choose from various bitrate options for compressed formats</li>
+          <li><b>Time Range Selection:</b> Extract audio from specific sections of your video</li>
+          <li><b>Metadata Preservation:</b> Optionally keep video metadata in the extracted audio file</li>
+          <li><b>Real-time Preview:</b> Listen to the audio before downloading</li>
+          <li><b>100% Client-side Processing:</b> Your files never leave your device</li>
+        </ul>
+
+        <h3 className="mt-6 mb-2 text-xl font-bold">How to Use the Audio Extractor</h3>
+        <ol className="list-decimal pl-6 space-y-2">
+          <li><b>Upload your video file</b> (supports MP4, WebM, AVI, MOV, MKV, and more)</li>
+          <li><b>Select your desired audio format</b> and quality settings</li>
+          <li><b>Choose the time range</b> if you only want to extract part of the audio</li>
+          <li><b>Click "Extract Audio"</b> and wait for processing to complete</li>
+          <li><b>Preview the extracted audio</b> in the built-in player</li>
+          <li><b>Download the audio file</b> to your device</li>
+        </ol>
+
+        <h3 className="mt-6 mb-2 text-xl font-bold">Perfect For</h3>
+        <ul className="list-disc pl-6 mt-2 space-y-1">
+          <li>Content creators who need to separate audio from video</li>
+          <li>Podcasters extracting audio from recorded interviews</li>
+          <li>Musicians who want to save audio tracks from music videos</li>
+          <li>Anyone who needs audio-only versions of video content</li>
+        </ul>
+
+        <p className="mt-4">
+          <b>Try it now:</b> Visit our <a href="/tools/audio-extractor" className="text-blue-600 hover:underline">Audio Extractor</a> tool and experience the convenience of browser-based audio extraction—no software installation required, no uploads, just fast and private processing right on your device.
         </p>
       </>
     ),

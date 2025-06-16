@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import UnitConverterPage from './pages/tools/UnitConverterPage';
 import CurrencyConverterPage from './pages/tools/CurrencyConverterPage';
@@ -10,6 +10,14 @@ import TutorialPage from './pages/TutorialPage';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import ExcelToFormatsConverterPage from './pages/tools/ExcelToFormatsConverterPage';
+import VideoConverterPage from './pages/tools/VideoConverterPage';
+import VideoClipperPage from './pages/tools/VideoClipperPage';
+import VideoCompressorPage from './pages/tools/VideoCompressorPage';
+import VideoToGifPage from './pages/tools/VideoToGifPage';
+import FrameExtractorPage from './pages/tools/FrameExtractorPage';
+import AudioExtractorPage from './pages/tools/AudioExtractorPage';
+import VideoMergerPage from './pages/tools/VideoMergerPage';
+import VideoConverter from './components/tools/VideoConverter';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -119,6 +127,7 @@ function App() {
             <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
             <Route path="tools/pdf-redaction-tool" element={<PDFRedactionToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
+            <Route path="tools/video-converter" element={<VideoConverterPage />} />
             <Route path="merge-pdf" element={<MergePDFPage />} />
             <Route path="split-pdf" element={<SplitPDFPage />} />
             <Route path="reorder-pdf" element={<ReorderPDFPage />} />
@@ -131,6 +140,15 @@ function App() {
             <Route path="delete-pages" element={<DeletePagesPage />} />
             <Route path="edit-metadata" element={<EditMetadataPage />} />
           </Route>
+          <Route path="/tools" element={<Navigate to="/tools/video-clipper" replace />} />
+          <Route path="/tools/video-converter" element={<VideoConverter />} />
+          <Route path="/tools/video-clipper" element={<VideoClipperPage />} />
+          <Route path="/tools/video-compressor" element={<VideoCompressorPage />} />
+          <Route path="/tools/video-to-gif" element={<VideoToGifPage />} />
+          <Route path="/tools/frame-extractor" element={<FrameExtractorPage />} />
+          <Route path="/tools/video-merger" element={<VideoMergerPage />} />
+          <Route path="/tools/audio-extractor" element={<AudioExtractorPage />} />
+          <Route path="*" element={<Navigate to="/tools/video-clipper" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

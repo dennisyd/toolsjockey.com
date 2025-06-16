@@ -12,6 +12,7 @@ Supercharged Multi-Tool Web App
 
 ## ✨ Features
 - **Grouped Tools:**
+  - Video converter with multiple format support and advanced settings
   - Image upscaler, compressor, format converter, EXIF remover, watermark adder
   - QR code generator, color palette extractor, color picker/converter
   - PDF utilities, Word to Markdown, CSV to JSON, CSV merger, JSON formatter
@@ -31,6 +32,7 @@ Supercharged Multi-Tool Web App
 - [Framer Motion](https://www.framer.com/motion/) (animations)
 - [Heroicons](https://heroicons.com/) (icons)
 - [jsPDF](https://github.com/parallax/jsPDF), [xlsx](https://github.com/SheetJS/sheetjs), [mammoth.js](https://github.com/mwilliamson/mammoth.js) for file utilities
+- [FFmpeg.wasm](https://github.com/ffmpegwasm/ffmpeg.wasm) for video processing
 
 ## 🚀 Getting Started
 
@@ -72,6 +74,18 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 
 ## 📄 License
 MIT (add your license text here)
+
+## Video Converter
+
+The Video Converter tool uses FFmpeg.wasm to provide professional-grade video conversion capabilities directly in the browser. It supports:
+
+- Converting between multiple formats (MP4, WebM, AVI, MOV, MKV)
+- Adjusting quality settings (resolution, bitrate, framerate)
+- Advanced options for codecs and compression
+- Batch processing of multiple videos
+- 100% client-side processing for privacy
+
+All processing happens entirely in your browser - no data is sent to any server.
 
 ## PDF Redaction Tool
 
