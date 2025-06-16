@@ -17,7 +17,6 @@ import VideoToGifPage from './pages/tools/VideoToGifPage';
 import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import AudioExtractorPage from './pages/tools/AudioExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
-import VideoConverter from './components/tools/VideoConverter';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -128,6 +127,12 @@ function App() {
             <Route path="tools/pdf-redaction-tool" element={<PDFRedactionToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
             <Route path="tools/video-converter" element={<VideoConverterPage />} />
+            <Route path="tools/video-clipper" element={<VideoClipperPage />} />
+            <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
+            <Route path="tools/video-to-gif" element={<VideoToGifPage />} />
+            <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
+            <Route path="tools/video-merger" element={<VideoMergerPage />} />
+            <Route path="tools/audio-extractor" element={<AudioExtractorPage />} />
             <Route path="merge-pdf" element={<MergePDFPage />} />
             <Route path="split-pdf" element={<SplitPDFPage />} />
             <Route path="reorder-pdf" element={<ReorderPDFPage />} />
@@ -140,15 +145,8 @@ function App() {
             <Route path="delete-pages" element={<DeletePagesPage />} />
             <Route path="edit-metadata" element={<EditMetadataPage />} />
           </Route>
-          <Route path="/tools" element={<Navigate to="/tools/video-clipper" replace />} />
-          <Route path="/tools/video-converter" element={<VideoConverter />} />
-          <Route path="/tools/video-clipper" element={<VideoClipperPage />} />
-          <Route path="/tools/video-compressor" element={<VideoCompressorPage />} />
-          <Route path="/tools/video-to-gif" element={<VideoToGifPage />} />
-          <Route path="/tools/frame-extractor" element={<FrameExtractorPage />} />
-          <Route path="/tools/video-merger" element={<VideoMergerPage />} />
-          <Route path="/tools/audio-extractor" element={<AudioExtractorPage />} />
-          <Route path="*" element={<Navigate to="/tools/video-clipper" replace />} />
+          <Route path="/tools" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
