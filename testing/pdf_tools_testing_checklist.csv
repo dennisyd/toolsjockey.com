@@ -108,12 +108,4 @@ Unlock PDF,□ Tested,"1. Owner password-protected PDF
 2. Test with incorrect password
 3. Test with different protection types","1. PDF successfully unlocked
 2. Content accessible after unlock
-3. Appropriate error for incorrect password",□ Works with various protection methods,
-Redact PDF,□ Tested,"1. PDF with text
-2. PDF with sensitive information","1. Select text to redact
-2. Apply redaction to multiple areas
-3. Save and verify redaction is permanent
-4. Test search for redacted text","1. Selected content completely removed
-2. Black boxes appear in place of content
-3. Text cannot be recovered
-4. Document structure preserved",□ Redaction is permanent 
+3. Appropriate error for incorrect password",□ Works with various protection methods, 

@@ -67,7 +67,6 @@ const FAQ = lazy(() => import('./pages/FAQ'));
 const Blog = lazy(() => import('./pages/Blog'));
 const BlogArticle = lazy(() => import('./pages/BlogArticle'));
 const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
-const PDFRedactionToolPage = lazy(() => import('./pages/tools/PDFRedactionToolPage'));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -125,7 +124,6 @@ function App() {
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
             <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
-            <Route path="tools/pdf-redaction-tool" element={<PDFRedactionToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
             <Route path="tools/video-converter" element={<VideoConverterPage />} />
             <Route path="tools/video-clipper" element={<VideoClipperPage />} />

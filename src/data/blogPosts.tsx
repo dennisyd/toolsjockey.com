@@ -21,9 +21,9 @@ export const blogPosts = [
           <b>What can you do on ToolsJockey?</b>
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-1">
-          <li><b>PDF Suite:</b> Merge, split, compress, reorder, rotate, extract text, redact, convert, edit metadata, add watermarks, and more.</li>
+          <li><b>PDF Suite:</b> Merge, split, compress, reorder, rotate, extract text, convert, edit metadata, add watermarks, and more.</li>
           <li><b>Excel/CSV Tools:</b> Merge, split, filter, convert (including Excel to Everything), and clean up spreadsheets—no Excel required.</li>
-          <li><b>Mail Merge & Redaction:</b> Generate personalized documents or securely redact PDFs, all in your browser.</li>
+          <li><b>Mail Merge:</b> Generate personalized documents, all in your browser.</li>
           <li><b>Developer Utilities:</b> JSON formatter, hash generator, regex tester, text diff, and more.</li>
           <li><b>Color & Image Tools:</b> Color palette generator, image compressor, format converter, QR code generator, and more.</li>
           <li><b>Quick Utilities:</b> Word/character counter, password generator, case converter, and more.</li>
@@ -128,22 +128,21 @@ export const blogPosts = [
   },
   {
     id: 'pdf-tips',
-    title: 'How to Merge, Split, and Redact PDFs Instantly—No Uploads Needed',
+    title: 'How to Merge and Split PDFs Instantly—No Uploads Needed',
     category: 'PDF TOOLS',
     date: 'June 2, 2025',
     author: 'ToolsJockey Team',
     readTime: '3 min read',
     image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-    excerpt: "Learn how to combine, split, or redact PDF files in seconds using ToolsJockey's client-only PDF suite. No sign-up, no file uploads, just instant results.",
+    excerpt: "Learn how to combine or split PDF files in seconds using ToolsJockey's client-only PDF suite. No sign-up, no file uploads, just instant results.",
     content: (
       <>
         <p>
-          With ToolsJockey's PDF suite, you can merge, split, or redact PDF files instantly—right in your browser. No uploads, no waiting, and your files stay private.
+          With ToolsJockey's PDF suite, you can merge or split PDF files instantly—right in your browser. No uploads, no waiting, and your files stay private.
         </p>
         <ul className="list-disc pl-6 mt-2 space-y-1">
           <li>Merge multiple PDFs into one</li>
           <li>Split a PDF into separate files</li>
-          <li>Redact sensitive text from PDFs</li>
           <li>Reorder, rotate, or delete pages</li>
           <li>Compress and optimize PDFs</li>
         </ul>
