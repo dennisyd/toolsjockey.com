@@ -13,63 +13,112 @@ const formatDate = () => {
   return date.toISOString().split('T')[0];
 };
 
-// Since we can't import TypeScript directly in Node.js, we'll define our tool pages here
-// These should match the paths in your toolsConfig.ts file
-const toolPaths = [
-  '/tools/batch-pdf-form-filler',
-  '/pdf-tools',
-  '/tools/word-to-markdown',
-  '/tools/markdown-table-generator',
-  '/tools/mail-merge-tool',
-  '/tools/video-converter',
-  '/tools/video-clipper',
-  '/tools/video-compressor',
-  '/tools/video-to-gif',
-  '/tools/frame-extractor',
-  '/tools/video-merger',
-  '/tools/audio-extractor',
-  '/tools/excel-merger-splitter',
-  '/tools/csv-merger',
-  '/tools/csv-to-json',
-  '/tools/column-filter',
-  '/tools/remove-duplicates',
-  '/tools/excel-to-formats',
-  '/tools/image-compressor',
-  '/tools/image-sharpener',
-  '/tools/image-format-converter',
-  '/tools/watermark-adder',
-  '/tools/exif-remover',
-  '/tools/color-palette-generator',
-  '/tools/color-picker',
-  '/tools/contrast-checker',
-  '/tools/gradient-generator',
-  '/tools/color-format-converter',
-  '/tools/json-formatter',
-  '/tools/hash-generator',
-  '/tools/css-minifier',
-  '/tools/base64-encoder',
-  '/tools/text-diff',
-  '/tools/regex-tester',
-  '/tools/qr-code-generator',
-  '/tools/password-generator',
-  '/tools/text-case-converter',
-  '/tools/word-counter',
-  '/tools/unit-converter',
-  '/tools/currency-converter'
-];
-
-// Blog post IDs (manually extracted from blogPosts.tsx)
-const blogPostIds = [
-  'main',
-  'video-converter',
-  'audio-extractor',
-  'pdf-tips',
-  'csv-excel',
-  'dev-utilities',
-  'batch-pdf-form-filler',
-  'excel-to-everything',
-  'mail-merge-tool'
-];
+// Define site structure with proper organization and metadata
+const siteStructure = {
+  // Core Pages
+  corePaths: [
+    { path: '/', priority: '1.0', changefreq: 'weekly' },
+    { path: '/about', priority: '0.7', changefreq: 'monthly' },
+    { path: '/contact', priority: '0.7', changefreq: 'monthly' },
+    { path: '/blog', priority: '0.8', changefreq: 'weekly' },
+    { path: '/faq', priority: '0.7', changefreq: 'monthly' }
+  ],
+  
+  // PDF Tools
+  pdfTools: [
+    { path: '/tools/pdf-suite', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/merge-pdf', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/split-pdf', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/compress-pdf', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/rotate-pdf', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/extract-text-from-pdf', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/pdf-to-word', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/pdf-to-images', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/images-to-pdf', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/edit-pdf-metadata', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/watermark-pdf', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/delete-pdf-pages', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/reorder-pdf-pages', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/batch-pdf-form-filler', priority: '0.9', changefreq: 'weekly' }
+  ],
+  
+  // Excel/CSV Tools
+  excelTools: [
+    { path: '/tools/excel-merger-splitter', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/csv-merger', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/csv-to-json', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/duplicate-remover', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/column-filter', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Video Tools
+  videoTools: [
+    { path: '/tools/video-converter', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/video-compressor', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/video-merger', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/video-clipper', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/video-to-gif', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/audio-extractor', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/frame-extractor', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Image Tools
+  imageTools: [
+    { path: '/tools/image-compressor', priority: '0.9', changefreq: 'weekly' },
+    { path: '/tools/image-format-converter', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/image-sharpener', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/text-from-image', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/exif-remover', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/watermark-adder', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Document Tools
+  documentTools: [
+    { path: '/tools/word-to-markdown', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/mail-merge-tool', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Developer Tools
+  devTools: [
+    { path: '/tools/json-formatter', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/hash-generator', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/regex-tester', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/text-diff-viewer', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/css-minifier', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/base64-encoder', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Color & Design Tools
+  designTools: [
+    { path: '/tools/color-palette-generator', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/color-picker', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/color-format-converter', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/gradient-generator', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/contrast-checker', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/qr-code-generator', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Utility Tools
+  utilityTools: [
+    { path: '/tools/word-counter', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/password-generator', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/text-case-converter', priority: '0.8', changefreq: 'weekly' },
+    { path: '/tools/markdown-table-generator', priority: '0.8', changefreq: 'weekly' }
+  ],
+  
+  // Blog Posts
+  blogPosts: [
+    { id: 'main', priority: '0.6', changefreq: 'monthly' },
+    { id: 'video-converter', priority: '0.6', changefreq: 'monthly' },
+    { id: 'audio-extractor', priority: '0.6', changefreq: 'monthly' },
+    { id: 'pdf-tips', priority: '0.6', changefreq: 'monthly' },
+    { id: 'csv-excel', priority: '0.6', changefreq: 'monthly' },
+    { id: 'dev-utilities', priority: '0.6', changefreq: 'monthly' },
+    { id: 'batch-pdf-form-filler', priority: '0.6', changefreq: 'monthly' },
+    { id: 'excel-to-everything', priority: '0.6', changefreq: 'monthly' },
+    { id: 'mail-merge-tool', priority: '0.6', changefreq: 'monthly' }
+  ]
+};
 
 // Generate the sitemap XML content
 function generateSitemapXml() {
@@ -80,50 +129,113 @@ function generateSitemapXml() {
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
   xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   
-  // Add the homepage
-  xml += `  <url>
-    <loc>${baseUrl}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>\n`;
-  
-  // Add static key pages
-  const staticPages = [
-    '/pdf-tools',
-    '/word-docs',
-    '/video-tools',
-    '/about',
-    '/contact',
-    '/blog'
-  ];
-  
-  staticPages.forEach(page => {
+  // Add core pages
+  xml += '  <!-- Core Pages -->\n';
+  siteStructure.corePaths.forEach(page => {
     xml += `  <url>
-    <loc>${baseUrl}${page}</loc>
+    <loc>${baseUrl}${page.path}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
   </url>\n`;
   });
   
-  // Add tool pages
-  toolPaths.forEach(toolPath => {
+  // Add PDF Tools
+  xml += '\n  <!-- PDF Tools -->\n';
+  siteStructure.pdfTools.forEach(tool => {
     xml += `  <url>
-    <loc>${baseUrl}${toolPath}</loc>
+    <loc>${baseUrl}${tool.path}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
   </url>\n`;
   });
   
-  // Add blog posts
-  blogPostIds.forEach(postId => {
+  // Add Excel/CSV Tools
+  xml += '\n  <!-- Excel/CSV Tools -->\n';
+  siteStructure.excelTools.forEach(tool => {
     xml += `  <url>
-    <loc>${baseUrl}/blog/${postId}</loc>
+    <loc>${baseUrl}${tool.path}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Video Tools
+  xml += '\n  <!-- Video Tools -->\n';
+  siteStructure.videoTools.forEach(tool => {
+    xml += `  <url>
+    <loc>${baseUrl}${tool.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Image Tools
+  xml += '\n  <!-- Image Tools -->\n';
+  siteStructure.imageTools.forEach(tool => {
+    xml += `  <url>
+    <loc>${baseUrl}${tool.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Document Tools
+  xml += '\n  <!-- Document Tools -->\n';
+  siteStructure.documentTools.forEach(tool => {
+    xml += `  <url>
+    <loc>${baseUrl}${tool.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Developer Tools
+  xml += '\n  <!-- Developer Tools -->\n';
+  siteStructure.devTools.forEach(tool => {
+    xml += `  <url>
+    <loc>${baseUrl}${tool.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Color & Design Tools
+  xml += '\n  <!-- Color & Design Tools -->\n';
+  siteStructure.designTools.forEach(tool => {
+    xml += `  <url>
+    <loc>${baseUrl}${tool.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Utility Tools
+  xml += '\n  <!-- Utility Tools -->\n';
+  siteStructure.utilityTools.forEach(tool => {
+    xml += `  <url>
+    <loc>${baseUrl}${tool.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${tool.changefreq}</changefreq>
+    <priority>${tool.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Blog Posts
+  xml += '\n  <!-- Blog Posts -->\n';
+  siteStructure.blogPosts.forEach(post => {
+    xml += `  <url>
+    <loc>${baseUrl}/blog/${post.id}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${post.changefreq}</changefreq>
+    <priority>${post.priority}</priority>
   </url>\n`;
   });
   
