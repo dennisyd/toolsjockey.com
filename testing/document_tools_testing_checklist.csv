@@ -1,0 +1,34 @@
+Document Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+Word to Markdown Converter,□ Tested,"1. Simple Word document
+2. Word with formatting (bold, italic, headers)
+3. Word with tables
+4. Word with images
+5. Word with lists/bullets","1. Convert simple text document
+2. Convert document with formatting
+3. Convert document with tables
+4. Convert document with images
+5. Test with different Word versions (.doc, .docx)","1. Text content preserved
+2. Formatting converted to Markdown syntax
+3. Tables converted to Markdown tables
+4. Image links/references included
+5. Lists properly formatted",□ Handles 50+ page documents,
+Markdown Table Generator,□ Tested,"1. CSV data
+2. Tabular text data
+3. Data with special characters","1. Generate table from CSV input
+2. Generate table from manual input
+3. Test alignment options (left, right, center)
+4. Test with header row options
+5. Test with special characters/formatting","1. Correct Markdown table syntax generated
+2. Data aligns properly in table
+3. Headers formatted correctly
+4. Special characters escaped properly",□ Creates tables with 50+ rows,
+Mail Merge Tool,□ Tested,"1. Template document with placeholders
+2. CSV data file with headers
+3. Data with special characters","1. Upload template with various placeholders
+2. Upload CSV with matching column headers
+3. Test with small dataset (5-10 rows)
+4. Test with large dataset (50+ rows)
+5. Test with special characters in data","1. All placeholders replaced with data
+2. Formatting preserved in output
+3. Special characters displayed correctly
+4. Correct number of documents generated",□ Processes 100+ records efficiently, 

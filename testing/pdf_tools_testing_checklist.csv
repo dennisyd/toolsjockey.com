@@ -1,0 +1,119 @@
+PDF Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+Batch PDF Form Filler,□ Tested,"1. PDF form with fillable fields
+2. CSV file with data","1. Upload a sample PDF form
+2. Upload CSV with matching column headers
+3. Test with small dataset (5-10 rows)
+4. Test with larger dataset (50+ rows)
+5. Test with special characters in data","1. All forms filled correctly
+2. All form fields mapped properly
+3. Special characters displayed correctly
+4. Downloaded ZIP contains all filled PDFs",□ Works with 50+ records,
+Merge PDF,□ Tested,"1. Multiple small PDFs
+2. PDFs with different page sizes
+3. Very large PDFs (50+ pages)","1. Merge 2-3 small PDFs
+2. Merge 10+ PDFs
+3. Test reordering before merging
+4. Test with password-protected PDFs
+5. Include PDFs with images/graphs","1. All pages included in correct order
+2. Page formatting preserved
+3. File size reasonable
+4. No content lost",□ Handles 20+ PDFs,
+Split PDF,□ Tested,"1. Multi-page PDF (20+ pages)
+2. PDF with different content types","1. Split by page ranges (e.g., 1-5, 6-10)
+2. Extract specific pages (e.g., 2,5,7)
+3. Split into individual pages
+4. Split very large document","1. Correct pages extracted
+2. Page content preserved
+3. Output files named logically",□ Works with 100+ page documents,
+Extract Text from PDF,□ Tested,"1. Text-based PDF
+2. Scanned PDF
+3. PDF with tables
+4. PDF with mixed content","1. Extract text from simple document
+2. Extract from document with tables
+3. Extract from multi-column layout
+4. Test with different languages","1. Text extracted accurately
+2. Formatting reasonably preserved
+3. Special characters handled correctly",□ Works with 50+ page documents,
+PDF to Word,□ Tested,"1. Simple text PDF
+2. Complex PDF with images/tables
+3. Multi-column PDF","1. Convert simple text document
+2. Convert document with images
+3. Convert document with tables
+4. Convert with special formatting","1. Text converted correctly
+2. Images preserved
+3. Tables structure maintained
+4. Formatting reasonably preserved",□ Works with 30+ page documents,
+Images to PDF,□ Tested,"1. JPG images
+2. PNG images
+3. Mixed image formats
+4. Large images","1. Convert single image to PDF
+2. Convert multiple images to PDF
+3. Test reordering before conversion
+4. Test with different image sizes","1. All images included in PDF
+2. Image quality preserved
+3. Correct page orientation",□ Handles 20+ images,
+PDF to Images,□ Tested,"1. PDF with text
+2. PDF with images
+3. PDF with mixed content","1. Convert full PDF to images
+2. Select specific pages to convert
+3. Test different image formats (JPG, PNG)
+4. Test different DPI settings","1. All pages converted correctly
+2. Image quality matches settings
+3. Text remains readable",□ Works with 30+ page documents,
+Reorder PDF Pages,□ Tested,"1. Multi-page PDF (10+ pages)","1. Drag and drop to reorder pages
+2. Reverse page order
+3. Move multiple pages at once
+4. Preview after reordering","1. Pages appear in new specified order
+2. Document content preserved
+3. No quality loss",□ Works with 50+ page documents,
+Rotate PDF,□ Tested,"1. PDF with mixed page orientations
+2. PDF with images","1. Rotate specific pages 90° clockwise
+2. Rotate specific pages 90° counterclockwise
+3. Rotate all pages 180°
+4. Rotate pages with images","1. Pages rotated correctly
+2. Content quality preserved
+3. Text remains readable",□ Works with 30+ page documents,
+Delete PDF Pages,□ Tested,"1. Multi-page PDF (20+ pages)","1. Delete single page
+2. Delete multiple specific pages
+3. Delete page range
+4. Preview after deletion","1. Specified pages removed
+2. Remaining content intact
+3. Page numbering updated",□ Works with 50+ page documents,
+Edit PDF Metadata,□ Tested,"1. PDF with existing metadata
+2. PDF without metadata","1. View existing metadata
+2. Edit all metadata fields
+3. Add new metadata
+4. Remove existing metadata","1. All metadata fields updated correctly
+2. Changes saved in downloaded file
+3. Original content preserved",□ Handles all standard metadata fields,
+Watermark PDF,□ Tested,"1. Multi-page PDF
+2. PDF with images/graphics","1. Add text watermark
+2. Add image watermark
+3. Adjust opacity settings
+4. Test different positions
+5. Test with different pages selected","1. Watermark appears on specified pages
+2. Positioning accurate
+3. Opacity settings applied correctly",□ Works with 30+ page documents,
+Compress PDF,□ Tested,"1. Large PDF (10MB+)
+2. PDF with many images
+3. Already compressed PDF","1. Compress with low settings
+2. Compress with medium settings
+3. Compress with high settings
+4. Compare original vs compressed","1. File size reduced
+2. Quality acceptable at chosen level
+3. Text remains readable
+4. No content lost",□ Achieves 50%+ compression for image-heavy PDFs,
+Unlock PDF,□ Tested,"1. Owner password-protected PDF
+2. User password-protected PDF","1. Attempt to unlock with correct password
+2. Test with incorrect password
+3. Test with different protection types","1. PDF successfully unlocked
+2. Content accessible after unlock
+3. Appropriate error for incorrect password",□ Works with various protection methods,
+Redact PDF,□ Tested,"1. PDF with text
+2. PDF with sensitive information","1. Select text to redact
+2. Apply redaction to multiple areas
+3. Save and verify redaction is permanent
+4. Test search for redacted text","1. Selected content completely removed
+2. Black boxes appear in place of content
+3. Text cannot be recovered
+4. Document structure preserved",□ Redaction is permanent 

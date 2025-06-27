@@ -1,0 +1,53 @@
+Image Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+Image Compressor,□ Tested,"1. Large JPEG (5MB+)
+2. High-resolution PNG
+3. Images with text/details
+4. Image with transparency","1. Compress with low settings
+2. Compress with medium settings
+3. Compress with high settings
+4. Compare original vs compressed
+5. Test batch compression","1. File size significantly reduced
+2. Quality acceptable at chosen level
+3. Fine details preserved acceptably
+4. Transparency preserved if applicable",□ Achieves 70%+ compression for photos,
+Image Sharpener/Upscaler,□ Tested,"1. Blurry photo
+2. Low-resolution image
+3. Image with text","1. Apply light sharpening
+2. Apply strong sharpening
+3. Upscale by 2x
+4. Upscale by 4x
+5. Test with different image types","1. Image appears clearer
+2. Details enhanced without artifacts
+3. Upscaled image larger with maintained quality
+4. Text remains legible",□ Successfully upscales 4x,
+Image Format Converter,□ Tested,"1. JPG images
+2. PNG images with transparency
+3. WEBP images
+4. TIFF/BMP images","1. Convert JPG to PNG
+2. Convert PNG to JPG
+3. Convert to WebP
+4. Test batch conversion
+5. Test preserving transparency","1. Image converted to correct format
+2. Visual quality preserved
+3. Transparency handled correctly
+4. Metadata preserved if applicable",□ Handles 20+ images in batch,
+Watermark Adder,□ Tested,"1. Photos
+2. Graphics/logos
+3. Images with different dimensions","1. Add text watermark
+2. Add image watermark
+3. Adjust opacity settings
+4. Test different positions
+5. Test with different fonts/colors","1. Watermark appears as configured
+2. Positioning accurate
+3. Opacity settings applied correctly
+4. Text readable/image visible",□ Works with high-resolution images,
+EXIF Data Remover,□ Tested,"1. Photos with EXIF data
+2. Images from different cameras
+3. Images with GPS data","1. Check existing EXIF data
+2. Remove all metadata
+3. Remove specific metadata
+4. Verify data removed
+5. Check file size difference","1. All selected metadata removed
+2. Image quality unchanged
+3. File size potentially reduced
+4. GPS/personal data completely removed",□ Removes all sensitive metadata, 

@@ -1,0 +1,59 @@
+Utility Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+QR Code Generator,□ Tested,"None - interactive tool","1. Generate QR for URL
+2. Generate QR for plain text
+3. Generate QR for contact info
+4. Generate QR for WiFi access
+5. Test different QR sizes
+6. Test download options","1. QR code generated without errors
+2. QR code scannable by mobile devices
+3. Different content types encoded properly
+4. Download options work correctly
+5. Higher density QRs readable",□ Handles complex data with error correction,
+Password Generator,□ Tested,"None - interactive tool","1. Generate with letters only
+2. Generate with letters and numbers
+3. Generate with special characters
+4. Test different password lengths
+5. Test password strength meter","1. Passwords match selected criteria
+2. Random distribution of characters
+3. Strength meter accurately reflects security
+4. Copy function works properly
+5. No patterns in generated passwords",□ Generates truly random passwords,
+Text Case Converter,□ Tested,"1. Simple text samples
+2. Text with special characters
+3. Multi-line text","1. Convert to UPPERCASE
+2. Convert to lowercase
+3. Convert to Title Case
+4. Convert to Sentence case
+5. Test with special characters
+6. Test with multi-line text","1. Text converted to correct case
+2. Special characters preserved
+3. Spacing preserved
+4. Line breaks maintained
+5. Real-time conversion",□ Processes large text documents,
+Word/Character Counter,□ Tested,"1. Simple text samples
+2. Text with special formatting
+3. Multi-paragraph text","1. Count words in simple text
+2. Count characters with/without spaces
+3. Count paragraphs
+4. Test with special characters
+5. Test with code snippets","1. Word count matches actual count
+2. Character count accurate with/without spaces
+3. Paragraph count correct
+4. Updates in real-time as text changes",□ Handles 10,000+ word documents,
+Unit Converter,□ Tested,"None - interactive tool","1. Convert length units (m, ft, etc.)
+2. Convert weight units (kg, lb, etc.)
+3. Convert temperature units (C, F, K)
+4. Convert area and volume units
+5. Test with decimal precision
+6. Test with very large/small numbers","1. Conversions mathematically accurate
+2. All common units available
+3. Results display with appropriate precision
+4. Real-time conversion as values change",□ All conversion formulas verified accurate,
+Currency Converter,□ Tested,"None - interactive tool","1. Convert between major currencies (USD, EUR, etc.)
+2. Test with different amounts
+3. Check exchange rate update
+4. Test rate history/charts if available
+5. Convert multiple currencies at once","1. Conversions match current exchange rates
+2. Exchange rates reasonably up-to-date
+3. Multiple currencies handled correctly
+4. Results display with appropriate precision",□ Exchange rates no more than 24 hours old 

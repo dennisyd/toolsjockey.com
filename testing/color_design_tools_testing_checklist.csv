@@ -1,0 +1,43 @@
+Color/Design Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+Color Palette Generator,□ Tested,"1. Photos with distinct colors
+2. Graphics/logos
+3. Images with gradients","1. Upload image and extract palette
+2. Generate complementary colors
+3. Generate analogous colors
+4. Test with different image types
+5. Test saving/exporting palette","1. Colors accurately extracted from image
+2. Palette representative of image
+3. Color codes displayed in multiple formats
+4. Export format usable in design tools",□ Works with high-resolution images,
+Color Picker,□ Tested,"None - interactive tool","1. Select colors using color wheel
+2. Select colors using RGB sliders
+3. Select colors using HSL sliders
+4. Input specific hex codes
+5. Test color history/saving","1. Selected color displayed accurately
+2. All color formats update in sync (HEX, RGB, HSL)
+3. Color preview updates in real-time
+4. Saved colors persist",□ All color format conversions accurate,
+Contrast Checker,□ Tested,"None - interactive tool","1. Test foreground/background combinations
+2. Test with light text on dark background
+3. Test with dark text on light background
+4. Test with similar colors
+5. Test with WCAG guidelines display","1. Contrast ratio calculated correctly
+2. WCAG compliance level shown (AA, AAA)
+3. Pass/fail status clear for text sizes
+4. Recommendations provided for failing combinations",□ All calculations match WCAG standards,
+Gradient Generator,□ Tested,"None - interactive tool","1. Create 2-color linear gradient
+2. Create multi-color gradient
+3. Test radial gradient
+4. Test gradient angle adjustments
+5. Generate CSS code","1. Gradient preview renders accurately
+2. Color stops positioned correctly
+3. Generated CSS valid and functional
+4. Changes update preview in real-time",□ Generates valid CSS for complex gradients,
+HEX ↔ RGB ↔ HSL Converter,□ Tested,"None - interactive tool","1. Convert HEX to RGB
+2. Convert RGB to HEX
+3. Convert HEX to HSL
+4. Convert HSL to RGB
+5. Test with edge values (#000000, #FFFFFF)","1. All conversions mathematically accurate
+2. Format displays correctly
+3. Alpha channel handled properly
+4. Invalid inputs caught and flagged",□ All conversions mathematically precise, 

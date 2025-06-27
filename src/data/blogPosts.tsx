@@ -157,7 +157,7 @@ export const blogPosts = [
     category: 'EXCEL/CSV',
     date: 'May 28, 2025',
     author: 'ToolsJockey Team',
-    readTime: '2 min read',
+    readTime: '2 min read', 
     image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80",
     excerpt: "Discover how ToolsJockey's spreadsheet utilities help you merge, split, and clean up your data—right in your browser.",
     content: (

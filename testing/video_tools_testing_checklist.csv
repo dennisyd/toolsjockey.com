@@ -1,0 +1,65 @@
+Video Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+Video Converter,□ Tested,"1. MP4 video
+2. WebM video
+3. MOV/AVI video
+4. Videos with audio
+5. High resolution video","1. Convert MP4 to WebM
+2. Convert WebM to MP4
+3. Convert MOV/AVI to MP4
+4. Test with different resolutions
+5. Test with videos of different lengths","1. Video converted to correct format
+2. Visual quality preserved
+3. Audio quality preserved
+4. Correct aspect ratio maintained",□ Handles 5+ minute videos,
+Video Clipper,□ Tested,"1. Long video (5+ minutes)
+2. Video with audio
+3. High-resolution video","1. Clip small section (30 seconds)
+2. Clip larger section (2+ minutes)
+3. Test precision of start/end times
+4. Test with different video formats","1. Clip contains exactly selected section
+2. No quality loss in clipped video
+3. Audio synced properly
+4. Original format preserved",□ Frame-accurate clipping,
+Video Compressor,□ Tested,"1. Large video file (100MB+)
+2. High-resolution video
+3. Videos of different lengths","1. Compress with low settings
+2. Compress with medium settings
+3. Compress with high settings
+4. Compare original vs compressed","1. File size significantly reduced
+2. Quality acceptable at chosen level
+3. Audio quality maintained
+4. Processing time reasonable",□ Achieves 50%+ compression,
+Video to GIF,□ Tested,"1. Short video clip
+2. Video with motion
+3. Different video formats","1. Convert full video to GIF
+2. Convert selected portion to GIF
+3. Test with different quality settings
+4. Test with different frame rates","1. Animated GIF created successfully
+2. Motion appears smooth
+3. Colors preserved reasonably
+4. File size manageable",□ Works with 30+ second clips,
+Frame Extractor,□ Tested,"1. Video with distinct scenes
+2. High-resolution video","1. Extract single frame at specific time
+2. Extract multiple frames at intervals
+3. Test with different video formats
+4. Test with different output formats","1. Frames extracted at correct timestamps
+2. Image quality matches source video
+3. Correct aspect ratio maintained",□ Extracts frames from HD video,
+Video Merger,□ Tested,"1. Multiple video files
+2. Videos with different formats
+3. Videos with different resolutions","1. Merge 2-3 videos
+2. Merge 5+ videos
+3. Merge videos with different formats
+4. Test reordering before merging","1. All videos included in correct order
+2. Smooth transitions between clips
+3. Audio transitions handled properly
+4. Quality preserved",□ Handles 10+ video files,
+Audio Extractor,□ Tested,"1. Video with clear audio
+2. Video with multiple audio tracks
+3. Different video formats","1. Extract audio as MP3
+2. Extract audio as WAV
+3. Test with videos of different lengths
+4. Test with different quality settings","1. Audio extracted correctly
+2. Audio quality matches source
+3. Complete audio track extracted
+4. No corruption in audio file",□ Works with hour+ long videos 

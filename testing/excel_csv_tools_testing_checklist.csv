@@ -1,0 +1,65 @@
+Excel/CSV Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+Excel Merger & Splitter,□ Tested,"1. Multiple Excel files
+2. Excel files with multiple sheets
+3. Files with formulas/formatting
+4. Large spreadsheets (1000+ rows)","1. Merge 2-3 Excel files
+2. Merge 5+ Excel files
+3. Split workbook by sheets
+4. Test with different Excel versions (.xls, .xlsx)
+5. Test with formatted cells/tables","1. All data merged correctly
+2. Sheet structure preserved
+3. Formatting maintained where possible
+4. Split files contain correct data",□ Handles files with 10,000+ rows,
+CSV Merger,□ Tested,"1. Multiple CSV files
+2. CSV files with different delimiters
+3. CSV with special characters
+4. Large CSV files","1. Merge files by rows (append)
+2. Merge files by columns
+3. Test with different delimiters
+4. Test with quoted fields
+5. Test with missing columns","1. All data merged correctly
+2. Column headers handled properly
+3. Special characters preserved
+4. Output file correctly formatted",□ Merges 20+ CSV files,
+CSV to JSON Converter,□ Tested,"1. Simple CSV data
+2. CSV with nested structures
+3. CSV with special characters
+4. CSV with empty fields","1. Convert simple CSV to JSON
+2. Test with custom delimiters
+3. Test with quoted fields
+4. Test with array structures
+5. Test with large files","1. Valid JSON output produced
+2. Data structure correctly mapped
+3. Special characters encoded properly
+4. Empty fields handled correctly",□ Handles 10,000+ row files,
+CSV/Excel Column Filter,□ Tested,"1. CSV with many columns
+2. Excel with multiple sheets
+3. Files with mixed data types","1. Select specific columns to keep
+2. Reorder selected columns
+3. Test with header/no header options
+4. Test with Excel and CSV formats
+5. Test with special characters in headers","1. Only selected columns retained
+2. Column order matches selection
+3. Header row handled correctly
+4. Data integrity maintained",□ Works with 50+ column spreadsheets,
+CSV/Excel Duplicate Remover,□ Tested,"1. Files with duplicate rows
+2. Files with partial duplicates
+3. Large datasets","1. Remove exact duplicates
+2. Remove duplicates based on specific columns
+3. Test case sensitivity options
+4. Test with different file formats
+5. Compare record counts before/after","1. Duplicates correctly identified
+2. Only duplicate rows removed
+3. Original data structure preserved
+4. Options applied correctly",□ Processes 10,000+ rows efficiently,
+Excel to Everything Converter,□ Tested,"1. Excel files with formatting
+2. Excel with charts/graphs
+3. Excel with formulas
+4. Multi-sheet workbooks","1. Convert Excel to CSV
+2. Convert Excel to JSON
+3. Convert Excel to HTML
+4. Convert Excel to PDF
+5. Test with different Excel versions","1. Data correctly converted to target format
+2. Structure preserved where format allows
+3. Formatting preserved where applicable
+4. Multiple sheets handled appropriately",□ Converts 20+ sheet workbooks, 

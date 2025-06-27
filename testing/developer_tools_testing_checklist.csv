@@ -1,0 +1,68 @@
+Developer Tool,Testing Status,Test Files Required,Testing Steps,Expected Results,Performance Check,Tester Notes
+JSON Formatter/Validator,□ Tested,"1. Valid JSON data
+2. Invalid JSON with errors
+3. Large JSON structures
+4. Nested JSON objects","1. Format valid JSON
+2. Validate correct JSON
+3. Test with syntax errors
+4. Test with large datasets
+5. Test minify functionality","1. JSON properly formatted with correct indentation
+2. Valid JSON reported as valid
+3. Errors detected with helpful messages
+4. Minified output has no whitespace
+5. Large files handled without lag",□ Handles 1MB+ JSON files,
+Hash Generator,□ Tested,"1. Text samples
+2. Binary files
+3. Large files","1. Generate MD5 hash
+2. Generate SHA-1 hash
+3. Generate SHA-256 hash
+4. Generate SHA-512 hash
+5. Test with file uploads","1. Hash values calculated correctly
+2. Different algorithms produce different hashes
+3. Same input always produces same hash
+4. Large files processed without errors",□ Processes 50MB+ files efficiently,
+CSS Minifier,□ Tested,"1. Simple CSS files
+2. Complex CSS with media queries
+3. CSS with comments
+4. CSS with vendor prefixes","1. Minify simple CSS
+2. Minify CSS with comments
+3. Test with @media queries
+4. Test with vendor prefixes
+5. Compare original vs minified size","1. All unnecessary whitespace removed
+2. Comments removed
+3. Functional CSS preserved
+4. Significant file size reduction
+5. Output remains valid CSS",□ Handles 100KB+ CSS files,
+Base64 Encoder/Decoder,□ Tested,"1. Plain text
+2. Binary files
+3. Text with special characters
+4. Images","1. Encode text to Base64
+2. Decode Base64 to text
+3. Encode file to Base64
+4. Decode Base64 to file
+5. Test with Unicode characters","1. Text correctly encoded/decoded
+2. Files correctly encoded/decoded
+3. Special characters preserved
+4. No data loss in conversion
+5. Large strings handled properly",□ Handles 10MB+ files/strings,
+Text Diff Viewer,□ Tested,"1. Similar text files
+2. Code with minor differences
+3. Large text with multiple changes","1. Compare two similar texts
+2. Test with code snippets
+3. Test with large documents
+4. Test highlighting features
+5. Test line-by-line comparison","1. Differences highlighted clearly
+2. Added/removed content distinguished
+3. Line numbers displayed correctly
+4. Navigable interface between changes
+5. Large files compared without lag",□ Compares 10,000+ line files,
+Regex Tester,□ Tested,"1. Text samples for testing
+2. Common regex patterns","1. Test simple patterns (e.g., email, phone)
+2. Test with capture groups
+3. Test with quantifiers
+4. Test match highlighting
+5. Test replace functionality","1. Matches highlighted in text
+2. Valid/invalid status shown correctly
+3. Capture groups displayed properly
+4. Replace preview functions correctly
+5. Real-time updating of results",□ Works with complex patterns and large text 

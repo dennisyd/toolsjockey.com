@@ -1,0 +1,7 @@
+# robots.txt for https://toolsjockey.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://toolsjockey.com/sitemap.xml 
