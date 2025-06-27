@@ -33,13 +33,28 @@ export const getFFmpeg = (): FFmpeg => {
   return ffmpegInstance;
 };
 
+// Detect browser
+const detectBrowser = (): string => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  if (userAgent.indexOf('chrome') > -1) return 'Chrome';
+  if (userAgent.indexOf('firefox') > -1) return 'Firefox';
+  if (userAgent.indexOf('edg') > -1) return 'Edge';
+  if (userAgent.indexOf('safari') > -1) return 'Safari';
+  return 'Unknown';
+};
+
 // Helper function to get a more specific error message
 const getDetailedErrorMessage = (error: any): string => {
   const errorString = String(error);
+  const currentBrowser = detectBrowser();
+  const isSupportedBrowser = ['Chrome', 'Edge', 'Firefox'].includes(currentBrowser);
   
   // Check for common error patterns
   if (errorString.includes('SharedArrayBuffer')) {
-    return 'Your browser doesn\'t fully support the required features. Please try using Chrome or Edge with HTTPS.';
+    if (isSupportedBrowser) {
+      return `Your browser (${currentBrowser}) supports video processing, but may not be running in a secure context. The converter will use a fallback method which may be slower but should still work.`;
+    }
+    return `Your browser doesn't fully support the required features. Please try using Chrome, Edge, or Firefox.`;
   }
   
   if (errorString.includes('fetch') || errorString.includes('network')) {

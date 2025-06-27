@@ -11,10 +11,20 @@ import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoConverter } from '../../hooks/useVideoConverter';
 import { useFileHandler } from '../../hooks/useFileHandler';
 import type { VideoFile, ConversionOptions, OutputFormat } from '../../types/video';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, X } from 'lucide-react';
 
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
+
+// Detect browser
+const detectBrowser = () => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  if (userAgent.indexOf('chrome') > -1) return 'Chrome';
+  if (userAgent.indexOf('firefox') > -1) return 'Firefox';
+  if (userAgent.indexOf('edg') > -1) return 'Edge';
+  if (userAgent.indexOf('safari') > -1) return 'Safari';
+  return 'Unknown';
+};
 
 const VideoConverter: React.FC = () => {
   // State variables
@@ -31,6 +41,7 @@ const VideoConverter: React.FC = () => {
   const [audioChannels, setAudioChannels] = useState<string>('2');
   const [audioSampleRate, setAudioSampleRate] = useState<string>('44100');
   const [compressionLevel, setCompressionLevel] = useState<string>('medium');
+  const [showCompatWarning, setShowCompatWarning] = useState(!isSharedArrayBufferSupported);
 
   // Custom hooks
   const { 
@@ -100,6 +111,14 @@ const VideoConverter: React.FC = () => {
     }
   };
 
+  // Dismiss compatibility warning
+  const dismissCompatWarning = () => {
+    setShowCompatWarning(false);
+  };
+
+  // Get current browser
+  const currentBrowser = detectBrowser();
+
   return (
     <div className="w-full max-w-5xl mx-auto bg-white dark:bg-primary-light rounded-lg shadow-lg">
       {/* Header */}
@@ -112,16 +131,39 @@ const VideoConverter: React.FC = () => {
       </div>
 
       {/* SharedArrayBuffer warning */}
-      {!isSharedArrayBufferSupported && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 m-4">
+      {!isSharedArrayBufferSupported && showCompatWarning && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 m-4 relative">
+          <button 
+            onClick={dismissCompatWarning}
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            aria-label="Dismiss warning"
+          >
+            <X size={18} />
+          </button>
           <div className="flex">
             <AlertCircle className="h-6 w-6 text-yellow-500" />
             <div className="ml-3">
               <p className="text-sm text-yellow-700">
-                <strong>Browser Compatibility Issue:</strong> Your browser doesn't support SharedArrayBuffer, 
-                which is required for optimal video processing. The converter will attempt to use a fallback method,
-                but for best results, please use Chrome, Edge, or Firefox with HTTPS.
+                <strong>Browser Compatibility Notice:</strong> {currentBrowser === 'Chrome' || currentBrowser === 'Edge' || currentBrowser === 'Firefox' ? (
+                  <>
+                    Your browser ({currentBrowser}) supports video processing, but the site may not be running in a secure context. 
+                    The converter will use a fallback method which may be slower.
+                  </>
+                ) : (
+                  <>
+                    Your browser ({currentBrowser}) doesn't fully support SharedArrayBuffer, 
+                    which is required for optimal video processing. For best results, please use Chrome, Edge, or Firefox.
+                  </>
+                )}
               </p>
+              <div className="mt-2">
+                <button
+                  onClick={dismissCompatWarning}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                >
+                  Continue Anyway
+                </button>
+              </div>
             </div>
           </div>
         </div>
