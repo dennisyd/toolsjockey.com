@@ -7,9 +7,11 @@ let ffmpegInstance: FFmpeg | null = null;
 let loadAttempts = 0;
 const MAX_LOAD_ATTEMPTS = 3;
 
-// Define FFmpeg version and CDN paths to ensure consistency
-const FFMPEG_VERSION = '0.11.0';
-const CORE_URL = `https://unpkg.com/@ffmpeg/core@${FFMPEG_VERSION}/dist/ffmpeg-core.js`;
+// Define local paths for FFmpeg core files
+// Use local files instead of CDN to avoid network issues
+const CORE_URL = '/ffmpeg-core.js';
+const WASM_URL = '/ffmpeg-core.wasm';
+const WORKER_URL = '/ffmpeg-core.worker.js';
 
 export interface FFmpegProcessOptions {
   command: string[];
@@ -28,6 +30,8 @@ export const getFFmpeg = (): FFmpeg => {
         // Progress handling is done in the hook
       },
       corePath: CORE_URL,
+      wasmPath: WASM_URL,
+      workerPath: WORKER_URL,
     });
   }
   return ffmpegInstance;
@@ -55,6 +59,10 @@ const getDetailedErrorMessage = (error: any): string => {
       return `Your browser (${currentBrowser}) supports video processing, but may not be running in a secure context. The converter will use a fallback method which may be slower but should still work.`;
     }
     return `Your browser doesn't fully support the required features. Please try using Chrome, Edge, or Firefox.`;
+  }
+  
+  if (errorString.includes('ERR_CACHE_WRITE_FAILURE') || errorString.includes('Failed to fetch')) {
+    return 'Unable to load video processing engine. This could be due to a network issue or content blockers. Please check your internet connection, disable any ad blockers, and try again.';
   }
   
   if (errorString.includes('fetch') || errorString.includes('network')) {
@@ -100,9 +108,13 @@ export const useFFmpeg = () => {
       const ffmpeg = ffmpegInstance || createFFmpeg({
         log: true,
         progress: ({ ratio }) => {
-          setFFmpegLoadingProgress(Math.round(ratio * 100));
+          if (ratio) {
+            setFFmpegLoadingProgress(Math.round(ratio * 100));
+          }
         },
         corePath: CORE_URL,
+        wasmPath: WASM_URL,
+        workerPath: WORKER_URL,
       });
       
       // Ensure WASM is loaded before proceeding
