@@ -17,6 +17,7 @@ import VideoToGifPage from './pages/tools/VideoToGifPage';
 import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import AudioExtractorPage from './pages/tools/AudioExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
+import NotFound from './pages/NotFound';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -146,7 +147,7 @@ function App() {
             <Route path="edit-metadata" element={<EditMetadataPage />} />
           </Route>
           <Route path="/tools" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
