@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import UnitConverterPage from './pages/tools/UnitConverterPage';
@@ -18,6 +18,7 @@ import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import AudioExtractorPage from './pages/tools/AudioExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
 import NotFound from './pages/NotFound';
+import { getFFmpeg } from './hooks/useFFmpeg';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -76,6 +77,26 @@ const LoadingFallback = () => (
 );
 
 function App() {
+  useEffect(() => {
+    // Pre-load FFmpeg when the app starts
+    const preloadFFmpeg = async () => {
+      try {
+        const ffmpeg = getFFmpeg();
+        if (!ffmpeg.isLoaded()) {
+          console.log('Preloading FFmpeg at app level...');
+          await ffmpeg.load();
+          console.log('FFmpeg preloaded successfully');
+        }
+      } catch (error) {
+        console.error('Error preloading FFmpeg:', error);
+        // We don't need to handle the error here, as the individual components
+        // will handle it when they try to use FFmpeg
+      }
+    };
+
+    preloadFFmpeg();
+  }, []);
+
   return (
     <BrowserRouter>
       <Suspense fallback={<LoadingFallback />}>

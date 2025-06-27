@@ -112,7 +112,15 @@ let loadingPromise: Promise<void> | null = null;
 const loadFFmpegOnce = async (): Promise<void> => {
   // If already loaded, return immediately
   if (isLoaded && ffmpegInstance) {
-    return;
+    try {
+      // Double check that the instance is actually working
+      if (ffmpegInstance.isLoaded()) {
+        return;
+      }
+    } catch (e) {
+      console.warn('FFmpeg instance claimed to be loaded but isLoaded() check failed:', e);
+      // Continue with loading if the check failed
+    }
   }
   
   // If currently loading, return the existing promise
@@ -157,7 +165,17 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       // Only load if not already loaded
       if (!alreadyLoaded) {
-        await ffmpegInstance.load();
+        try {
+          await ffmpegInstance.load();
+        } catch (loadError) {
+          // Special handling for "already loaded" error
+          if (String(loadError).includes('ffmpeg.wasm was loaded')) {
+            console.log('FFmpeg was already loaded, continuing...');
+            alreadyLoaded = true;
+          } else {
+            throw loadError;
+          }
+        }
       }
       
       // Test the FFmpeg instance with a simple operation to verify it's working correctly
@@ -224,7 +242,7 @@ export const useFFmpeg = () => {
       
       setIsFFmpegLoading(false);
     }
-  }, []);
+  }, [isFFmpegLoaded]);
   
   // Check if FFmpeg is already loaded on mount
   useEffect(() => {
