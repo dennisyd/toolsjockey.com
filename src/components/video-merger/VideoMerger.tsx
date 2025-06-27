@@ -47,7 +47,7 @@ const VideoMerger: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // FFmpeg state
-  const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, error: ffmpegError, getFFmpeg } = useFFmpeg();
+  const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, error: ffmpegError } = useFFmpeg();
   const { progress, currentTask } = useVideoProcessor();
   
   // Load FFmpeg when component mounts
@@ -122,14 +122,14 @@ const VideoMerger: React.FC = () => {
         const videoItem = videos.find(v => v.id === id);
         if (!videoItem) return;
         
-        const ffmpeg = getFFmpeg();
+        const ffmpeg = await import('../../hooks/useFFmpeg');
         const inputFileName = `duration_check_${id}.${videoItem.file.name.split('.').pop()}`;
         
         // Write the file to FFmpeg's virtual filesystem
-        ffmpeg.FS('writeFile', inputFileName, await fetchFile(videoItem.file));
+        ffmpeg.getFFmpeg().FS('writeFile', inputFileName, await fetchFile(videoItem.file));
         
         // Use FFprobe to get duration info
-        await ffmpeg.run(
+        await ffmpeg.getFFmpeg().run(
           '-i', inputFileName, 
           '-f', 'null', 
           '-'
@@ -151,7 +151,7 @@ const VideoMerger: React.FC = () => {
         
         // Clean up
         try {
-          ffmpeg.FS('unlink', inputFileName);
+          ffmpeg.getFFmpeg().FS('unlink', inputFileName);
         } catch (e) {
           console.warn('Could not unlink file:', e);
         }
@@ -254,8 +254,7 @@ const VideoMerger: React.FC = () => {
       }).join('\n');
       
       // Get the FFmpeg instance directly
-      const { getFFmpeg } = await import('../../hooks/useFFmpeg');
-      const ffmpeg = getFFmpeg();
+      const ffmpeg = await import('../../hooks/useFFmpeg');
       
       // Manually write each video file to FFmpeg's virtual filesystem
       for (let i = 0; i < videos.length; i++) {
@@ -266,11 +265,11 @@ const VideoMerger: React.FC = () => {
         setCurrentTaskMessage(`Preparing video ${i + 1} of ${videos.length}`);
         
         // Use fetchFile for better compatibility
-        ffmpeg.FS('writeFile', inputFileName, await fetchFile(video.file));
+        ffmpeg.getFFmpeg().FS('writeFile', inputFileName, await fetchFile(video.file));
       }
       
       // Write the concat file
-      ffmpeg.FS('writeFile', 'concat.txt', new TextEncoder().encode(fileContent));
+      ffmpeg.getFFmpeg().FS('writeFile', 'concat.txt', new TextEncoder().encode(fileContent));
       
       setCurrentTaskMessage('Merging videos...');
       
@@ -278,7 +277,7 @@ const VideoMerger: React.FC = () => {
       // This ensures all videos are included in the merge
       try {
         // First try with simple concat and copy (fastest)
-        await ffmpeg.run(
+        await ffmpeg.getFFmpeg().run(
           '-f', 'concat',
           '-safe', '0',
           '-i', 'concat.txt',
@@ -300,7 +299,7 @@ const VideoMerger: React.FC = () => {
           setCurrentTaskMessage(`Transcoding video ${i + 1} of ${videos.length} for compatibility...`);
           
           // Transcode each video to a compatible format
-          await ffmpeg.run(
+          await ffmpeg.getFFmpeg().run(
             '-i', inputFileName,
             '-c:v', 'libx264',
             '-c:a', 'aac',
@@ -310,18 +309,18 @@ const VideoMerger: React.FC = () => {
           
           // Update the concat file to use the transcoded videos
           if (i === 0) {
-            ffmpeg.FS('writeFile', 'concat_transcoded.txt', new TextEncoder().encode(''));
+            ffmpeg.getFFmpeg().FS('writeFile', 'concat_transcoded.txt', new TextEncoder().encode(''));
           }
           
           const concatLine = `file '${transcodedFileName}'\n`;
-          const currentContent = new TextDecoder().decode(ffmpeg.FS('readFile', 'concat_transcoded.txt'));
-          ffmpeg.FS('writeFile', 'concat_transcoded.txt', new TextEncoder().encode(currentContent + concatLine));
+          const currentContent = new TextDecoder().decode(ffmpeg.getFFmpeg().FS('readFile', 'concat_transcoded.txt'));
+          ffmpeg.getFFmpeg().FS('writeFile', 'concat_transcoded.txt', new TextEncoder().encode(currentContent + concatLine));
         }
         
         setCurrentTaskMessage('Merging transcoded videos...');
         
         // Now merge the transcoded videos
-        await ffmpeg.run(
+        await ffmpeg.getFFmpeg().run(
           '-f', 'concat',
           '-safe', '0',
           '-i', 'concat_transcoded.txt',
@@ -332,34 +331,34 @@ const VideoMerger: React.FC = () => {
         // Clean up transcoded files
         for (let i = 0; i < videos.length; i++) {
           try {
-            ffmpeg.FS('unlink', `transcoded_${i}.mp4`);
+            ffmpeg.getFFmpeg().FS('unlink', `transcoded_${i}.mp4`);
           } catch (e) {
             console.warn(`Could not unlink transcoded file ${i}:`, e);
           }
         }
         try {
-          ffmpeg.FS('unlink', 'concat_transcoded.txt');
+          ffmpeg.getFFmpeg().FS('unlink', 'concat_transcoded.txt');
         } catch (e) {
           console.warn('Could not unlink transcoded concat file:', e);
         }
       }
       
       // Read the output file
-      const data = ffmpeg.FS('readFile', 'output.mp4');
+      const data = ffmpeg.getFFmpeg().FS('readFile', 'output.mp4');
       
       // Create a blob URL
       const blob = new Blob([data.buffer], { type: 'video/mp4' });
       const url = URL.createObjectURL(blob);
       
       // Clean up files
-      ffmpeg.FS('unlink', 'concat.txt');
-      ffmpeg.FS('unlink', 'output.mp4');
+      ffmpeg.getFFmpeg().FS('unlink', 'concat.txt');
+      ffmpeg.getFFmpeg().FS('unlink', 'output.mp4');
       
       // Clean up input files
       for (let i = 0; i < videos.length; i++) {
         const ext = videos[i].file.name.split('.').pop();
         try {
-          ffmpeg.FS('unlink', `${i}.${ext}`);
+          ffmpeg.getFFmpeg().FS('unlink', `${i}.${ext}`);
         } catch (e) {
           console.warn(`Could not unlink file ${i}.${ext}:`, e);
         }

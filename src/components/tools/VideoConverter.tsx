@@ -11,7 +11,7 @@ import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoConverter } from '../../hooks/useVideoConverter';
 import { useFileHandler } from '../../hooks/useFileHandler';
 import type { VideoFile, ConversionOptions, OutputFormat } from '../../types/video';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X, RefreshCw } from 'lucide-react';
 
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
@@ -47,9 +47,9 @@ const VideoConverter: React.FC = () => {
   const { 
     isFFmpegLoaded, 
     isFFmpegLoading,
-    ffmpegLoadingProgress,
-    loadFFmpeg,
     error: ffmpegError,
+    loadFFmpeg,
+    retryLoadFFmpeg,
   } = useFFmpeg();
   
   const {
@@ -78,6 +78,13 @@ const VideoConverter: React.FC = () => {
     });
   }, [loadFFmpeg]);
 
+  // Clear error message when FFmpeg loads successfully
+  useEffect(() => {
+    if (isFFmpegLoaded && errorMessage && errorMessage.includes('video processing engine')) {
+      setErrorMessage(null);
+    }
+  }, [isFFmpegLoaded, errorMessage]);
+
   // Toggle advanced options
   const toggleAdvancedOptions = () => {
     setShowAdvanced(!showAdvanced);
@@ -90,7 +97,16 @@ const VideoConverter: React.FC = () => {
       return;
     }
 
+    // Ensure FFmpeg is loaded before attempting conversion
+    if (!isFFmpegLoaded) {
+      setErrorMessage('Video processing engine is not loaded yet. Please wait or try refreshing the page.');
+      return;
+    }
+
     try {
+      // Clear any previous errors
+      setErrorMessage(null);
+      
       // Collect all options
       const options: ConversionOptions = {
         outputFormat,
@@ -174,11 +190,31 @@ const VideoConverter: React.FC = () => {
         <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 m-4">
           <div className="flex">
             <AlertCircle className="h-6 w-6 text-red-500" />
-            <div className="ml-3">
+            <div className="ml-3 flex-grow">
               <p className="text-sm text-red-700 dark:text-red-400">
                 {errorMessage || ffmpegError}
               </p>
+              {(errorMessage?.includes('video processing engine') || ffmpegError) && (
+                <button 
+                  onClick={retryLoadFFmpeg}
+                  className="mt-2 flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+                >
+                  <RefreshCw size={16} className="mr-1" /> Retry Loading Video Engine
+                </button>
+              )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading indicator */}
+      {isFFmpegLoading && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 m-4">
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent mr-3"></div>
+            <p className="text-sm text-blue-700 dark:text-blue-400">
+              Loading video processing engine... This may take a moment.
+            </p>
           </div>
         </div>
       )}
@@ -189,7 +225,7 @@ const VideoConverter: React.FC = () => {
         onFileDrop={handleFileDrop}
         onFileRemove={removeFile}
         files={videoFiles}
-        disabled={isConverting}
+        disabled={isConverting || isFFmpegLoading}
       />
 
       {/* Settings Panel */}
@@ -198,7 +234,7 @@ const VideoConverter: React.FC = () => {
           <FormatSelector 
             selectedFormat={outputFormat} 
             onChange={setOutputFormat}
-            disabled={isConverting}
+            disabled={isConverting || isFFmpegLoading}
           />
           <QualitySettings 
             quality={quality}
@@ -209,7 +245,7 @@ const VideoConverter: React.FC = () => {
             onResolutionChange={setResolution}
             onBitrateChange={setBitrate}
             onFramerateChange={setFramerate}
-            disabled={isConverting}
+            disabled={isConverting || isFFmpegLoading}
           />
         </div>
         
@@ -218,7 +254,7 @@ const VideoConverter: React.FC = () => {
             type="button"
             onClick={toggleAdvancedOptions}
             className="text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
-            disabled={isConverting}
+            disabled={isConverting || isFFmpegLoading}
           >
             {showAdvanced ? '↑ Hide advanced options' : '↓ Show advanced options'}
           </button>
@@ -241,84 +277,80 @@ const VideoConverter: React.FC = () => {
               setCompressionLevel(options.compressionLevel);
             }}
             outputFormat={outputFormat}
-            disabled={isConverting}
+            disabled={isConverting || isFFmpegLoading}
           />
         )}
       </div>
       
       {/* Preview Section */}
       {videoFiles.length > 0 && (
-        <VideoPreview 
-          file={videoFiles[0]} 
-          convertedFile={convertedFiles[0] || null}
-        />
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold mb-4">Preview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <VideoPreview file={videoFiles[0]} />
+            <div>
+              <h3 className="font-medium mb-2">Video Information</h3>
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
+                <p><span className="font-medium">File:</span> {videoFiles[0].file.name}</p>
+                <p><span className="font-medium">Size:</span> {(videoFiles[0].file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                <p><span className="font-medium">Type:</span> {videoFiles[0].file.type || 'Unknown'}</p>
+                {videoFiles[0].metadata?.duration && (
+                  <p><span className="font-medium">Duration:</span> {formatDuration(videoFiles[0].metadata.duration)}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
       
-      {/* Progress & Status */}
-      {isConverting && (
-        <ConversionProgress
-          progress={conversionProgress}
-          currentTask={currentTask}
-          estimatedTimeRemaining={estimatedTimeRemaining}
-        />
-      )}
-
-      {/* Start Conversion Button */}
+      {/* Conversion Controls */}
       <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-          <button
-            type="button"
-            onClick={handleStartConversion}
-            disabled={isConverting || videoFiles.length === 0 || !isFFmpegLoaded}
-            className={`px-5 py-3 rounded-lg font-medium text-white 
-              ${isConverting || videoFiles.length === 0 || !isFFmpegLoaded
-                ? 'bg-blue-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-              } transition-colors w-full md:w-auto`}
-          >
-            {isFFmpegLoading 
-              ? 'Loading Video Engine...' 
-              : isConverting 
-                ? 'Converting...' 
-                : 'Start Conversion'}
-          </button>
-          
-          {isConverting && (
+        {isConverting ? (
+          <div className="space-y-4">
+            <ConversionProgress 
+              progress={conversionProgress} 
+              currentTask={currentTask}
+              estimatedTimeRemaining={estimatedTimeRemaining}
+            />
             <button
-              type="button"
               onClick={abort}
-              className="px-5 py-3 rounded-lg font-medium text-red-600 border border-red-600 hover:bg-red-50 transition-colors w-full md:w-auto"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-md transition-colors"
             >
               Cancel Conversion
             </button>
-          )}
-        </div>
-        
-        {/* FFmpeg loading progress */}
-        {isFFmpegLoading && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Loading video processing engine: {ffmpegLoadingProgress}%
-            </p>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-1">
-              <div 
-                className="bg-blue-600 h-2.5 rounded-full" 
-                style={{ width: `${ffmpegLoadingProgress}%` }}
-              ></div>
-            </div>
           </div>
+        ) : (
+          <button
+            onClick={handleStartConversion}
+            disabled={videoFiles.length === 0 || isFFmpegLoading || !isFFmpegLoaded}
+            className={`w-full font-medium py-3 px-4 rounded-md transition-colors ${
+              videoFiles.length === 0 || isFFmpegLoading || !isFFmpegLoaded
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
+            }`}
+          >
+            {isFFmpegLoading 
+              ? 'Loading Video Engine...' 
+              : videoFiles.length === 0 
+                ? 'Upload Video to Convert' 
+                : `Convert to ${outputFormat.toUpperCase()}`}
+          </button>
         )}
       </div>
-
+      
       {/* Download Section */}
       {convertedFiles.length > 0 && !isConverting && (
-        <DownloadSection
-          convertedFiles={convertedFiles}
-          originalFiles={videoFiles}
-        />
+        <DownloadSection files={convertedFiles} />
       )}
     </div>
   );
+};
+
+// Helper function to format duration in seconds to MM:SS format
+const formatDuration = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
 export default VideoConverter; 

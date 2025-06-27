@@ -1,16 +1,12 @@
 import React from 'react';
 import { Download, CheckCircle } from 'lucide-react';
-import type { ConvertedFile, VideoFile } from '../../../types/video';
+import type { ConvertedFile } from '../../../types/video';
 
 interface DownloadSectionProps {
-  convertedFiles: ConvertedFile[];
-  originalFiles: VideoFile[];
+  files: ConvertedFile[];
 }
 
-const DownloadSection: React.FC<DownloadSectionProps> = ({
-  convertedFiles,
-  originalFiles,
-}) => {
+const DownloadSection: React.FC<DownloadSectionProps> = ({ files }) => {
   // Format file size to human-readable format
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -18,15 +14,6 @@ const DownloadSection: React.FC<DownloadSectionProps> = ({
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // Calculate size reduction percentage
-  const calculateSizeReduction = (
-    originalSize: number,
-    convertedSize: number
-  ): number => {
-    const reduction = ((originalSize - convertedSize) / originalSize) * 100;
-    return Math.round(reduction);
   };
 
   // Handle download
@@ -44,8 +31,8 @@ const DownloadSection: React.FC<DownloadSectionProps> = ({
     // For multiple files, we'd typically use JSZip to create a zip file
     // But for simplicity in this demo, if there's only one file,
     // we'll just download it directly
-    if (convertedFiles.length === 1) {
-      handleDownload(convertedFiles[0]);
+    if (files.length === 1) {
+      handleDownload(files[0]);
       return;
     }
 
@@ -66,69 +53,50 @@ const DownloadSection: React.FC<DownloadSectionProps> = ({
 
       {/* File list with download buttons */}
       <div className="mb-6 divide-y divide-gray-200 dark:divide-gray-700">
-        {convertedFiles.map((file) => {
-          // Find original file to compare size
-          const originalFile = originalFiles.find(
-            (of) => of.id === file.originalId
-          );
-          const originalSize = originalFile?.size || 0;
-          const sizeReduction = calculateSizeReduction(originalSize, file.size);
-
-          return (
-            <div
-              key={file.id}
-              className="py-3 flex flex-col md:flex-row md:items-center justify-between"
-            >
-              <div className="mb-2 md:mb-0">
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {file.name}
-                </p>
-                <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 dark:text-gray-400">
-                  <span className="mr-3">
-                    {formatFileSize(file.size)}{' '}
-                    <span
-                      className={
-                        sizeReduction > 0
-                          ? 'text-green-500 dark:text-green-400'
-                          : 'text-amber-500 dark:text-amber-400'
-                      }
-                    >
-                      ({sizeReduction > 0 ? '-' : '+'}
-                      {Math.abs(sizeReduction)}%)
-                    </span>
+        {files.map((file) => (
+          <div
+            key={file.id}
+            className="py-3 flex flex-col md:flex-row md:items-center justify-between"
+          >
+            <div className="mb-2 md:mb-0">
+              <p className="font-medium text-gray-900 dark:text-white">
+                {file.name}
+              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 dark:text-gray-400">
+                <span className="mr-3">
+                  {formatFileSize(file.size)}
+                </span>
+                {file.metadata && (
+                  <span className="flex items-center">
+                    {file.metadata.width && file.metadata.height && (
+                      <span className="flex items-center text-gray-400">
+                        <span className="h-1 w-1 bg-gray-400 rounded-full mx-2" />
+                        {file.metadata.width}×{file.metadata.height}
+                      </span>
+                    )}
+                    {file.format && (
+                      <span className="flex items-center text-gray-400">
+                        <span className="h-1 w-1 bg-gray-400 rounded-full mx-2" />
+                        {file.format.toUpperCase()}
+                      </span>
+                    )}
                   </span>
-                  {file.metadata && (
-                    <span className="flex items-center">
-                      {file.metadata.width && file.metadata.height && (
-                        <span className="flex items-center text-gray-400">
-                          <span className="h-1 w-1 bg-gray-400 rounded-full mx-2" />
-                          {file.metadata.width}×{file.metadata.height}
-                        </span>
-                      )}
-                      {file.format && (
-                        <span className="flex items-center text-gray-400">
-                          <span className="h-1 w-1 bg-gray-400 rounded-full mx-2" />
-                          {file.format.toUpperCase()}
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </div>
+                )}
               </div>
-              <button
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                onClick={() => handleDownload(file)}
-              >
-                <Download className="h-4 w-4 mr-1.5" />
-                Download
-              </button>
             </div>
-          );
-        })}
+            <button
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              onClick={() => handleDownload(file)}
+            >
+              <Download className="h-4 w-4 mr-1.5" />
+              Download
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Download all button */}
-      {convertedFiles.length > 1 && (
+      {files.length > 1 && (
         <div className="flex justify-center">
           <button
             className="inline-flex items-center px-5 py-3 border border-transparent rounded-md shadow-sm text-md font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"

@@ -2,8 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
 
-// Singleton FFmpeg instance
+// Singleton FFmpeg instance and loading state
 let ffmpegInstance: FFmpeg | null = null;
+let isLoading = false;
+let isLoaded = false;
 let loadAttempts = 0;
 const MAX_LOAD_ATTEMPTS = 3;
 
@@ -12,6 +14,20 @@ const MAX_LOAD_ATTEMPTS = 3;
 const CORE_URL = '/ffmpeg-core.js';
 const WASM_URL = '/ffmpeg-core.wasm';
 const WORKER_URL = '/ffmpeg-core.worker.js';
+
+// Check if FFmpeg core files exist
+const checkFFmpegFilesExist = async (): Promise<boolean> => {
+  try {
+    const coreResponse = await fetch(CORE_URL, { method: 'HEAD' });
+    const wasmResponse = await fetch(WASM_URL, { method: 'HEAD' });
+    const workerResponse = await fetch(WORKER_URL, { method: 'HEAD' });
+    
+    return coreResponse.ok && wasmResponse.ok && workerResponse.ok;
+  } catch (error) {
+    console.error('Error checking FFmpeg files:', error);
+    return false;
+  }
+};
 
 export interface FFmpegProcessOptions {
   command: string[];
@@ -81,105 +97,145 @@ const getDetailedErrorMessage = (error: any): string => {
     return 'Video processing engine failed to initialize properly. Please refresh the page and try again.';
   }
   
+  if (errorString.includes('ffmpeg.wasm was loaded')) {
+    return 'Video processing engine is already loaded. This is likely a temporary issue. Please try your operation again.';
+  }
+  
   // Default message for unknown errors
   return 'Video processing engine failed to load. Please refresh the page and try again.';
 };
 
-export const useFFmpeg = () => {
-  const [isFFmpegLoaded, setIsFFmpegLoaded] = useState(false);
-  const [isFFmpegLoading, setIsFFmpegLoading] = useState(false);
-  const [ffmpegLoadingProgress, setFFmpegLoadingProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+// Global loading function that returns a promise
+let loadingPromise: Promise<void> | null = null;
+
+// Function to safely load FFmpeg once
+const loadFFmpegOnce = async (): Promise<void> => {
+  // If already loaded, return immediately
+  if (isLoaded && ffmpegInstance) {
+    return;
+  }
   
-  // Load FFmpeg
-  const loadFFmpeg = useCallback(async () => {
-    if (ffmpegInstance && isFFmpegLoaded) return;
-    
+  // If currently loading, return the existing promise
+  if (isLoading && loadingPromise) {
+    return loadingPromise;
+  }
+  
+  // Start loading
+  isLoading = true;
+  
+  loadingPromise = new Promise<void>(async (resolve, reject) => {
     try {
-      setIsFFmpegLoading(true);
-      setError(null);
-      loadAttempts++;
-      
-      // If we have an existing instance but it failed, reset it
-      if (ffmpegInstance && !isFFmpegLoaded && loadAttempts > 1) {
-        ffmpegInstance = null;
+      // First check if FFmpeg core files exist
+      const filesExist = await checkFFmpegFilesExist();
+      if (!filesExist) {
+        throw new Error('FFmpeg core files not found. This could be due to a deployment issue.');
       }
       
-      const ffmpeg = ffmpegInstance || createFFmpeg({
-        log: true,
-        progress: ({ ratio }) => {
-          if (ratio) {
-            setFFmpegLoadingProgress(Math.round(ratio * 100));
-          }
-        },
-        corePath: CORE_URL,
-        wasmPath: WASM_URL,
-        workerPath: WORKER_URL,
-      });
+      loadAttempts++;
       
-      // Ensure WASM is loaded before proceeding
-      await ffmpeg.load();
+      // Create FFmpeg instance if it doesn't exist
+      if (!ffmpegInstance) {
+        ffmpegInstance = createFFmpeg({
+          log: true,
+          progress: () => {
+            // Progress handling is done in the hook
+          },
+          corePath: CORE_URL,
+          wasmPath: WASM_URL,
+          workerPath: WORKER_URL,
+        });
+      }
+      
+      // Check if FFmpeg is already loaded
+      let alreadyLoaded = false;
+      try {
+        alreadyLoaded = ffmpegInstance.isLoaded();
+      } catch (e) {
+        console.log('Error checking if FFmpeg is loaded:', e);
+        alreadyLoaded = false;
+      }
+      
+      // Only load if not already loaded
+      if (!alreadyLoaded) {
+        await ffmpegInstance.load();
+      }
       
       // Test the FFmpeg instance with a simple operation to verify it's working correctly
       try {
-        ffmpeg.FS('writeFile', 'test.txt', new Uint8Array([1, 2, 3]));
-        ffmpeg.FS('readFile', 'test.txt');
-        ffmpeg.FS('unlink', 'test.txt');
+        ffmpegInstance.FS('writeFile', 'test.txt', new Uint8Array([1, 2, 3]));
+        ffmpegInstance.FS('readFile', 'test.txt');
+        ffmpegInstance.FS('unlink', 'test.txt');
       } catch (testErr) {
         console.error('FFmpeg instance test failed:', testErr);
         throw new Error('Failed to initialize FFmpeg properly');
       }
       
-      ffmpegInstance = ffmpeg;
-      setIsFFmpegLoaded(true);
-      setIsFFmpegLoading(false);
+      isLoaded = true;
       loadAttempts = 0; // Reset attempts on success
+      resolve();
     } catch (err) {
       console.error('Error loading FFmpeg:', err);
+      isLoaded = false;
+      
+      // If we haven't reached max attempts, try again with a delay
+      if (loadAttempts < MAX_LOAD_ATTEMPTS) {
+        setTimeout(() => {
+          isLoading = false;
+          loadingPromise = null;
+          loadFFmpegOnce().then(resolve).catch(reject);
+        }, 2000); // Wait 2 seconds before retrying
+      } else {
+        reject(err);
+      }
+    } finally {
+      isLoading = false;
+      loadingPromise = null;
+    }
+  });
+  
+  return loadingPromise;
+};
+
+export const useFFmpeg = () => {
+  const [isFFmpegLoaded, setIsFFmpegLoaded] = useState(isLoaded);
+  const [isFFmpegLoading, setIsFFmpegLoading] = useState(isLoading);
+  const [ffmpegLoadingProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Load FFmpeg
+  const loadFFmpeg = useCallback(async () => {
+    // If already loaded in this component, return immediately
+    if (isFFmpegLoaded) return;
+    
+    try {
+      setIsFFmpegLoading(true);
+      setError(null);
+      
+      await loadFFmpegOnce();
+      
+      setIsFFmpegLoaded(true);
+      setIsFFmpegLoading(false);
+    } catch (err) {
+      console.error('Error in useFFmpeg hook:', err);
       
       // Get a more user-friendly error message
       const detailedError = getDetailedErrorMessage(err);
       setError(detailedError);
       
       setIsFFmpegLoading(false);
-      
-      // If we haven't reached max attempts, try again with a delay
-      if (loadAttempts < MAX_LOAD_ATTEMPTS) {
-        setTimeout(() => {
-          loadFFmpeg();
-        }, 2000); // Wait 2 seconds before retrying
-      }
     }
-  }, [isFFmpegLoaded]);
+  }, []);
   
   // Check if FFmpeg is already loaded on mount
   useEffect(() => {
-    if (ffmpegInstance) {
-      try {
-        if (ffmpegInstance.isLoaded()) {
-          // Verify the instance is working correctly
-          try {
-            ffmpegInstance.FS('writeFile', 'test.txt', new Uint8Array([1, 2, 3]));
-            ffmpegInstance.FS('readFile', 'test.txt');
-            ffmpegInstance.FS('unlink', 'test.txt');
-            setIsFFmpegLoaded(true);
-          } catch (testErr) {
-            console.error('FFmpeg instance verification failed:', testErr);
-            // Instance is not working correctly, reload it
-            ffmpegInstance = null;
-            loadFFmpeg();
-          }
-        } else {
-          loadFFmpeg();
-        }
-      } catch (err) {
-        console.error('Error checking FFmpeg loaded state:', err);
-        ffmpegInstance = null;
-        loadFFmpeg();
-      }
-    } else {
-      loadFFmpeg();
+    // If already loaded globally, just update state
+    if (isLoaded && ffmpegInstance) {
+      setIsFFmpegLoaded(true);
+      return;
     }
+    
+    // Otherwise, load FFmpeg
+    loadFFmpeg();
   }, [loadFFmpeg]);
   
   // Process a file with FFmpeg
@@ -187,7 +243,7 @@ export const useFFmpeg = () => {
     file: File,
     options: FFmpegProcessOptions
   ) => {
-    if (!ffmpegInstance) {
+    if (!ffmpegInstance || !isLoaded) {
       throw new Error('FFmpeg not loaded');
     }
     
@@ -244,6 +300,9 @@ export const useFFmpeg = () => {
   const retryLoadFFmpeg = useCallback(() => {
     // Reset the instance to force a clean reload
     ffmpegInstance = null;
+    isLoaded = false;
+    isLoading = false;
+    loadingPromise = null;
     loadAttempts = 0;
     loadFFmpeg();
   }, [loadFFmpeg]);
@@ -252,10 +311,9 @@ export const useFFmpeg = () => {
     isFFmpegLoaded,
     isFFmpegLoading,
     ffmpegLoadingProgress,
-    loadFFmpeg,
-    retryLoadFFmpeg,
-    getFFmpeg,
-    processFile,
     error,
+    loadFFmpeg,
+    processFile,
+    retryLoadFFmpeg,
   };
 };
