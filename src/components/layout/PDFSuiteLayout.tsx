@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { toolsConfig } from '../../utils/toolsConfig';
 import Header from './Header';
 import Footer from './Footer';
+import AdSlot from '../ads/AdSlot';
 
 interface PDFSuiteLayoutProps {
   title: string;
@@ -55,15 +56,11 @@ const PDFSuiteLayout: React.FC<PDFSuiteLayoutProps> = ({ title, children }) => {
           </main>
           {/* Ad slot or reserved space */}
           <aside className="hidden lg:block">
-            <div className="w-full h-24 bg-gray-100 dark:bg-primary rounded flex items-center justify-center text-gray-400 border border-gray-200 dark:border-gray-700">
-              Ad Space (300x250)
-            </div>
+            <AdSlot slot="sidebar" />
           </aside>
         </div>
         {/* Bottom ad slot */}
-        <div className="w-full h-12 bg-gray-100 dark:bg-primary rounded flex items-center justify-center text-gray-400 border border-gray-200 dark:border-gray-700 mt-8">
-          Ad Space (728x90)
-        </div>
+        <AdSlot slot="footer" className="mt-8" />
       </div>
       <Footer />
     </>

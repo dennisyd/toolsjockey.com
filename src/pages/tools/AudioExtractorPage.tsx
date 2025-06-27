@@ -15,7 +15,6 @@ const AudioExtractorPage: React.FC = () => {
         title="Audio Extractor"
         description="Extract audio tracks from any video in multiple formats - all processing happens in your browser for maximum privacy."
         toolPath="audio-extractor"
-        toolName="Audio Extractor"
       >
         <AudioExtractor />
       </VideoToolLayout>

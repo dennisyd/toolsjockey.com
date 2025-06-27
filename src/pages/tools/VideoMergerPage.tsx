@@ -8,14 +8,13 @@ const VideoMergerPage: React.FC = () => {
     <>
       <Helmet>
         <title>Video Merger - Combine Videos Online | ToolsJockey</title>
-        <meta name="description" content="Merge multiple video files into one without uploading them. Free online video merger tool with privacy-first approach - all processing happens in your browser." />
+        <meta name="description" content="Merge multiple videos without uploading them. Free online video merger with privacy-first approach - all processing happens in your browser." />
       </Helmet>
       
       <VideoToolLayout
         title="Video Merger"
-        description="Combine multiple videos into a single file - all processing happens in your browser for maximum privacy."
+        description="Combine multiple video files into a single video - all processing happens in your browser for maximum privacy."
         toolPath="video-merger"
-        toolName="Video Merger"
       >
         <VideoMerger />
       </VideoToolLayout>
