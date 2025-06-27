@@ -364,10 +364,10 @@ const FrameExtractor: React.FC = () => {
       {/* File uploader */}
       <div className="p-6">
         <FileUploader
-          onFileSelect={handleFileUpload}
-          acceptedFormats="video/*"
-          files={sourceVideo ? [sourceVideo] : []}
-          description="Upload a video file to extract frames (MP4, WebM, AVI, MOV, etc.)"
+          onFileUpload={handleFileUpload}
+          accept="video/*"
+          files={[sourceVideo].filter(Boolean) as File[]}
+          description="Upload a video file to extract frames"
           disabled={isProcessing}
         />
       </div>

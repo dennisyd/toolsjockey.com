@@ -301,10 +301,10 @@ const VideoCompressor: React.FC = () => {
       {/* File uploader */}
       <div className="p-6">
         <FileUploader
-          onFileSelect={handleFileUpload}
-          acceptedFormats="video/*"
-          files={sourceVideo ? [sourceVideo] : []}
-          description="Upload a video file to compress (MP4, WebM, AVI, MOV, etc.)"
+          onFileUpload={handleFileUpload}
+          accept="video/*"
+          files={[sourceVideo].filter(Boolean) as File[]}
+          description="Upload a video file to compress"
           disabled={isProcessing}
         />
       </div>

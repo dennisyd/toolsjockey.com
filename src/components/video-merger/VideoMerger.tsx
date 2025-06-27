@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { fetchFile } from '@ffmpeg/ffmpeg';
 import FileUploader from '../shared/FileUploader';
 import VideoQueue from './VideoQueue';
@@ -8,7 +8,6 @@ import ProgressBar from '../shared/ProgressBar';
 import FFmpegStatus from '../shared/FFmpegStatus';
 import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoProcessor } from '../../hooks/useVideoProcessor';
-import { formatDuration } from '../../utils/fileUtils';
 import { v4 as uuidv4 } from 'uuid';
 
 interface VideoItem {
@@ -23,9 +22,6 @@ interface MergedVideo {
   size: number;
   filename: string;
 }
-
-// Check if SharedArrayBuffer is supported
-const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
 
 // Compatibility Info Component
 const CompatibilityInfo: React.FC = () => (
@@ -51,7 +47,7 @@ const VideoMerger: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // FFmpeg state
-  const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError, getFFmpeg } = useFFmpeg();
+  const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, error: ffmpegError, getFFmpeg } = useFFmpeg();
   const { progress, currentTask } = useVideoProcessor();
   
   // Load FFmpeg when component mounts
@@ -240,7 +236,6 @@ const VideoMerger: React.FC = () => {
     
     if (!isFFmpegLoaded) {
       try {
-        setCurrentTaskMessage('Loading video processing engine...');
         await loadFFmpeg();
       } catch (err) {
         // Error is handled by the hook, we just need to return
@@ -402,192 +397,91 @@ const VideoMerger: React.FC = () => {
     }
   };
   
-  // Calculate total duration
-  const totalDuration = videos.reduce((acc, video) => acc + video.duration, 0);
-  
-  // Check if there are mixed video formats
-  const hasMixedFormats = (): boolean => {
-    if (videos.length < 2) return false;
-    
-    const formats = new Set<string>();
-    videos.forEach(video => {
-      const ext = video.file.name.split('.').pop()?.toLowerCase() || '';
-      formats.add(ext);
-    });
-    
-    return formats.size > 1;
-  };
-  
-  // Check if any videos have missing durations
-  const hasMissingDurations = (): boolean => {
-    return videos.some(video => video.duration === 0);
-  };
-  
   return (
-    <div>
-      {/* SharedArrayBuffer warning */}
-      {!isSharedArrayBufferSupported && (
-        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 mb-6">
-          <div className="flex">
-            <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-300 mr-2" />
-            <p className="text-sm text-yellow-700 dark:text-yellow-200">
-              Your browser may have limited support for video processing. For best results, use Chrome or Edge with HTTPS.
-            </p>
-          </div>
+    <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg overflow-hidden w-full max-w-5xl mx-auto">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Video Merger</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
+          Combine multiple videos into one file without uploading them to servers.
+        </p>
+        <div className="mt-2 text-xs inline-flex items-center px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+          <span className="mr-1">●</span> 100% Client-side Processing
         </div>
-      )}
-
-      {/* FFmpeg Status */}
+      </div>
+      
+      {/* FFmpeg Status Component */}
       <FFmpegStatus />
-
-      {/* Error message (non-FFmpeg errors) */}
+      
+      {/* Error message */}
       {errorMessage && !ffmpegError && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-600 mb-6">
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 m-4">
           <div className="flex">
-            <AlertCircle className="h-5 w-5 text-red-400 dark:text-red-300 mr-2" />
-            <div>
-              <p className="text-sm text-red-700 dark:text-red-200">{errorMessage}</p>
-            </div>
+            <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+            <p className="text-sm text-red-700 dark:text-red-300">{errorMessage}</p>
           </div>
         </div>
       )}
       
-      {/* Compatibility Info */}
-      <CompatibilityInfo />
-
       {/* File uploader */}
-      <div className="mt-6">
+      <div className="p-6">
         <FileUploader
-          onFileSelect={handleFileUpload}
-          acceptedFormats="video/*"
-          files={[]}
+          onFileUpload={handleFileUpload}
+          accept="video/*"
           multiple={true}
-          description="Upload video files to merge (MP4, WebM, etc.)"
           disabled={isProcessing}
         />
+        
+        <CompatibilityInfo />
       </div>
       
       {/* Video queue */}
       {videos.length > 0 && (
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Video Queue ({videos.length})</h2>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Total Duration: {formatDuration(totalDuration)}
-            </div>
-          </div>
-          
-          {/* Format compatibility warnings */}
-          {hasMixedFormats() && (
-            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 rounded-md">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-300 mr-2 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                    <strong>Different video formats detected.</strong> This may cause compatibility issues when merging.
-                  </p>
-                  <p className="text-xs text-yellow-600 dark:text-yellow-300 mt-1">
-                    Consider converting all videos to the same format using our <a href="/tools/video-converter" className="underline hover:text-yellow-800">Video Converter</a> first.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {hasMissingDurations() && (
-            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 rounded-md">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-300 mr-2 flex-shrink-0" />
-                <div>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                    <strong>Some videos have missing duration metadata.</strong> This may affect the merging process.
-                  </p>
-                  <p className="text-xs text-yellow-600 dark:text-yellow-300 mt-1">
-                    For best results, use videos with complete metadata or convert them to MP4 format.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
+        <div className="px-6 pb-6">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Videos to Merge</h2>
           <VideoQueue
             videos={videos}
-            selectedVideoId={null}
-            onVideoSelect={() => {}}
-            onVideoRemove={handleRemoveVideo}
-            onVideoReorder={handleReorderVideos}
+            onRemove={handleRemoveVideo}
+            onReorder={handleReorderVideos}
+            disabled={isProcessing}
           />
-          
-          <div className="mt-6">
-            <button
-              onClick={mergeVideos}
-              disabled={videos.length < 2 || !isFFmpegLoaded || isProcessing}
-              className={`w-full px-5 py-3 rounded-lg font-medium text-white flex items-center justify-center
-                ${videos.length < 2 || !isFFmpegLoaded || isProcessing
-                  ? 'bg-blue-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700'
-                } transition-colors`}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              {isFFmpegLoading 
-                ? 'Loading Video Engine...' 
-                : isProcessing 
-                  ? 'Merging Videos...' 
-                  : 'Merge Videos'}
-            </button>
-          </div>
+        </div>
+      )}
+      
+      {/* Processing section */}
+      {isProcessing && (
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Processing</h2>
+          <ProgressBar progress={progress} />
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{currentTaskMessage || currentTask}</p>
         </div>
       )}
       
       {/* Merged video preview */}
-      {mergedVideo && (
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Merged Video</h2>
+      {mergedVideo && !isProcessing && (
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-3">Merged Video</h2>
           <MergePreview
-            src={mergedVideo.url}
-            size={mergedVideo.size}
+            videoUrl={mergedVideo.url}
+            fileSize={mergedVideo.size}
             onDownload={handleDownloadMergedVideo}
-            format="mp4"
           />
         </div>
       )}
       
-      {/* Processing status */}
-      {isProcessing && (
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <ProgressBar
-            progress={progress}
-            currentTask={currentTask || currentTaskMessage}
-          />
+      {/* Action buttons */}
+      <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div className="flex justify-end">
+          {videos.length >= 2 && (
+            <button
+              onClick={mergeVideos}
+              disabled={isProcessing || videos.length < 2 || isFFmpegLoading || !isFFmpegLoaded}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isProcessing ? 'Merging...' : 'Merge Videos'}
+            </button>
+          )}
         </div>
-      )}
-      
-      {/* FFmpeg loading progress */}
-      {isFFmpegLoading && (
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Loading video processing engine: {ffmpegLoadingProgress}%
-          </p>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-1">
-            <div 
-              className="bg-blue-600 h-2.5 rounded-full" 
-              style={{ width: `${ffmpegLoadingProgress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
-      
-      {/* FFmpeg loading status */}
-      {!isFFmpegLoaded && !isFFmpegLoading && (
-        <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Loading Video Processing Engine</h2>
-          <ProgressBar
-            progress={ffmpegLoadingProgress}
-            isIndeterminate={true}
-            currentTask="Waiting for FFmpeg to initialize..."
-          />
-        </div>
-      )}
+      </div>
     </div>
   );
 };

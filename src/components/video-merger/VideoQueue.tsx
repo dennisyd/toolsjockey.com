@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, GripVertical, Play, Clock } from 'lucide-react';
+import { Trash2, GripVertical, Clock } from 'lucide-react';
 import { formatDuration, formatFileSize } from '../../utils/fileUtils';
 
 interface VideoItem {
@@ -11,38 +11,40 @@ interface VideoItem {
 
 interface VideoQueueProps {
   videos: VideoItem[];
-  selectedVideoId: string | null;
-  onVideoSelect: (id: string) => void;
-  onVideoRemove: (id: string) => void;
-  onVideoReorder: (sourceIndex: number, destinationIndex: number) => void;
+  onRemove: (id: string) => void;
+  onReorder: (sourceIndex: number, destinationIndex: number) => void;
+  disabled?: boolean;
 }
 
 const VideoQueue: React.FC<VideoQueueProps> = ({
   videos,
-  selectedVideoId,
-  onVideoSelect,
-  onVideoRemove,
-  onVideoReorder,
+  onRemove,
+  onReorder,
+  disabled = false
 }) => {
   // Drag and drop functionality
   const [draggedItem, setDraggedItem] = React.useState<number | null>(null);
   
   const handleDragStart = (index: number) => {
+    if (disabled) return;
     setDraggedItem(index);
   };
   
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
-    if (draggedItem === null || draggedItem === index) return;
+    if (disabled || draggedItem === null || draggedItem === index) return;
     
     // Reorder the videos
-    onVideoReorder(draggedItem, index);
+    onReorder(draggedItem, index);
     setDraggedItem(index);
   };
   
   const handleDragEnd = () => {
     setDraggedItem(null);
   };
+  
+  // Calculate total duration
+  const totalDuration = videos.reduce((sum, video) => sum + video.duration, 0);
   
   // If no videos, show empty state
   if (videos.length === 0) {
@@ -56,22 +58,28 @@ const VideoQueue: React.FC<VideoQueueProps> = ({
   
   return (
     <div className="space-y-2">
+      <div className="flex justify-between items-center mb-2">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {videos.length} video{videos.length !== 1 ? 's' : ''}
+        </div>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Total Duration: {formatDuration(totalDuration)}
+        </div>
+      </div>
+      
       {videos.map((video, index) => (
         <div
           key={video.id}
-          className={`flex items-center p-3 rounded-lg cursor-pointer border ${
-            video.id === selectedVideoId
-              ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20 dark:border-blue-700'
-              : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
-          }`}
-          onClick={() => onVideoSelect(video.id)}
-          draggable
+          className={`flex items-center p-3 rounded-lg ${disabled ? 'opacity-70' : 'cursor-pointer'} border
+            bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700
+          `}
+          draggable={!disabled}
           onDragStart={() => handleDragStart(index)}
           onDragOver={(e) => handleDragOver(e, index)}
           onDragEnd={handleDragEnd}
         >
           {/* Drag handle */}
-          <div className="cursor-grab p-1 mr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <div className={`p-1 mr-2 text-gray-400 ${disabled ? 'cursor-not-allowed' : 'cursor-grab hover:text-gray-600 dark:hover:text-gray-300'}`}>
             <GripVertical className="w-4 h-4" />
           </div>
           
@@ -94,17 +102,11 @@ const VideoQueue: React.FC<VideoQueueProps> = ({
           </div>
           
           {/* Actions */}
-          <div className="flex items-center space-x-2 ml-4">
+          <div className="flex items-center ml-4">
             <button
-              onClick={(e) => { e.stopPropagation(); onVideoSelect(video.id); }}
-              className="p-1 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-              title="Preview video"
-            >
-              <Play className="w-4 h-4" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onVideoRemove(video.id); }}
-              className="p-1 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+              onClick={(e) => { e.stopPropagation(); onRemove(video.id); }}
+              disabled={disabled}
+              className={`p-1 ${disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400'}`}
               title="Remove video"
             >
               <Trash2 className="w-4 h-4" />
@@ -114,7 +116,7 @@ const VideoQueue: React.FC<VideoQueueProps> = ({
       ))}
       
       {/* Instructions */}
-      {videos.length > 1 && (
+      {videos.length > 1 && !disabled && (
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
           Drag and drop videos to reorder them.
         </p>

@@ -251,10 +251,10 @@ const VideoToGif: React.FC = () => {
       {/* File uploader */}
       <div className="p-6">
         <FileUploader
-          onFileSelect={handleFileUpload}
-          acceptedFormats="video/*"
-          files={sourceVideo ? [sourceVideo] : []}
-          description="Upload a video file to convert to GIF (MP4, WebM, AVI, MOV, etc.)"
+          onFileUpload={handleFileUpload}
+          accept="video/*"
+          files={[sourceVideo].filter(Boolean) as File[]}
+          description="Upload a video file to convert to GIF"
           disabled={isProcessing}
         />
       </div>

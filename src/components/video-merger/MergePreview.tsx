@@ -4,16 +4,14 @@ import VideoPreview from '../shared/VideoPreview';
 import { formatFileSize } from '../../utils/fileUtils';
 
 interface MergePreviewProps {
-  src: string;
-  size: number;
-  format: string;
+  videoUrl: string;
+  fileSize: number;
   onDownload: () => void;
 }
 
 const MergePreview: React.FC<MergePreviewProps> = ({
-  src,
-  size,
-  format,
+  videoUrl,
+  fileSize,
   onDownload,
 }) => {
   return (
@@ -33,18 +31,18 @@ const MergePreview: React.FC<MergePreviewProps> = ({
       
       {/* Video preview */}
       <VideoPreview
-        src={src}
-        title={`Merged Video (${format.toUpperCase()})`}
+        src={videoUrl}
+        title="Merged Video"
       />
       
       {/* Video details */}
       <div className="flex flex-wrap justify-between items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
         <div className="space-y-1">
           <div className="text-sm text-gray-700 dark:text-gray-300">
-            <span className="font-medium">Format:</span> {format.toUpperCase()}
+            <span className="font-medium">Format:</span> MP4
           </div>
           <div className="text-sm text-gray-700 dark:text-gray-300">
-            <span className="font-medium">Size:</span> {formatFileSize(size)}
+            <span className="font-medium">Size:</span> {formatFileSize(fileSize)}
           </div>
         </div>
         

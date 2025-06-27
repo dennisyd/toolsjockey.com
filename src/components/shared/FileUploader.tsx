@@ -2,8 +2,8 @@ import React, { useRef, useState } from 'react';
 import { Upload, X, AlertCircle } from 'lucide-react';
 
 interface FileUploaderProps {
-  onFileSelect: (files: File[]) => void;
-  acceptedFormats?: string;
+  onFileUpload: (files: File[]) => void;
+  accept?: string;
   multiple?: boolean;
   maxSize?: number; // in bytes
   description?: string;
@@ -13,8 +13,8 @@ interface FileUploaderProps {
 }
 
 const FileUploader: React.FC<FileUploaderProps> = ({
-  onFileSelect,
-  acceptedFormats = "video/*",
+  onFileUpload,
+  accept = "video/*",
   multiple = false,
   maxSize = 2 * 1024 * 1024 * 1024, // 2GB default
   description = "Upload your video file",
@@ -47,10 +47,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         return false;
       }
       
-      // Check file type if acceptedFormats is provided
-      if (acceptedFormats && acceptedFormats !== "*") {
+      // Check file type if accept is provided
+      if (accept && accept !== "*") {
         const fileType = file.type;
-        const acceptedTypes = acceptedFormats.split(',').map(type => type.trim());
+        const acceptedTypes = accept.split(',').map(type => type.trim());
         
         // Check if the file type matches any of the accepted types
         const isAccepted = acceptedTypes.some(type => {
@@ -82,7 +82,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     const validFiles = validateFiles(selectedFiles);
     
     if (validFiles.length > 0) {
-      onFileSelect(validFiles);
+      onFileUpload(validFiles);
     }
     
     // Reset the input value to allow selecting the same file again
@@ -122,7 +122,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       const validFiles = validateFiles(droppedFiles);
       
       if (validFiles.length > 0) {
-        onFileSelect(validFiles);
+        onFileUpload(validFiles);
       }
     }
   };
@@ -151,7 +151,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
           type="file"
           ref={fileInputRef}
           className="hidden"
-          accept={acceptedFormats}
+          accept={accept}
           multiple={multiple}
           onChange={handleFileChange}
           disabled={disabled}
