@@ -18,92 +18,104 @@ const siteStructure = {
   // Core Pages
   corePaths: [
     { path: '/', priority: '1.0', changefreq: 'weekly' },
-    { path: '/about', priority: '0.7', changefreq: 'monthly' },
-    { path: '/contact', priority: '0.7', changefreq: 'monthly' },
-    { path: '/blog', priority: '0.8', changefreq: 'weekly' },
-    { path: '/faq', priority: '0.7', changefreq: 'monthly' }
+    { path: '/about/', priority: '0.7', changefreq: 'monthly' },
+    { path: '/contact/', priority: '0.7', changefreq: 'monthly' },
+    { path: '/blog/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/faq/', priority: '0.7', changefreq: 'monthly' }
+  ],
+  
+  // Tool Categories
+  toolCategories: [
+    { path: '/tools/pdf-suite/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/pdf-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/video-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/excel-csv-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/image-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/document-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/developer-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/color-design-tools/', priority: '0.8', changefreq: 'weekly' },
+    { path: '/utility-tools/', priority: '0.8', changefreq: 'weekly' }
   ],
   
   // PDF Tools
   pdfTools: [
-    { path: '/tools/pdf-suite', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/merge-pdf', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/split-pdf', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/compress-pdf', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/rotate-pdf', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/extract-text-from-pdf', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/pdf-to-word', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/pdf-to-images', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/images-to-pdf', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/edit-pdf-metadata', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/watermark-pdf', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/delete-pdf-pages', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/reorder-pdf-pages', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/batch-pdf-form-filler', priority: '0.9', changefreq: 'weekly' }
+    { path: '/tools/merge-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/split-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/compress-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/rotate-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/extract-text-from-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/pdf-to-word/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/pdf-to-images/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/images-to-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/edit-pdf-metadata/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/watermark-pdf/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/delete-pdf-pages/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/reorder-pdf-pages/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/batch-pdf-form-filler/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Excel/CSV Tools
   excelTools: [
-    { path: '/tools/excel-merger-splitter', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/csv-merger', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/csv-to-json', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/duplicate-remover', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/column-filter', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/excel-merger-splitter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/csv-merger/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/csv-to-json/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/duplicate-remover/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/column-filter/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Video Tools
   videoTools: [
-    { path: '/tools/video-converter', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/video-compressor', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/video-merger', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/video-clipper', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/video-to-gif', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/audio-extractor', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/frame-extractor', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/video-converter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/video-compressor/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/video-merger/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/video-clipper/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/video-to-gif/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/audio-extractor/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/frame-extractor/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Image Tools
   imageTools: [
-    { path: '/tools/image-compressor', priority: '0.9', changefreq: 'weekly' },
-    { path: '/tools/image-format-converter', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/image-sharpener', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/text-from-image', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/exif-remover', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/watermark-adder', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/image-compressor/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/image-format-converter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/image-sharpener/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/text-from-image/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/exif-remover/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/watermark-adder/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Document Tools
   documentTools: [
-    { path: '/tools/word-to-markdown', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/mail-merge-tool', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/word-to-markdown/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/mail-merge-tool/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Developer Tools
   devTools: [
-    { path: '/tools/json-formatter', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/hash-generator', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/regex-tester', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/text-diff-viewer', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/css-minifier', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/base64-encoder', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/json-formatter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/hash-generator/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/regex-tester/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/text-diff-viewer/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/css-minifier/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/base64-encoder/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Color & Design Tools
   designTools: [
-    { path: '/tools/color-palette-generator', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/color-picker', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/color-format-converter', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/gradient-generator', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/contrast-checker', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/qr-code-generator', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/color-palette-generator/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/color-picker/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/color-format-converter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/gradient-generator/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/contrast-checker/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/qr-code-generator/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Utility Tools
   utilityTools: [
-    { path: '/tools/word-counter', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/password-generator', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/text-case-converter', priority: '0.8', changefreq: 'weekly' },
-    { path: '/tools/markdown-table-generator', priority: '0.8', changefreq: 'weekly' }
+    { path: '/tools/word-counter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/password-generator/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/text-case-converter/', priority: '0.7', changefreq: 'weekly' },
+    { path: '/tools/markdown-table-generator/', priority: '0.7', changefreq: 'weekly' }
   ],
   
   // Blog Posts
@@ -137,6 +149,17 @@ function generateSitemapXml() {
     <lastmod>${today}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
+  </url>\n`;
+  });
+  
+  // Add Tool Categories
+  xml += '\n  <!-- Tool Categories -->\n';
+  siteStructure.toolCategories.forEach(category => {
+    xml += `  <url>
+    <loc>${baseUrl}${category.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${category.changefreq}</changefreq>
+    <priority>${category.priority}</priority>
   </url>\n`;
   });
   
@@ -228,11 +251,11 @@ function generateSitemapXml() {
   </url>\n`;
   });
   
-  // Add Blog Posts
+  // Add Blog Posts (grouped at the end as requested)
   xml += '\n  <!-- Blog Posts -->\n';
   siteStructure.blogPosts.forEach(post => {
     xml += `  <url>
-    <loc>${baseUrl}/blog/${post.id}</loc>
+    <loc>${baseUrl}/blog/${post.id}/</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${post.changefreq}</changefreq>
     <priority>${post.priority}</priority>
