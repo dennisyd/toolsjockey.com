@@ -102,6 +102,16 @@ function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="pdf-tools" element={<PDFSuiteDashboard />} />
+          
+          {/* Video tool routes - these have their own layout with header/footer */}
+          <Route path="tools/video-converter" element={<VideoConverterPage />} />
+          <Route path="tools/video-clipper" element={<VideoClipperPage />} />
+          <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
+          <Route path="tools/video-to-gif" element={<VideoToGifPage />} />
+          <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
+          <Route path="tools/video-merger" element={<VideoMergerPage />} />
+          <Route path="tools/audio-extractor" element={<AudioExtractorPage />} />
+          
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="blog" element={<Blog />} />
@@ -146,13 +156,6 @@ function App() {
             <Route path="contact" element={<Contact />} />
             <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
-            <Route path="tools/video-converter" element={<VideoConverterPage />} />
-            <Route path="tools/video-clipper" element={<VideoClipperPage />} />
-            <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
-            <Route path="tools/video-to-gif" element={<VideoToGifPage />} />
-            <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
-            <Route path="tools/video-merger" element={<VideoMergerPage />} />
-            <Route path="tools/audio-extractor" element={<AudioExtractorPage />} />
             <Route path="merge-pdf" element={<MergePDFPage />} />
             <Route path="split-pdf" element={<SplitPDFPage />} />
             <Route path="reorder-pdf" element={<ReorderPDFPage />} />
