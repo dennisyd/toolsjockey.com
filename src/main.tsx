@@ -4,7 +4,9 @@ import App from './App';
 import './index.css';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import * as PDFLib from 'pdf-lib';
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+// Use local PDF.js worker instead of CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 (window as any).pdfjsLib = pdfjsLib;
 (window as any).PDFLib = PDFLib;
 

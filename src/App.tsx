@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import type { ComponentType } from 'react';
 import Layout from './components/layout/Layout';
 import UnitConverterPage from './pages/tools/UnitConverterPage';
 import CurrencyConverterPage from './pages/tools/CurrencyConverterPage';
@@ -20,66 +21,88 @@ import VideoMergerPage from './pages/tools/VideoMergerPage';
 import NotFound from './pages/NotFound';
 import { getFFmpeg } from './hooks/useFFmpeg';
 
-// Lazy load pages for better performance
-const Home = lazy(() => import('./pages/Home'));
-const ImageSharpenerPage = lazy(() => import('./pages/tools/ImageSharpenerPage'));
-const QRCodeGeneratorPage = lazy(() => import('./pages/tools/QRCodeGeneratorPage'));
-const ImageCompressorPage = lazy(() => import('./pages/tools/ImageCompressorPage'));
-const ColorPaletteGeneratorPage = lazy(() => import('./pages/tools/ColorPaletteGeneratorPage'));
-const ExcelMergerSplitterPage = lazy(() => import('./pages/tools/ExcelMergerSplitterPage'));
-const WordToMarkdownPage = lazy(() => import('./pages/tools/WordToMarkdownPage'));
-const CSVToJSONPage = lazy(() => import('./pages/tools/CSVToJSONPage'));
-const WordCounterPage = lazy(() => import('./pages/tools/WordCounterPage'));
-const WatermarkAdderPage = lazy(() => import('./pages/tools/WatermarkAdderPage'));
-const EXIFRemoverPage = lazy(() => import('./pages/tools/EXIFRemoverPage'));
-const ImageFormatConverterPage = lazy(() => import('./pages/tools/ImageFormatConverterPage'));
-const CSVToolMergerPage = lazy(() => import('./pages/tools/CSVToolMergerPage'));
-const JSONFormatterPage = lazy(() => import('./pages/tools/JSONFormatterPage'));
-const BatchPDFFormFillerPage = lazy(() => import('./pages/tools/BatchPDFFormFillerPage'));
-const PDFSuiteDashboard = lazy(() => import('./pages/pdf-tools/index'));
-const VideoToolsPage = lazy(() => import('./pages/video-tools/index'));
-const ImageToolsPage = lazy(() => import('./pages/image-tools/index'));
-const ExcelCsvToolsPage = lazy(() => import('./pages/excel-csv-tools/index'));
-const DocumentToolsPage = lazy(() => import('./pages/document-tools/index'));
-const DeveloperToolsPage = lazy(() => import('./pages/developer-tools/index'));
-const ColorDesignToolsPage = lazy(() => import('./pages/color-design-tools/index'));
-const UtilityToolsPage = lazy(() => import('./pages/utility-tools/index'));
-const MergePDFPage = lazy(() => import('./pages/pdf-tools/MergePDFPage'));
-const SplitPDFPage = lazy(() => import('./pages/pdf-tools/SplitPDFPage'));
-const ReorderPDFPage = lazy(() => import('./pages/pdf-tools/ReorderPDFPage'));
-const RotatePDFPage = lazy(() => import('./pages/pdf-tools/RotatePDFPage'));
-const WatermarkPDFPage = lazy(() => import('./pages/pdf-tools/WatermarkPDFPage'));
-const PDFToImagesPage = lazy(() => import('./pages/pdf-tools/PDFToImagesPage'));
-const ImagesToPDFPage = lazy(() => import('./pages/pdf-tools/ImagesToPDFPage'));
-const ExtractTextPage = lazy(() => import('./pages/pdf-tools/ExtractTextPage'));
-const PDFToWordPage = lazy(() => import('./pages/pdf-tools/PDFToWordPage'));
-const DeletePagesPage = lazy(() => import('./pages/pdf-tools/DeletePagesPage'));
-const EditMetadataPage = lazy(() => import('./pages/pdf-tools/EditMetadataPage'));
-const TextFromImagePage = lazy(() => import('./pages/tools/TextFromImagePage'));
-const HashGeneratorPage = lazy(() => import('./pages/tools/HashGeneratorPage'));
-const CSSMinifierPage = lazy(() => import('./pages/tools/CSSMinifierPage'));
-const Base64EncoderPage = lazy(() => import('./pages/tools/Base64EncoderPage'));
-const PasswordGeneratorPage = lazy(() => import('./pages/tools/PasswordGeneratorPage'));
-const TextCaseConverterPage = lazy(() => import('./pages/tools/TextCaseConverterPage'));
-const TextDiffViewerPage = lazy(() => import('./pages/tools/TextDiffViewerPage'));
-const ColumnFilterToolPage = lazy(() => import('./pages/tools/ColumnFilterToolPage'));
-const DuplicateRemoverToolPage = lazy(() => import('./pages/tools/DuplicateRemoverToolPage'));
-const MarkdownTableGeneratorPage = lazy(() => import('./pages/tools/MarkdownTableGeneratorPage'));
-const RegexTesterPage = lazy(() => import('./pages/tools/RegexTesterPage'));
-const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
-const ContrastChecker = lazy(() => import('./tools/colorDesign/ContrastChecker'));
-const GradientGenerator = lazy(() => import('./tools/colorDesign/GradientGenerator'));
-const ColorFormatConverter = lazy(() => import('./tools/colorDesign/ColorFormatConverter'));
-const FAQ = lazy(() => import('./pages/FAQ'));
+// Lazy load pages with retry mechanism
+const retryLazy = <T extends ComponentType<any>>(componentImport: () => Promise<{ default: T }>) => {
+  return new Promise<{ default: T }>((resolve, reject) => {
+    // Try to load the component with retries
+    const load = (retryCount = 0) => {
+      componentImport()
+        .then(resolve)
+        .catch((error: Error) => {
+          if (retryCount < 3) {
+            console.log(`Retrying import (${retryCount + 1}/3)...`);
+            setTimeout(() => load(retryCount + 1), 300);
+          } else {
+            console.error('Failed to load component after retries:', error);
+            reject(error);
+          }
+        });
+    };
+    load();
+  });
+};
+
+// Lazy load pages with retry mechanism
+const Home = lazy(() => retryLazy(() => import('./pages/Home')));
+const ImageSharpenerPage = lazy(() => retryLazy(() => import('./pages/tools/ImageSharpenerPage')));
+const QRCodeGeneratorPage = lazy(() => retryLazy(() => import('./pages/tools/QRCodeGeneratorPage')));
+const ImageCompressorPage = lazy(() => retryLazy(() => import('./pages/tools/ImageCompressorPage')));
+const ColorPaletteGeneratorPage = lazy(() => retryLazy(() => import('./pages/tools/ColorPaletteGeneratorPage')));
+const ExcelMergerSplitterPage = lazy(() => retryLazy(() => import('./pages/tools/ExcelMergerSplitterPage')));
+const WordToMarkdownPage = lazy(() => retryLazy(() => import('./pages/tools/WordToMarkdownPage')));
+const CSVToJSONPage = lazy(() => retryLazy(() => import('./pages/tools/CSVToJSONPage')));
+const WordCounterPage = lazy(() => retryLazy(() => import('./pages/tools/WordCounterPage')));
+const WatermarkAdderPage = lazy(() => retryLazy(() => import('./pages/tools/WatermarkAdderPage')));
+const EXIFRemoverPage = lazy(() => retryLazy(() => import('./pages/tools/EXIFRemoverPage')));
+const ImageFormatConverterPage = lazy(() => retryLazy(() => import('./pages/tools/ImageFormatConverterPage')));
+const CSVToolMergerPage = lazy(() => retryLazy(() => import('./pages/tools/CSVToolMergerPage')));
+const JSONFormatterPage = lazy(() => retryLazy(() => import('./pages/tools/JSONFormatterPage')));
+const BatchPDFFormFillerPage = lazy(() => retryLazy(() => import('./pages/tools/BatchPDFFormFillerPage')));
+const PDFSuiteDashboard = lazy(() => retryLazy(() => import('./pages/pdf-tools/index')));
+const VideoToolsPage = lazy(() => retryLazy(() => import('./pages/video-tools/index')));
+const ImageToolsPage = lazy(() => retryLazy(() => import('./pages/image-tools/index')));
+const ExcelCsvToolsPage = lazy(() => retryLazy(() => import('./pages/excel-csv-tools/index')));
+const DocumentToolsPage = lazy(() => retryLazy(() => import('./pages/document-tools/index')));
+const DeveloperToolsPage = lazy(() => retryLazy(() => import('./pages/developer-tools/index')));
+const ColorDesignToolsPage = lazy(() => retryLazy(() => import('./pages/color-design-tools/index')));
+const UtilityToolsPage = lazy(() => retryLazy(() => import('./pages/utility-tools/index')));
+const MergePDFPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/MergePDFPage')));
+const SplitPDFPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/SplitPDFPage')));
+const ReorderPDFPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/ReorderPDFPage')));
+const RotatePDFPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/RotatePDFPage')));
+const WatermarkPDFPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/WatermarkPDFPage')));
+const PDFToImagesPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/PDFToImagesPage')));
+const ImagesToPDFPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/ImagesToPDFPage')));
+const ExtractTextPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/ExtractTextPage')));
+const PDFToWordPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/PDFToWordPage')));
+const DeletePagesPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/DeletePagesPage')));
+const EditMetadataPage = lazy(() => retryLazy(() => import('./pages/pdf-tools/EditMetadataPage')));
+const TextFromImagePage = lazy(() => retryLazy(() => import('./pages/tools/TextFromImagePage')));
+const HashGeneratorPage = lazy(() => retryLazy(() => import('./pages/tools/HashGeneratorPage')));
+const CSSMinifierPage = lazy(() => retryLazy(() => import('./pages/tools/CSSMinifierPage')));
+const Base64EncoderPage = lazy(() => retryLazy(() => import('./pages/tools/Base64EncoderPage')));
+const PasswordGeneratorPage = lazy(() => retryLazy(() => import('./pages/tools/PasswordGeneratorPage')));
+const TextCaseConverterPage = lazy(() => retryLazy(() => import('./pages/tools/TextCaseConverterPage')));
+const TextDiffViewerPage = lazy(() => retryLazy(() => import('./pages/tools/TextDiffViewerPage')));
+const ColumnFilterToolPage = lazy(() => retryLazy(() => import('./pages/tools/ColumnFilterToolPage')));
+const DuplicateRemoverToolPage = lazy(() => retryLazy(() => import('./pages/tools/DuplicateRemoverToolPage')));
+const MarkdownTableGeneratorPage = lazy(() => retryLazy(() => import('./pages/tools/MarkdownTableGeneratorPage')));
+const RegexTesterPage = lazy(() => retryLazy(() => import('./pages/tools/RegexTesterPage')));
+const ColorPickerTool = lazy(() => retryLazy(() => import('./tools/colorDesign/ColorPickerTool')));
+const ContrastChecker = lazy(() => retryLazy(() => import('./tools/colorDesign/ContrastChecker')));
+const GradientGenerator = lazy(() => retryLazy(() => import('./tools/colorDesign/GradientGenerator')));
+const ColorFormatConverter = lazy(() => retryLazy(() => import('./tools/colorDesign/ColorFormatConverter')));
+const FAQ = lazy(() => retryLazy(() => import('./pages/FAQ')));
 // Blog pages
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogArticle = lazy(() => import('./pages/BlogArticle'));
-const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
+const Blog = lazy(() => retryLazy(() => import('./pages/Blog')));
+const BlogArticle = lazy(() => retryLazy(() => import('./pages/BlogArticle')));
+const MailMergeToolPage = lazy(() => retryLazy(() => import('./pages/tools/MailMergeToolPage')));
 
 // Loading fallback
 const LoadingFallback = () => (
-  <div className="flex items-center justify-center h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent"></div>
+  <div className="flex flex-col items-center justify-center h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent mb-4"></div>
+    <p className="text-gray-600">Loading resources...</p>
   </div>
 );
 
@@ -96,8 +119,7 @@ function App() {
         }
       } catch (error) {
         console.error('Error preloading FFmpeg:', error);
-        // We don't need to handle the error here, as the individual components
-        // will handle it when they try to use FFmpeg
+        // Individual components will handle FFmpeg loading if needed
       }
     };
 

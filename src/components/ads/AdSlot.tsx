@@ -76,7 +76,7 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
     return (
       <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>
         <div className="tools-preview bg-gradient-to-r from-purple-50 to-blue-50 dark:from-primary dark:to-primary-dark border border-blue-100 dark:border-primary-darker rounded-lg p-3 text-center">
-          <h4 className="font-medium text-purple-700 dark:text-purple-300 mb-1">More Tools Coming Soon:</h4>
+          <h4 className="font-medium text-purple-700 dark:text-purple-300 mb-1">Next-Level SaaS Tools — Launching Soon:</h4>
           <div className="flex flex-wrap justify-center gap-2">
             <span className="tool-badge bg-white dark:bg-primary-light px-3 py-1 rounded-full text-sm shadow-sm">📚 PublishJockey</span>
             <span className="tool-badge bg-white dark:bg-primary-light px-3 py-1 rounded-full text-sm shadow-sm">✍️ WriteJockey</span>
