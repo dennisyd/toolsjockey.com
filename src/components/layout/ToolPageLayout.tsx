@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { toolsConfig, toolGroups } from '../../utils/toolsConfig';
+import AdSlot from '../ads/AdSlot';
 
 interface ToolPageLayoutProps {
   toolId: string;
@@ -82,17 +83,13 @@ const ToolPageLayout: React.FC<ToolPageLayoutProps> = ({ toolId, title, icon: Ic
               </div>
             )}
           </main>
-          {/* Ad slot or reserved space */}
+          {/* Ad slot for sidebar */}
           <aside className="hidden lg:block">
-            <div className="w-full h-24 bg-gray-100 dark:bg-primary rounded flex items-center justify-center text-gray-400 border border-gray-200 dark:border-gray-700">
-              Ad Space (300x250)
-            </div>
+            <AdSlot slot="sidebar" />
           </aside>
         </div>
         {/* Bottom ad slot */}
-        <div className="w-full h-12 bg-gray-100 dark:bg-primary rounded flex items-center justify-center text-gray-400 border border-gray-200 dark:border-gray-700 mt-8">
-          Ad Space (728x90)
-        </div>
+        <AdSlot slot="footer" className="mt-8" />
       </div>
     </>
   );
