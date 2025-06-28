@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import VideoConverter from '../../components/tools/VideoConverter';
-import ToolPageLayout from '../../components/layout/ToolPageLayout';
-import { FileVideo } from 'lucide-react';
+import VideoToolLayout from '../../components/shared/VideoToolLayout';
 
 const VideoConverterPage = () => {
   useEffect(() => {
@@ -9,15 +8,13 @@ const VideoConverterPage = () => {
   }, []);
 
   return (
-    <ToolPageLayout
-      toolId="video-converter"
+    <VideoToolLayout
       title="Video Converter"
-      icon={FileVideo}
-      group="video"
-      relatedTools={['image-sharpener', 'image-compressor', 'json-formatter']}
+      description="Convert videos between different formats without uploading to servers."
+      toolPath="video-converter"
     >
       <VideoConverter />
-    </ToolPageLayout>
+    </VideoToolLayout>
   );
 };
 

@@ -1,8 +1,8 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
+import AdSlot from '../../components/ads/AdSlot';
 
 const FORMATTER_TOOLS = [
   { title: 'JSON Formatter', path: '/tools/json-formatter', desc: 'Format, validate, and beautify JSON data.' },
@@ -28,6 +28,11 @@ const DeveloperToolsPage = () => {
         <h1 className="text-3xl font-bold text-center mb-8">Developer Tools – Format JSON, Test Regex, Encode Data</h1>
         
         <div className="max-w-4xl mx-auto">
+          {/* Ad slot at the top */}
+          <div className="mb-8">
+            <AdSlot slot="header" />
+          </div>
+          
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">Formatter Tools</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -60,6 +65,11 @@ const DeveloperToolsPage = () => {
             </div>
           </div>
 
+          {/* Ad slot in the middle */}
+          <div className="mb-8">
+            <AdSlot slot="sidebar" />
+          </div>
+
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Why Use Our Developer Tools?</h2>
             <ul className="list-disc pl-5 space-y-2 text-gray-700">
@@ -69,6 +79,11 @@ const DeveloperToolsPage = () => {
               <li><span className="font-medium">Fast Processing:</span> Get results instantly with client-side processing.</li>
               <li><span className="font-medium">Works Everywhere:</span> Compatible with Windows, Mac, Linux, iOS, and Android.</li>
             </ul>
+          </div>
+          
+          {/* Ad slot at the bottom */}
+          <div className="mt-8">
+            <AdSlot slot="footer" />
           </div>
         </div>
       </main>
