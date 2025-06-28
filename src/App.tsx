@@ -37,6 +37,13 @@ const CSVToolMergerPage = lazy(() => import('./pages/tools/CSVToolMergerPage'));
 const JSONFormatterPage = lazy(() => import('./pages/tools/JSONFormatterPage'));
 const BatchPDFFormFillerPage = lazy(() => import('./pages/tools/BatchPDFFormFillerPage'));
 const PDFSuiteDashboard = lazy(() => import('./pages/pdf-tools/index'));
+const VideoToolsPage = lazy(() => import('./pages/video-tools/index'));
+const ImageToolsPage = lazy(() => import('./pages/image-tools/index'));
+const ExcelCsvToolsPage = lazy(() => import('./pages/excel-csv-tools/index'));
+const DocumentToolsPage = lazy(() => import('./pages/document-tools/index'));
+const DeveloperToolsPage = lazy(() => import('./pages/developer-tools/index'));
+const ColorDesignToolsPage = lazy(() => import('./pages/color-design-tools/index'));
+const UtilityToolsPage = lazy(() => import('./pages/utility-tools/index'));
 const MergePDFPage = lazy(() => import('./pages/pdf-tools/MergePDFPage'));
 const SplitPDFPage = lazy(() => import('./pages/pdf-tools/SplitPDFPage'));
 const ReorderPDFPage = lazy(() => import('./pages/pdf-tools/ReorderPDFPage'));
@@ -102,6 +109,13 @@ function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="pdf-tools" element={<PDFSuiteDashboard />} />
+          <Route path="video-tools" element={<VideoToolsPage />} />
+          <Route path="image-tools" element={<ImageToolsPage />} />
+          <Route path="excel-csv-tools" element={<ExcelCsvToolsPage />} />
+          <Route path="document-tools" element={<DocumentToolsPage />} />
+          <Route path="developer-tools" element={<DeveloperToolsPage />} />
+          <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
+          <Route path="utility-tools" element={<UtilityToolsPage />} />
           
           {/* Video tool routes - these have their own layout with header/footer */}
           <Route path="tools/video-converter" element={<VideoConverterPage />} />
