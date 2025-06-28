@@ -90,9 +90,7 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
   // Other sizes - use a generic placeholder for now
   return (
     <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>
-      <div className="bg-gray-100 dark:bg-primary border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 flex items-center justify-center h-full w-full rounded">
-        <span>Tools coming soon</span>
-      </div>
+      <div className="bg-gray-100 dark:bg-primary border border-gray-300 dark:border-gray-700 rounded h-full w-full"></div>
     </div>
   );
 };
