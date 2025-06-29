@@ -128,6 +128,10 @@ function App() {
 
   return (
     <BrowserRouter>
+      <meta
+        httpEquiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+      />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           <Route path="pdf-tools" element={<PDFSuiteDashboard />} />
