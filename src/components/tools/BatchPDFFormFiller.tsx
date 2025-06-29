@@ -200,13 +200,37 @@ const BatchPDFFormFiller: React.FC = () => {
               form.getTextField(field).setText(value !== undefined ? String(value) : '');
             }
             
-            // Preserve dates in their original format
+            // Handle date fields - both direct date inputs and Excel-style date numbers
             if (detail.type === 'Text' && value !== undefined) {
               const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
               const valueStr = String(value);
+              
+              // Check if field name contains "date" (case insensitive)
+              const isDateField = field.toLowerCase().includes('date');
+              
               if (dateRegex.test(valueStr)) {
-                // For date fields, set the text directly to preserve the entered format
+                // For direct date inputs, set the text directly to preserve the entered format
                 form.getTextField(field).setText(valueStr);
+              } else if (isDateField && !isNaN(Number(valueStr))) {
+                // This might be an Excel date serial number (days since 1/1/1900)
+                try {
+                  // Convert Excel date number to JS date
+                  const excelEpoch = new Date(1900, 0, 1);
+                  const daysSinceEpoch = Number(valueStr) - 2; // Excel has a leap year bug we need to adjust for
+                  const date = new Date(excelEpoch);
+                  date.setDate(date.getDate() + daysSinceEpoch);
+                  
+                  // Format as MM/DD/YYYY
+                  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                  const day = date.getDate().toString().padStart(2, '0');
+                  const year = date.getFullYear();
+                  const formattedDate = `${month}/${day}/${year}`;
+                  
+                  form.getTextField(field).setText(formattedDate);
+                } catch {
+                  // If conversion fails, fall back to original value
+                  form.getTextField(field).setText(valueStr);
+                }
               }
             }
           } catch {
