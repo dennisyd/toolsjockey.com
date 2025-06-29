@@ -3,31 +3,31 @@
   <!-- Core Pages -->
   <url>
     <loc>https://toolsjockey.com/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/about/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/contact/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/faq/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -35,55 +35,55 @@
   <!-- Tool Categories -->
   <url>
     <loc>https://toolsjockey.com/tools/pdf-suite/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/pdf-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/video-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/excel-csv-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/image-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/document-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/developer-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/color-design-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/utility-tools/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -91,79 +91,79 @@
   <!-- PDF Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/merge-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/split-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/compress-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/rotate-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/extract-text-from-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/pdf-to-word/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/pdf-to-images/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/images-to-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/edit-pdf-metadata/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/watermark-pdf/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/delete-pdf-pages/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/reorder-pdf-pages/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/batch-pdf-form-filler/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -171,31 +171,31 @@
   <!-- Excel/CSV Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/excel-merger-splitter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/csv-merger/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/csv-to-json/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/duplicate-remover/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/column-filter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -203,43 +203,43 @@
   <!-- Video Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/video-converter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/video-compressor/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/video-merger/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/video-clipper/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/video-to-gif/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/audio-extractor/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/frame-extractor/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -247,37 +247,37 @@
   <!-- Image Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/image-compressor/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/image-format-converter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/image-sharpener/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/text-from-image/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/exif-remover/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/watermark-adder/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -285,13 +285,13 @@
   <!-- Document Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/word-to-markdown/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/mail-merge-tool/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -299,37 +299,37 @@
   <!-- Developer Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/json-formatter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/hash-generator/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/regex-tester/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/text-diff-viewer/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/css-minifier/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/base64-encoder/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -337,37 +337,37 @@
   <!-- Color & Design Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/color-palette-generator/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/color-picker/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/color-format-converter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/gradient-generator/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/contrast-checker/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/qr-code-generator/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -375,25 +375,25 @@
   <!-- Utility Tools -->
   <url>
     <loc>https://toolsjockey.com/tools/word-counter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/password-generator/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/text-case-converter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/tools/markdown-table-generator/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -401,55 +401,55 @@
   <!-- Blog Posts -->
   <url>
     <loc>https://toolsjockey.com/blog/main/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/video-converter/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/audio-extractor/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/pdf-tips/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/csv-excel/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/dev-utilities/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/batch-pdf-form-filler/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/excel-to-everything/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://toolsjockey.com/blog/mail-merge-tool/</loc>
-    <lastmod>2025-06-28</lastmod>
+    <lastmod>2025-06-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
