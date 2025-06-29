@@ -58,6 +58,7 @@ const ImageFormatConverterPage = lazy(() => retryLazy(() => import('./pages/tool
 const CSVToolMergerPage = lazy(() => retryLazy(() => import('./pages/tools/CSVToolMergerPage')));
 const JSONFormatterPage = lazy(() => retryLazy(() => import('./pages/tools/JSONFormatterPage')));
 const BatchPDFFormFillerPage = lazy(() => retryLazy(() => import('./pages/tools/BatchPDFFormFillerPage')));
+const BatchPDFFormFillerTestPage = lazy(() => retryLazy(() => import('./pages/tools/BatchPDFFormFillerTestPage')));
 const PDFSuiteDashboard = lazy(() => retryLazy(() => import('./pages/pdf-tools/index')));
 const VideoToolsPage = lazy(() => retryLazy(() => import('./pages/video-tools/index')));
 const ImageToolsPage = lazy(() => retryLazy(() => import('./pages/image-tools/index')));
@@ -166,6 +167,7 @@ function App() {
             <Route path="tools/csv-merger" element={<CSVToolMergerPage />} />
             <Route path="tools/json-formatter" element={<JSONFormatterPage />} />
             <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
+            <Route path="tools/batch-pdf-form-filler-test" element={<BatchPDFFormFillerTestPage />} />
             <Route path="tools/text-from-image" element={<TextFromImagePage />} />
             <Route path="tools/unit-converter" element={<UnitConverterPage />} />
             <Route path="tools/currency-converter" element={<CurrencyConverterPage />} />

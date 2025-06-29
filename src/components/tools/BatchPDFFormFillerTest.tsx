@@ -4,6 +4,8 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
 
+console.log('BatchPDFFormFillerTest component loading - Version 2.0.0');
+
 // Helper to get field type name and possible values
 function getFieldTypeAndOptions(field: any) {
   const ctor = field?.constructor?.name;
@@ -74,10 +76,9 @@ function getFieldTypeAndOptions(field: any) {
   return { type, options };
 }
 
-// Version tag to help with debugging
-console.log('BatchPDFFormFiller component version: 1.2.0');
-
-const BatchPDFFormFiller: React.FC = () => {
+const BatchPDFFormFillerTest: React.FC = () => {
+  console.log('BatchPDFFormFillerTest rendering');
+  
   // PDF upload and field extraction
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [fieldNames, setFieldNames] = useState<string[]>([]);
@@ -98,11 +99,15 @@ const BatchPDFFormFiller: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [zipUrl, setZipUrl] = useState<string | null>(null);
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   // Refs for file inputs
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const dataInputRef = useRef<HTMLInputElement>(null);
-
+  
+  // Manual field type override
+  const [manualTypeOverrides, setManualTypeOverrides] = useState<Record<string, string>>({});
+  
   // Step 1: Upload PDF and extract fields
   const handlePDFUpload = async (file: File) => {
     setPdfError(null);
@@ -112,46 +117,94 @@ const BatchPDFFormFiller: React.FC = () => {
     setXfaWarning(null);
     setPdfFile(file);
     setZipUrl(null);
+    setDebugInfo(`Processing PDF: ${file.name} (${file.size} bytes)`);
+    
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       setPdfBytes(bytes);
-      const pdfDoc = await PDFDocument.load(bytes);
+      
+      const loadOptions = {
+        updateMetadata: false,
+        // Add a cache breaker for PDF loading to avoid cached objects
+        forceIndirectObjects: true
+      };
+      
+      console.log('Loading PDF document...');
+      const pdfDoc = await PDFDocument.load(bytes, loadOptions);
+      console.log('PDF document loaded successfully');
+      
+      // Log PDF version
+      setDebugInfo(prev => `${prev}\nPDF Version: ${(pdfDoc as any).getVersion ? (pdfDoc as any).getVersion() : 'Unknown'}`);
+      
       // XFA detection (look for /XFA in the catalog)
       const catalog = (pdfDoc as any).context.lookup(pdfDoc.catalog);
       if (catalog && catalog.get('XFA')) {
         setXfaWarning('Warning: This PDF uses XFA forms (Adobe LiveCycle). These are not supported by this tool.');
       }
+      
       const form = pdfDoc.getForm();
+      
       // Try to extract field names, types, and options
       let fields: string[] = [];
       let details: { name: string; type: string; options?: string[] }[] = [];
+      
       try {
-        // Add debug logging
-        console.log('PDF Form loaded, attempting to get fields...');
+        console.log('Getting form fields...');
         const pdfFields = form.getFields();
         console.log(`Found ${pdfFields.length} fields in the PDF`);
+        setDebugInfo(prev => `${prev}\nFound ${pdfFields.length} form fields`);
         
         fields = pdfFields.map(f => f.getName());
+        
         details = pdfFields.map(f => {
+          const fieldName = f.getName();
           const fieldConstructor = f?.constructor?.name || 'Unknown';
-          console.log(`Field ${f.getName()}: constructor = ${fieldConstructor}`);
+          console.log(`Field ${fieldName}: constructor = ${fieldConstructor}`);
+          
+          // Determine type either from constructor or methods
           const { type, options } = getFieldTypeAndOptions(f);
-          return { name: f.getName(), type, options };
+          
+          // Display extra debug info
+          setDebugInfo(prev => `${prev}\nField: ${fieldName} (Type: ${type}, Constructor: ${fieldConstructor})`);
+          
+          return { name: fieldName, type, options };
         });
-        console.log('Field details:', details);
       } catch (error) {
         console.error('Error extracting PDF fields:', error);
+        setDebugInfo(prev => `${prev}\nError extracting fields: ${error}`);
         fields = [];
         details = [];
       }
+      
       setFieldNames(fields);
       setFieldDetails(details);
       setIsFillable(fields.length > 0);
-      if (fields.length === 0) setPdfError('No fillable fields found. This PDF may be scanned or non-interactive.');
+      
+      if (fields.length === 0) {
+        setPdfError('No fillable fields found. This PDF may be scanned or non-interactive.');
+      }
     } catch (e: any) {
-      setPdfError('Failed to parse PDF.');
+      console.error('Error loading PDF:', e);
+      setDebugInfo(prev => `${prev}\nError loading PDF: ${e.message || 'Unknown error'}`);
+      setPdfError('Failed to parse PDF: ' + (e.message || 'Unknown error'));
       setIsFillable(false);
     }
+  };
+
+  // Update field type manually
+  const handleTypeChange = (fieldName: string, newType: string) => {
+    const newOverrides = { ...manualTypeOverrides, [fieldName]: newType };
+    setManualTypeOverrides(newOverrides);
+    
+    // Update field details with the override
+    const updatedDetails = fieldDetails.map(detail => {
+      if (detail.name === fieldName) {
+        return { ...detail, type: newType };
+      }
+      return detail;
+    });
+    
+    setFieldDetails(updatedDetails);
   };
 
   // Export field names as CSV or Excel
@@ -187,9 +240,12 @@ const BatchPDFFormFiller: React.FC = () => {
     setDataError(null);
     setDataFile(file);
     setZipUrl(null);
+    setDebugInfo(`Processing data file: ${file.name}`);
+    
     try {
       let rows: any[] = [];
       let columns: string[] = [];
+      
       if (file.name.endsWith('.csv')) {
         const text = await file.text();
         const parsed = Papa.parse(text, { header: true });
@@ -203,8 +259,11 @@ const BatchPDFFormFiller: React.FC = () => {
         rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
         columns = Object.keys(rows[0] || {});
       }
+      
       setDataRows(rows);
       setColumnNames(columns);
+      setDebugInfo(prev => `${prev}\nFound ${rows.length} data rows with ${columns.length} columns`);
+      
       // Validate columns
       if (fieldNames.length > 0) {
         const missing = fieldNames.filter(f => !columns.includes(f));
@@ -215,7 +274,9 @@ const BatchPDFFormFiller: React.FC = () => {
         }
       }
     } catch (e: any) {
-      setDataError('Failed to parse data file.');
+      console.error('Error parsing data file:', e);
+      setDebugInfo(prev => `${prev}\nError parsing data file: ${e.message || 'Unknown error'}`);
+      setDataError(`Failed to parse data file: ${e.message || 'Unknown error'}`);
     }
   };
 
@@ -225,94 +286,153 @@ const BatchPDFFormFiller: React.FC = () => {
     setIsProcessing(true);
     setProgress(0);
     setZipUrl(null);
+    setDebugInfo(`Starting PDF filling process for ${dataRows.length} rows`);
+    
     const zip = new JSZip();
+    let errors = 0;
+    
     for (let i = 0; i < dataRows.length; i++) {
       const row = dataRows[i];
       try {
         const pdfDoc = await PDFDocument.load(pdfBytes);
         const form = pdfDoc.getForm();
+        
         for (const detail of fieldDetails) {
           const field = detail.name;
           const value = row[field];
+          const fieldType = manualTypeOverrides[field] || detail.type;
+          
           try {
-            if (detail.type === 'Text') {
-              form.getTextField(field).setText(value !== undefined ? String(value) : '');
-            } else if (detail.type === 'Checkbox') {
-              const normalized = String(value).trim().toLowerCase();
+            // Handle based on field type (with extra error handling)
+            if (fieldType === 'Text') {
+              console.log(`Setting text field ${field} to "${value}"`);
+              const textField = form.getTextField(field);
+              textField.setText(value !== undefined ? String(value) : '');
+              
+              // Handle date fields - both direct date inputs and Excel-style date numbers
+              if (value !== undefined) {
+                const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+                const valueStr = String(value);
+                
+                // Check if field name contains "date" (case insensitive)
+                const isDateField = field.toLowerCase().includes('date');
+                
+                if (dateRegex.test(valueStr)) {
+                  // For direct date inputs, set the text directly to preserve the entered format
+                  console.log(`Setting date field ${field} to formatted date: ${valueStr}`);
+                  textField.setText(valueStr);
+                } else if (isDateField && !isNaN(Number(valueStr))) {
+                  // This might be an Excel date serial number (days since 1/1/1900)
+                  try {
+                    // Convert Excel date number to JS date
+                    const excelEpoch = new Date(1900, 0, 1);
+                    const daysSinceEpoch = Number(valueStr) - 2; // Excel has a leap year bug we need to adjust for
+                    const date = new Date(excelEpoch);
+                    date.setDate(date.getDate() + daysSinceEpoch);
+                    
+                    // Format as MM/DD/YYYY
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const year = date.getFullYear();
+                    const formattedDate = `${month}/${day}/${year}`;
+                    
+                    console.log(`Converting Excel date ${valueStr} to ${formattedDate} for field ${field}`);
+                    textField.setText(formattedDate);
+                  } catch (dateError) {
+                    console.error(`Date conversion error for ${field}:`, dateError);
+                    textField.setText(valueStr);
+                  }
+                }
+              }
+            } else if (fieldType === 'Checkbox') {
+              const normalized = value !== undefined ? String(value).trim().toLowerCase() : '';
               if (["true","1","yes","on","checked","x"].includes(normalized)) {
                 form.getCheckBox(field).check();
               } else {
                 form.getCheckBox(field).uncheck();
               }
-            } else if (detail.type === 'Radio') {
+            } else if (fieldType === 'Radio') {
               if (value !== undefined && value !== '') {
                 form.getRadioGroup(field).select(String(value));
               }
-            } else if (detail.type === 'Dropdown') {
+            } else if (fieldType === 'Dropdown') {
               if (value !== undefined && value !== '') {
                 form.getDropdown(field).select(String(value));
               }
             } else {
               // fallback: try text
+              console.log(`Using fallback text field for ${field} (${fieldType})`);
               form.getTextField(field).setText(value !== undefined ? String(value) : '');
             }
+          } catch (fieldError) {
+            console.error(`Error setting field ${field}:`, fieldError);
+            setDebugInfo(prev => `${prev}\nError with field ${field}: ${fieldError instanceof Error ? fieldError.message : 'Unknown error'}`);
             
-            // Handle date fields - both direct date inputs and Excel-style date numbers
-            if (detail.type === 'Text' && value !== undefined) {
-              const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
-              const valueStr = String(value);
-              
-              // Check if field name contains "date" (case insensitive)
-              const isDateField = field.toLowerCase().includes('date');
-              
-              if (dateRegex.test(valueStr)) {
-                // For direct date inputs, set the text directly to preserve the entered format
-                form.getTextField(field).setText(valueStr);
-              } else if (isDateField && !isNaN(Number(valueStr))) {
-                // This might be an Excel date serial number (days since 1/1/1900)
-                try {
-                  // Convert Excel date number to JS date
-                  const excelEpoch = new Date(1900, 0, 1);
-                  const daysSinceEpoch = Number(valueStr) - 2; // Excel has a leap year bug we need to adjust for
-                  const date = new Date(excelEpoch);
-                  date.setDate(date.getDate() + daysSinceEpoch);
-                  
-                  // Format as MM/DD/YYYY
-                  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                  const day = date.getDate().toString().padStart(2, '0');
-                  const year = date.getFullYear();
-                  const formattedDate = `${month}/${day}/${year}`;
-                  
-                  form.getTextField(field).setText(formattedDate);
-                } catch {
-                  // If conversion fails, fall back to original value
-                  form.getTextField(field).setText(valueStr);
+            // Try fallback approach for problematic fields
+            try {
+              const anyForm = form as any;
+              if (typeof anyForm.getField === 'function') {
+                const genericField = anyForm.getField(field);
+                if (genericField && typeof genericField.setValue === 'function') {
+                  genericField.setValue(value !== undefined ? String(value) : '');
                 }
               }
+            } catch (fallbackError) {
+              // Ignore fallback errors
             }
-          } catch {
-            // ignore field errors
           }
         }
-        form.flatten();
+        
+        // Flatten the form
+        try {
+          form.flatten();
+        } catch (flattenError) {
+          console.error('Error flattening form:', flattenError);
+          setDebugInfo(prev => `${prev}\nError flattening form: ${flattenError instanceof Error ? flattenError.message : 'Unknown error'}`);
+        }
+        
+        // Save the PDF
         const filledBytes = await pdfDoc.save();
         zip.file(`filled_${i + 1}.pdf`, filledBytes);
-      } catch {
-        // skip row on error
+      } catch (rowError) {
+        console.error(`Error processing row ${i + 1}:`, rowError);
+        setDebugInfo(prev => `${prev}\nError processing row ${i + 1}: ${rowError instanceof Error ? rowError.message : 'Unknown error'}`);
+        errors++;
       }
+      
       setProgress(Math.round(((i + 1) / dataRows.length) * 100));
     }
-    const content = await zip.generateAsync({ type: 'blob' }, (meta) => {
-      setProgress(Math.round(meta.percent));
-    });
-    const url = URL.createObjectURL(content);
-    setZipUrl(url);
+    
+    // Generate the ZIP file
+    try {
+      const content = await zip.generateAsync({ type: 'blob' }, (meta) => {
+        setProgress(Math.round(meta.percent));
+      });
+      
+      const url = URL.createObjectURL(content);
+      setZipUrl(url);
+      
+      if (errors > 0) {
+        setDebugInfo(prev => `${prev}\nCompleted with ${errors} errors. Some PDFs may not have processed correctly.`);
+      } else {
+        setDebugInfo(prev => `${prev}\nAll PDFs processed successfully!`);
+      }
+    } catch (zipError) {
+      console.error('Error creating ZIP file:', zipError);
+      setDebugInfo(prev => `${prev}\nError creating ZIP file: ${zipError instanceof Error ? zipError.message : 'Unknown error'}`);
+    }
+    
     setIsProcessing(false);
   };
 
   // UI
   return (
     <div className="flex flex-col gap-8 max-w-2xl mx-auto py-8">
+      <div className="bg-green-100 p-4 rounded-lg text-green-800 mb-4">
+        <h2 className="font-bold text-lg">Test Version</h2>
+        <p>This is a test version of the Batch PDF Form Filler with enhanced field detection and error handling.</p>
+      </div>
+      
       {/* Step 1: Upload PDF */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-md p-6 flex flex-col gap-4">
         <h2 className="text-xl font-bold mb-2">Step 1: Upload Fillable PDF</h2>
@@ -346,10 +466,25 @@ const BatchPDFFormFiller: React.FC = () => {
             <div className="font-semibold mb-1">Detected Fields:</div>
             <ul className="list-disc pl-6 text-sm">
               {fieldDetails.map(f => (
-                <li key={f.name}>
-                  <span className="font-mono">{f.name}</span> <span className="text-xs text-gray-500">({f.type})</span>
+                <li key={f.name} className="mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono">{f.name}</span>
+                    <select 
+                      value={manualTypeOverrides[f.name] || f.type}
+                      onChange={(e) => handleTypeChange(f.name, e.target.value)}
+                      className="text-xs border border-gray-300 rounded px-1"
+                    >
+                      <option value="Text">Text</option>
+                      <option value="Checkbox">Checkbox</option>
+                      <option value="Radio">Radio</option>
+                      <option value="Dropdown">Dropdown</option>
+                      <option value="Button">Button</option>
+                      <option value="Unknown">Unknown</option>
+                    </select>
+                    <span className="text-xs text-gray-500">({f.type})</span>
+                  </div>
                   {f.options && f.options.length > 0 && (
-                    <span className="ml-2 text-xs text-blue-600">Options: {f.options.join(', ')}</span>
+                    <span className="ml-2 text-xs text-blue-600 block">Options: {f.options.join(', ')}</span>
                   )}
                 </li>
               ))}
@@ -419,20 +554,26 @@ const BatchPDFFormFiller: React.FC = () => {
           </a>
         )}
       </div>
+      
+      {/* Debug Information Section */}
+      {debugInfo && (
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md p-4">
+          <h3 className="font-bold mb-2">Debug Information</h3>
+          <pre className="text-xs whitespace-pre-wrap overflow-auto max-h-48 bg-black text-green-400 p-2 rounded">
+            {debugInfo}
+          </pre>
+        </div>
+      )}
+      
       {/* Footer donation message */}
       <div className="text-center mt-8">
         <div className="donation-options bg-blue-50 border border-blue-200 rounded-lg p-4 my-2 text-center">
           <h4 className="text-lg font-semibold mb-1">🙏 Like this free tool?</h4>
-          <p className="mb-3 text-gray-700">If this tool saved you time or money, please consider supporting its development. Every bit helps keep privacy-focused tools free for everyone.</p>
+          <p className="mb-3 text-gray-700">If this tool saved you time or money, please consider supporting its development.</p>
           <div className="paypal-option flex flex-wrap justify-center gap-2 mb-2">
             <a href="https://paypal.me/ydennis/10" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal $10</a>
             <a href="https://paypal.me/ydennis/25" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal $25</a>
             <a href="https://paypal.me/ydennis" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal Custom</a>
-          </div>
-          <div className="alternative-payments text-sm text-gray-600 mt-2">
-            <p className="mb-1">Or send directly:</p>
-            <a href="https://cash.app/$dennisyd" className="inline-block mr-2 text-green-700 hover:underline" target="_blank" rel="noopener noreferrer">📱 CashApp $dennisyd</a>
-            <span className="inline-block">🏦 Zelle: <span className="font-mono">dennisyd@gmail.com</span></span>
           </div>
         </div>
       </div>
@@ -440,4 +581,4 @@ const BatchPDFFormFiller: React.FC = () => {
   );
 };
 
-export default BatchPDFFormFiller; 
+export default BatchPDFFormFillerTest; 
