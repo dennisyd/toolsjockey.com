@@ -199,6 +199,16 @@ const BatchPDFFormFiller: React.FC = () => {
               // fallback: try text
               form.getTextField(field).setText(value !== undefined ? String(value) : '');
             }
+            
+            // Preserve dates in their original format
+            if (detail.type === 'Text' && value !== undefined) {
+              const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+              const valueStr = String(value);
+              if (dateRegex.test(valueStr)) {
+                // For date fields, set the text directly to preserve the entered format
+                form.getTextField(field).setText(valueStr);
+              }
+            }
           } catch {
             // ignore field errors
           }
@@ -329,16 +339,21 @@ const BatchPDFFormFiller: React.FC = () => {
         )}
       </div>
       {/* Footer donation message */}
-      <div className="text-center text-xs text-gray-600 dark:text-gray-300 mt-8">
-        <div className="mb-2">This tool is 100% free and runs in your browser. If it saved you time, consider donating.</div>
-        <a
-          href="https://www.buymeacoffee.com/toolsjockey"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded shadow"
-        >
-          ☕ Buy Me a Coffee
-        </a>
+      <div className="text-center mt-8">
+        <div className="donation-options bg-blue-50 border border-blue-200 rounded-lg p-4 my-2 text-center">
+          <h4 className="text-lg font-semibold mb-1">🙏 Like this free tool?</h4>
+          <p className="mb-3 text-gray-700">If this tool saved you time or money, please consider supporting its development. Every bit helps keep privacy-focused tools free for everyone.</p>
+          <div className="paypal-option flex flex-wrap justify-center gap-2 mb-2">
+            <a href="https://paypal.me/ydennis/10" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal $10</a>
+            <a href="https://paypal.me/ydennis/25" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal $25</a>
+            <a href="https://paypal.me/ydennis" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal Custom</a>
+          </div>
+          <div className="alternative-payments text-sm text-gray-600 mt-2">
+            <p className="mb-1">Or send directly:</p>
+            <a href="https://cash.app/$dennisyd" className="inline-block mr-2 text-green-700 hover:underline" target="_blank" rel="noopener noreferrer">📱 CashApp $dennisyd</a>
+            <span className="inline-block">🏦 Zelle: <span className="font-mono">dennisyd@gmail.com</span></span>
+          </div>
+        </div>
       </div>
     </div>
   );
