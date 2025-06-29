@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { toolsConfig, toolGroups } from '../../utils/toolsConfig';
 import AdSlot from '../ads/AdSlot';
+import { Lock } from 'lucide-react';
 
 interface ToolPageLayoutProps {
   toolId: string;
@@ -16,6 +17,9 @@ const ToolPageLayout: React.FC<ToolPageLayoutProps> = ({ toolId, title, icon: Ic
   // Find group info
   const groupMeta = toolGroups.find(g => g.id === group);
   const siblings = toolsConfig.filter(t => t.group === group);
+
+  // Check if we're on the batch-pdf-form-filler page
+  const isBatchPdfFormFillerPage = toolId === 'batch-pdf-form-filler';
 
   // Breadcrumb
   const groupLabel = groupMeta?.label || group;
@@ -36,28 +40,65 @@ const ToolPageLayout: React.FC<ToolPageLayoutProps> = ({ toolId, title, icon: Ic
           <span>&gt;</span>
           <b>{title}</b>
         </nav>
-        <div className="grid gap-8 lg:grid-cols-[220px_1fr_300px] md:grid-cols-[1fr_3fr]">
-          {/* Sidebar */}
-          <aside className="hidden md:block">
-            <div className="mb-4 font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
-              Other tools in this category
+        <div className="grid gap-8 lg:grid-cols-[220px_1fr] md:grid-cols-[1fr_3fr]">
+          {/* Left sidebar with privacy badge (if batch-pdf-form-filler) and tool categories */}
+          <aside className="hidden md:flex flex-col gap-6">
+            {/* Privacy Badge for batch-pdf-form-filler */}
+            {isBatchPdfFormFillerPage && (
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
+                <div className="flex justify-center mb-1">
+                  <Lock className="w-5 h-5 text-blue-600" />
+                </div>
+                <h3 className="text-blue-700 font-bold text-lg">Your Privacy Guaranteed</h3>
+                <p className="text-gray-700 text-sm mt-2">
+                  All processing happens in your browser. Your files never leave your computer.
+                </p>
+                <div className="text-xs text-gray-500 mt-2">
+                  Built by MIT-trained engineer
+                </div>
+              </div>
+            )}
+            
+            {/* Tools category navigation */}
+            <div>
+              <div className="mb-4 font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                Other tools in this category
+              </div>
+              <ul className="space-y-1">
+                {siblings.map(t => (
+                  <li key={t.id}>
+                    <Link
+                      to={t.path}
+                      className={`block px-3 py-1 rounded transition-colors ${t.id === toolId ? 'bg-accent/10 font-bold text-accent' : 'hover:bg-gray-100 dark:hover:bg-primary'}`}
+                      aria-current={t.id === toolId ? 'page' : undefined}
+                    >
+                      {t.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="space-y-1">
-              {siblings.map(t => (
-                <li key={t.id}>
-                  <Link
-                    to={t.path}
-                    className={`block px-3 py-1 rounded transition-colors ${t.id === toolId ? 'bg-accent/10 font-bold text-accent' : 'hover:bg-gray-100 dark:hover:bg-primary'}`}
-                    aria-current={t.id === toolId ? 'page' : undefined}
-                  >
-                    {t.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
           </aside>
-          {/* Main tool card */}
-          <main className="col-span-2 flex flex-col gap-6">
+          
+          {/* Main content area */}
+          <div className="flex flex-col gap-6">
+            {/* Mobile privacy badge */}
+            {isBatchPdfFormFillerPage && (
+              <div className="md:hidden bg-blue-50 border border-blue-100 rounded-lg p-4 text-center mb-4">
+                <div className="flex justify-center mb-1">
+                  <Lock className="w-5 h-5 text-blue-600" />
+                </div>
+                <h3 className="text-blue-700 font-bold text-lg">Your Privacy Guaranteed</h3>
+                <p className="text-gray-700 text-sm mt-2">
+                  All processing happens in your browser. Your files never leave your computer.
+                </p>
+                <div className="text-xs text-gray-500 mt-2">
+                  Built by MIT-trained engineer
+                </div>
+              </div>
+            )}
+            
+            {/* Main tool card */}
             <div className="bg-white dark:bg-primary-light rounded-lg shadow p-6 flex flex-col gap-4">
               <div className="flex items-center gap-3 mb-2">
                 <Icon className="w-7 h-7 text-accent" />
@@ -65,6 +106,7 @@ const ToolPageLayout: React.FC<ToolPageLayoutProps> = ({ toolId, title, icon: Ic
               </div>
               {children}
             </div>
+            
             {/* Related tools */}
             {related.length > 0 && (
               <div>
@@ -82,12 +124,9 @@ const ToolPageLayout: React.FC<ToolPageLayoutProps> = ({ toolId, title, icon: Ic
                 </div>
               </div>
             )}
-          </main>
-          {/* Ad slot for sidebar */}
-          <aside className="hidden lg:block">
-            <AdSlot slot="sidebar" />
-          </aside>
+          </div>
         </div>
+        
         {/* Bottom ad slot */}
         <AdSlot slot="footer" className="mt-8" />
       </div>

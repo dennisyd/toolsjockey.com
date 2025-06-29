@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface AdSlotProps {
   slot: 'header' | 'sidebar' | 'footer' | 'mobile' | 'interstitial' | 'native';
@@ -18,6 +19,10 @@ const slotSizes: Record<string, string> = {
 
 const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
   const [adBlocked, setAdBlocked] = useState(false);
+  const location = useLocation();
+  
+  // Check if we're on the batch-pdf-form-filler page
+  const isBatchPdfFormFillerPage = location.pathname.includes('batch-pdf-form-filler');
 
   useEffect(() => {
     // Simple ad-blocker detection: try to load a known ad class
@@ -58,8 +63,8 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
   // Otherwise, show the custom content based on the slot size
   const currentSize = size || slotSizes[slot];
   
-  // 300x250 style ad space
-  if (currentSize === '300x250' || slot === 'sidebar') {
+  // 300x250 style ad space - Don't show privacy badge on batch-pdf-form-filler page
+  if ((currentSize === '300x250' || slot === 'sidebar') && !isBatchPdfFormFillerPage) {
     return (
       <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>
         <div className="feature-highlight bg-blue-50 border border-blue-200 dark:bg-primary-light dark:border-primary-dark rounded-lg p-4 text-center shadow-sm">
@@ -67,6 +72,13 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
           <p className="my-2 text-gray-700 dark:text-gray-300">All processing happens in your browser. Your files never leave your computer.</p>
           <small className="text-gray-500 dark:text-gray-400">Built by MIT-trained engineer</small>
         </div>
+      </div>
+    );
+  } else if (currentSize === '300x250' || slot === 'sidebar') {
+    // Empty sidebar for batch-pdf-form-filler page
+    return (
+      <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>
+        <div className="bg-gray-100 dark:bg-primary border border-gray-300 dark:border-gray-700 rounded h-full w-full"></div>
       </div>
     );
   }

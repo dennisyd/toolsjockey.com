@@ -431,6 +431,9 @@ const BatchPDFFormFiller: React.FC = () => {
       {/* Step 1: Upload PDF */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-md p-6 flex flex-col gap-4">
         <h2 className="text-xl font-bold mb-2">Step 1: Upload Fillable PDF</h2>
+        <div className="bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 rounded p-3 text-sm text-blue-700 dark:text-blue-300 mb-2">
+          <strong>Note:</strong> Due to client-side processing limitations, multiselect fields cannot be processed. All other field types are supported.
+        </div>
         <input
           type="file"
           accept="application/pdf"
@@ -550,28 +553,15 @@ const BatchPDFFormFiller: React.FC = () => {
         )}
       </div>
       
-      {/* Debug Information Section */}
+      {/* Debug Information Section - renamed to Processing Status */}
       {debugInfo && (
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md p-4">
-          <h3 className="font-bold mb-2">Debug Information</h3>
+          <h3 className="font-bold mb-2">Processing Status</h3>
           <pre className="text-xs whitespace-pre-wrap overflow-auto max-h-48 bg-black text-green-400 p-2 rounded">
             {debugInfo}
           </pre>
         </div>
       )}
-      
-      {/* Footer donation message */}
-      <div className="text-center mt-8">
-        <div className="donation-options bg-blue-50 border border-blue-200 rounded-lg p-4 my-2 text-center">
-          <h4 className="text-lg font-semibold mb-1">🙏 Like this free tool?</h4>
-          <p className="mb-3 text-gray-700">If this tool saved you time or money, please consider supporting its development.</p>
-          <div className="paypal-option flex flex-wrap justify-center gap-2 mb-2">
-            <a href="https://paypal.me/ydennis/10" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal $10</a>
-            <a href="https://paypal.me/ydennis/25" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal $25</a>
-            <a href="https://paypal.me/ydennis" className="paypal-btn bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition" target="_blank" rel="noopener noreferrer">💳 PayPal Custom</a>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
