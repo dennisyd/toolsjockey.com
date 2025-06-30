@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { toolsConfig } from '../../utils/toolsConfig';
-import Header from './Header';
-import Footer from './Footer';
 import AdSlot from '../ads/AdSlot';
 
 interface PDFSuiteLayoutProps {
@@ -17,7 +15,6 @@ const PDFSuiteLayout: React.FC<PDFSuiteLayoutProps> = ({ title, children }) => {
   const location = useLocation();
   return (
     <>
-      <Header />
       <div className="container-app mx-auto px-2 md:px-0 py-8 flex flex-col gap-6">
         {/* Breadcrumb */}
         <nav className="text-sm text-gray-500 flex items-center gap-2 mb-2" aria-label="Breadcrumb">
@@ -62,7 +59,6 @@ const PDFSuiteLayout: React.FC<PDFSuiteLayoutProps> = ({ title, children }) => {
         {/* Bottom ad slot */}
         <AdSlot slot="footer" className="mt-8" />
       </div>
-      <Footer />
     </>
   );
 };

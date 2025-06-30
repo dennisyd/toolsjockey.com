@@ -163,13 +163,6 @@ const RotatePDFPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            <button
-              className="btn btn-primary mt-4"
-              onClick={handleRotate}
-              disabled={isProcessing || !file}
-            >
-              {isProcessing ? 'Rotating...' : 'Apply Rotation & Download'}
-            </button>
             {isProcessing && (
               <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
                 <div
