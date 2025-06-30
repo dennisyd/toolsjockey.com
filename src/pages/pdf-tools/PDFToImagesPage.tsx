@@ -129,26 +129,36 @@ const PDFToImagesPage: React.FC = () => {
     if (images.length === 0) return;
     setIsProcessing(true);
     setError(null);
+    
+    // First try with the standard approach
     try {
       const zip = new JSZip();
       
       for (let i = 0; i < images.length; i++) {
         const img = images[i];
-        // Convert data URL to Blob more reliably
-        const response = await fetch(img.url);
-        if (!response.ok) throw new Error(`Failed to fetch image ${i+1}`);
-        const blob = await response.blob();
-        zip.file(img.name, blob);
+        try {
+          // Convert data URL to Blob more reliably
+          const response = await fetch(img.url);
+          if (!response.ok) throw new Error(`Failed to fetch image ${i+1}`);
+          const blob = await response.blob();
+          zip.file(img.name, blob);
+        } catch (fetchError) {
+          // Fallback: Try to use the data URL directly
+          console.log(`Using fallback for image ${i+1}`);
+          const base64Data = img.url.split(',')[1];
+          zip.file(img.name, base64Data, {base64: true});
+        }
         
         // Update progress as we add each file
         setProgress(Math.round((i / images.length) * 50));
       }
       
       try {
+        // Try with lower compression level first for better compatibility
         const zipBlob = await zip.generateAsync({ 
           type: 'blob',
           compression: 'DEFLATE',
-          compressionOptions: { level: 6 }
+          compressionOptions: { level: 3 } // Lower compression level for better compatibility
         }, (metadata) => {
           // Scale progress from 50-100% during zip generation
           setProgress(50 + Math.round(metadata.percent / 2));
@@ -165,14 +175,49 @@ const PDFToImagesPage: React.FC = () => {
         
         // Clean up the object URL after a short delay
         setTimeout(() => URL.revokeObjectURL(url), 5000);
+        
+        // Success - exit the function
+        setIsProcessing(false);
+        setTimeout(() => setProgress(0), 1000);
+        return;
       } catch (zipError) {
-        console.error("ZIP generation error:", zipError);
-        setError('Failed to create ZIP file. The file might be too large or there was a browser error.');
+        console.error("First ZIP generation attempt failed:", zipError);
+        // Continue to fallback method
       }
     } catch (e) {
-      console.error("ZIP creation error:", e);
-      setError('Failed to create ZIP file. Please try downloading images individually.');
+      console.error("First ZIP creation method failed:", e);
+      // Continue to fallback method
     }
+    
+    // Fallback method: Try sequential downloads if ZIP creation fails
+    try {
+      setError('ZIP creation failed. Starting sequential downloads of individual images...');
+      
+      // Sequential downloads with delays
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        setProgress(Math.round((i / images.length) * 100));
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.href = img.url;
+        link.download = img.name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Add a small delay between downloads to prevent browser from freezing
+        if (i < images.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      setError('ZIP creation failed. Individual images have been downloaded instead.');
+    } catch (fallbackError) {
+      console.error("Fallback method also failed:", fallbackError);
+      setError('Failed to create ZIP file. Please try downloading images individually by clicking the Download button under each image.');
+    }
+    
     setIsProcessing(false);
     setTimeout(() => setProgress(0), 1000);
   };
