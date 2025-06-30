@@ -19,7 +19,7 @@
     "@tensorflow/tfjs": "^4.22.0",
     "browser-image-compression": "^2.0.2",
     "diff-match-patch": "^1.0.5",
-    "docx": "^9.5.0",
+    "docx": "^9.5.1",
     "framer-motion": "^12.12.2",
     "highlight.js": "^11.11.1",
     "jspdf": "^3.0.1",
