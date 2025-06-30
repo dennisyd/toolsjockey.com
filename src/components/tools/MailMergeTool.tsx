@@ -138,17 +138,45 @@ const MailMergeTool: React.FC = () => {
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
       
-      // Convert to JSON
-      const jsonData = XLSX.utils.sheet_to_json<Record<string, string>>(worksheet, { header: 'A' });
+      // Set date detection and formatting options
+      const options = { 
+        header: 1,
+        raw: false, // Convert values to strings
+        dateNF: 'mm/dd/yyyy' // Format dates as MM/DD/YYYY
+      };
+      
+      // Convert to array of arrays first
+      const rawData = XLSX.utils.sheet_to_json<any[]>(worksheet, options);
+      
+      if (rawData.length < 2) { // Need at least headers and one row
+        setFileError('Excel file contains insufficient data.');
+        setIsProcessing(false);
+        return;
+      }
       
       // Extract headers from the first row
-      const headers = Object.keys(jsonData[0]).map(key => String(jsonData[0][key]));
+      const headers = rawData[0].map(String);
       
-      // Remove the header row and convert data to the right format
-      const rows = jsonData.slice(1).map(row => {
+      // Convert data rows to objects with proper date handling
+      const rows = rawData.slice(1).map(row => {
         const formattedRow: Record<string, string> = {};
-        Object.keys(row).forEach((cell, index) => {
-          formattedRow[headers[index]] = String(row[cell]);
+        headers.forEach((header, index) => {
+          let value = row[index];
+          
+          // Convert Excel date numbers to formatted dates
+          if (typeof value === 'number' && value > 1000 && value < 100000) {
+            try {
+              // Excel dates are stored as days since 1/1/1900
+              const date = new Date(1900, 0, value - 1);
+              if (!isNaN(date.getTime())) {
+                value = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+              }
+            } catch (e) {
+              // Keep original value if conversion fails
+            }
+          }
+          
+          formattedRow[header] = value !== undefined ? String(value) : '';
         });
         return formattedRow;
       });
