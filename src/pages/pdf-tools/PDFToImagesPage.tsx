@@ -8,6 +8,7 @@ import PDFSuiteLayout from '../../components/layout/PDFSuiteLayout';
 interface ImageResult {
   url: string;
   name: string;
+  size?: number; // Add size property to track image sizes
 }
 
 const PDFToImagesPage: React.FC = () => {
@@ -17,6 +18,8 @@ const PDFToImagesPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [totalImageSize, setTotalImageSize] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -24,6 +27,27 @@ const PDFToImagesPage: React.FC = () => {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', 'Export PDF pages as PNG or JPEG files.');
   }, []);
+
+  // Calculate total size of images and set warning if needed
+  useEffect(() => {
+    if (images.length > 0) {
+      // Estimate total size
+      const total = images.reduce((sum, img) => sum + (img.size || 0), 0);
+      setTotalImageSize(total);
+      
+      // Set warning if total size is large
+      if (total > 100 * 1024 * 1024) { // 100MB
+        setWarning('The total size of images is very large. ZIP creation may fail in the browser. Consider downloading images individually.');
+      } else if (total > 50 * 1024 * 1024) { // 50MB
+        setWarning('The total size of images is large. ZIP creation may be slow or fail in some browsers.');
+      } else {
+        setWarning(null);
+      }
+    } else {
+      setTotalImageSize(0);
+      setWarning(null);
+    }
+  }, [images]);
 
   // Handle file selection
   const handleFiles = async (fileList: FileList | null) => {
@@ -36,6 +60,7 @@ const PDFToImagesPage: React.FC = () => {
     setFile(f);
     setImages([]);
     setError(null);
+    setWarning(null);
     setProgress(0);
   };
 
@@ -51,6 +76,7 @@ const PDFToImagesPage: React.FC = () => {
     setIsProcessing(true);
     setImages([]);
     setError(null);
+    setWarning(null);
     setProgress(0);
     try {
       const bytes = await file.arrayBuffer();
@@ -69,9 +95,14 @@ const PDFToImagesPage: React.FC = () => {
         const ctx = canvas.getContext('2d');
         await page.render({ canvasContext: ctx, viewport }).promise;
         const dataUrl = canvas.toDataURL(`image/${format}`);
+        
+        // Estimate size of the image
+        const estimatedSize = Math.ceil(dataUrl.length * 0.75); // Base64 is ~33% larger than binary
+        
         imgs.push({
           url: dataUrl,
-          name: `${file.name.replace(/\.pdf$/, '')}-page-${i}.${format}`
+          name: `${file.name.replace(/\.pdf$/, '')}-page-${i}.${format}`,
+          size: estimatedSize
         });
       }
       setImages(imgs);
@@ -97,32 +128,60 @@ const PDFToImagesPage: React.FC = () => {
   const handleDownloadZip = async () => {
     if (images.length === 0) return;
     setIsProcessing(true);
+    setError(null);
     try {
       const zip = new JSZip();
-      for (const img of images) {
-        // Convert dataURL to blob
-        const res = await fetch(img.url);
-        const blob = await res.blob();
+      
+      for (let i = 0; i < images.length; i++) {
+        const img = images[i];
+        // Convert data URL to Blob more reliably
+        const response = await fetch(img.url);
+        if (!response.ok) throw new Error(`Failed to fetch image ${i+1}`);
+        const blob = await response.blob();
         zip.file(img.name, blob);
+        
+        // Update progress as we add each file
+        setProgress(Math.round((i / images.length) * 50));
       }
-      const zipBlob = await zip.generateAsync({ type: 'blob' }, (metadata) => {
-        setProgress(Math.round(metadata.percent));
-      });
-      const url = URL.createObjectURL(zipBlob);
-      // Immediately trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = file ? file.name.replace(/\.pdf$/, '-images.zip') : 'images.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      // Optionally, clean up the object URL after a short delay
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      
+      try {
+        const zipBlob = await zip.generateAsync({ 
+          type: 'blob',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        }, (metadata) => {
+          // Scale progress from 50-100% during zip generation
+          setProgress(50 + Math.round(metadata.percent / 2));
+        });
+        
+        // Create and trigger download
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = file ? file.name.replace(/\.pdf$/, '-images.zip') : 'images.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the object URL after a short delay
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } catch (zipError) {
+        console.error("ZIP generation error:", zipError);
+        setError('Failed to create ZIP file. The file might be too large or there was a browser error.');
+      }
     } catch (e) {
-      setError('Failed to create ZIP file.');
+      console.error("ZIP creation error:", e);
+      setError('Failed to create ZIP file. Please try downloading images individually.');
     }
     setIsProcessing(false);
     setTimeout(() => setProgress(0), 1000);
+  };
+
+  // Format file size for display
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   return (
@@ -178,11 +237,17 @@ const PDFToImagesPage: React.FC = () => {
                   className="btn btn-success text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                   onClick={handleDownloadZip}
                   disabled={isProcessing}
+                  title={totalImageSize > 0 ? `Total size: ${formatFileSize(totalImageSize)}` : ''}
                 >
                   Download All as ZIP
                 </button>
               )}
             </div>
+            {warning && (
+              <div className="bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-400 dark:border-orange-600 p-3 rounded text-orange-900 dark:text-orange-100 text-sm mb-4">
+                <strong>Warning:</strong> {warning}
+              </div>
+            )}
             {isProcessing && (
               <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
                 <div
@@ -205,7 +270,9 @@ const PDFToImagesPage: React.FC = () => {
                     className="w-40 h-56 object-contain border mb-1 bg-slate-100 dark:bg-slate-700"
                     draggable={false}
                   />
-                  <span className="text-xs text-gray-600 dark:text-gray-300 mb-1">Page {idx + 1}</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-300 mb-1">
+                    Page {idx + 1} {img.size && `(${formatFileSize(img.size)})`}
+                  </span>
                   <button
                     className="btn btn-secondary btn-xs"
                     onClick={() => handleDownloadImage(img.url, img.name)}
