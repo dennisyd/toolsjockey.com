@@ -192,16 +192,44 @@ const MailMergeTool: React.FC = () => {
 
   // Create PDF from text content
   const createPDF = (content: string): Blob => {
+    // Create new PDF document
     const doc = new jsPDF();
     
-    // Split content by newlines and add to PDF
-    const lines = content.split('\n');
-    let y = 20;
+    // Set font size
+    doc.setFontSize(11);
     
-    lines.forEach(line => {
-      doc.text(line, 20, y);
-      y += 7; // Increase y position for next line
-    });
+    // Get page dimensions
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 20;
+    const maxWidth = pageWidth - (margin * 2);
+    
+    // Split content by newlines
+    const lines = content.split('\n');
+    let y = margin;
+    
+    // Process each line
+    for (const line of lines) {
+      // Handle text wrapping for long lines
+      const textLines = doc.splitTextToSize(line, maxWidth);
+      
+      // Add each wrapped line to the PDF
+      for (const textLine of textLines) {
+        // Check if we need a new page
+        if (y > (doc.internal.pageSize.height - margin)) {
+          doc.addPage();
+          y = margin;
+        }
+        
+        // Add the line with proper margins
+        doc.text(textLine, margin, y);
+        y += 7; // Line spacing
+      }
+      
+      // Add extra spacing after paragraphs
+      if (line.trim() === '') {
+        y += 3;
+      }
+    }
     
     return doc.output('blob');
   };
