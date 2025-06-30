@@ -10,11 +10,7 @@ const WatermarkPDFPage: React.FC = () => {
   }, []);
   return (
     <PDFSuiteLayout title="Add Watermark to PDF">
-      <main className="container-app mx-auto px-2 md:px-0 py-8">
-        <h1 className="text-2xl font-bold mb-4">Add Watermark to PDF</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">Add styled text overlays to every page.</p>
-        <WatermarkAdder />
-      </main>
+      <WatermarkAdder />
     </PDFSuiteLayout>
   );
 };

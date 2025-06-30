@@ -11,6 +11,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script type="text/javascript">
+      // Script to remove duplicate privacy badges
+      document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for React to render
+        setTimeout(function() {
+          // Find all elements that might be privacy badges
+          const allBadges = document.querySelectorAll('.bg-blue-50');
+          const privacyBadges = [];
+          
+          // Filter to find only the privacy badges
+          allBadges.forEach(function(badge) {
+            if (badge.textContent && badge.textContent.includes('Your Privacy Guaranteed')) {
+              privacyBadges.push(badge);
+            }
+          });
+          
+          // If there's more than one, remove all but the first one
+          if (privacyBadges.length > 1) {
+            for (let i = 1; i < privacyBadges.length; i++) {
+              if (privacyBadges[i].parentNode) {
+                privacyBadges[i].parentNode.removeChild(privacyBadges[i]);
+              }
+            }
+          }
+        }, 1000);
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

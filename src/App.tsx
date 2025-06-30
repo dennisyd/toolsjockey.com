@@ -20,6 +20,23 @@ import AudioExtractorPage from './pages/tools/AudioExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
 import NotFound from './pages/NotFound';
 import { getFFmpeg } from './hooks/useFFmpeg';
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
+import DonationBanner from './components/layout/DonationBanner';
+import TickerTape from './components/TickerTape';
+
+// PDF Tool Layout wrapper component
+const PDFToolLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-col min-h-screen">
+    <Header />
+    <TickerTape />
+    <main className="flex-grow">
+      {children}
+    </main>
+    <DonationBanner />
+    <Footer />
+  </div>
+);
 
 // Lazy load pages with retry mechanism
 const retryLazy = <T extends ComponentType<any>>(componentImport: () => Promise<{ default: T }>) => {
@@ -148,6 +165,19 @@ function App() {
           <Route path="tools/video-merger" element={<VideoMergerPage />} />
           <Route path="tools/audio-extractor" element={<AudioExtractorPage />} />
           
+          {/* PDF tool routes - wrapped in PDFToolLayout to include header/footer but avoid duplicate privacy badges */}
+          <Route path="merge-pdf" element={<PDFToolLayout><MergePDFPage /></PDFToolLayout>} />
+          <Route path="split-pdf" element={<PDFToolLayout><SplitPDFPage /></PDFToolLayout>} />
+          <Route path="reorder-pdf" element={<PDFToolLayout><ReorderPDFPage /></PDFToolLayout>} />
+          <Route path="rotate-pdf" element={<PDFToolLayout><RotatePDFPage /></PDFToolLayout>} />
+          <Route path="watermark-pdf" element={<PDFToolLayout><WatermarkPDFPage /></PDFToolLayout>} />
+          <Route path="pdf-to-images" element={<PDFToolLayout><PDFToImagesPage /></PDFToolLayout>} />
+          <Route path="images-to-pdf" element={<PDFToolLayout><ImagesToPDFPage /></PDFToolLayout>} />
+          <Route path="extract-text" element={<PDFToolLayout><ExtractTextPage /></PDFToolLayout>} />
+          <Route path="pdf-to-word" element={<PDFToolLayout><PDFToWordPage /></PDFToolLayout>} />
+          <Route path="delete-pages" element={<PDFToolLayout><DeletePagesPage /></PDFToolLayout>} />
+          <Route path="edit-metadata" element={<PDFToolLayout><EditMetadataPage /></PDFToolLayout>} />
+          
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="blog" element={<Blog />} />
@@ -192,17 +222,6 @@ function App() {
             <Route path="contact" element={<Contact />} />
             <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
-            <Route path="merge-pdf" element={<MergePDFPage />} />
-            <Route path="split-pdf" element={<SplitPDFPage />} />
-            <Route path="reorder-pdf" element={<ReorderPDFPage />} />
-            <Route path="rotate-pdf" element={<RotatePDFPage />} />
-            <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
-            <Route path="pdf-to-images" element={<PDFToImagesPage />} />
-            <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
-            <Route path="extract-text" element={<ExtractTextPage />} />
-            <Route path="pdf-to-word" element={<PDFToWordPage />} />
-            <Route path="delete-pages" element={<DeletePagesPage />} />
-            <Route path="edit-metadata" element={<EditMetadataPage />} />
           </Route>
           <Route path="/tools" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />

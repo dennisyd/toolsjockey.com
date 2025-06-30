@@ -4,27 +4,14 @@ import Footer from './Footer';
 import DonationBanner from './DonationBanner';
 import TickerTape from '../TickerTape';
 
-const pdfToolPaths = [
-  '/merge-pdf',
-  '/split-pdf',
-  '/reorder-pdf',
-  '/rotate-pdf',
-  '/watermark-pdf',
-  '/pdf-to-images',
-  '/images-to-pdf',
-  '/extract-text',
-  '/pdf-to-word',
-  '/delete-pages',
-  '/edit-metadata'
-];
-
+// PDF tool paths are now handled outside of the Layout component
+// so we don't need to check for them here anymore
 const Layout = () => {
   const location = useLocation();
-  // Show CTA only on tool pages and individual PDF tool pages
+  // Show CTA only on tool pages (not on PDF tool pages since they're outside the Layout)
   const showDonationBanner =
     location.pathname.startsWith('/tools') ||
-    location.pathname.startsWith('/pdf-tools') ||
-    pdfToolPaths.some(path => location.pathname.startsWith(path));
+    location.pathname.startsWith('/pdf-tools');
 
   return (
     <div className="flex flex-col min-h-screen">

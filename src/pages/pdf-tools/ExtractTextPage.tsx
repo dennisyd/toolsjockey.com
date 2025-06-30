@@ -80,69 +80,72 @@ const ExtractTextPage: React.FC = () => {
 
   return (
     <PDFSuiteLayout title="Extract Text from PDF">
-      <main className="container-app mx-auto px-2 md:px-0 py-8">
-        <h1 className="text-2xl font-bold mb-4">Extract Text from PDF</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">Extract all text from your PDF, per page or as a single document. Everything runs in your browser.</p>
-        <input
-          type="file"
-          accept="application/pdf"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={e => handleFiles(e.target.files)}
-        />
-        <div
-          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
-          onClick={() => fileInputRef.current?.click()}
-          onDrop={handleDrop}
-          onDragOver={e => e.preventDefault()}
-        >
-          <span className="text-gray-500">Drag & drop a PDF file here, or click to select</span>
-        </div>
-        {file && (
-          <div className="mb-6">
-            <button
-              className="btn btn-primary mb-4"
-              onClick={handleExtract}
-              disabled={isProcessing}
-            >
-              {isProcessing ? 'Extracting...' : 'Extract Text'}
-            </button>
-            {isProcessing && (
-              <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
-                <div
-                  className="bg-accent h-3 rounded-full transition-all"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-            )}
-          </div>
-        )}
-        {fullText && (
-          <div className="mb-4">
-            <button className="btn btn-success mr-2" onClick={handleDownload}>Download as .txt</button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigator.clipboard.writeText(fullText)}
-            >
-              Copy All Text
-            </button>
-          </div>
-        )}
-        {textByPage.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-2">Text by Page</h2>
-            <div className="space-y-4">
-              {textByPage.map((txt, idx) => (
-                <div key={idx} className="bg-slate-50 dark:bg-slate-800 rounded p-3 shadow-sm">
-                  <div className="font-semibold mb-1">Page {idx + 1}</div>
-                  <pre className="whitespace-pre-wrap text-xs text-gray-800 dark:text-gray-200">{txt}</pre>
-                </div>
-              ))}
+      {/* Information notice about PDF types - Keep this since it's specific to text extraction */}
+      <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400 dark:border-blue-600 p-4 rounded text-blue-900 dark:text-blue-100 text-sm mb-6">
+        <strong>Important:</strong> This tool works best with <span className="font-semibold">native PDFs</span> (digitally created documents) where text is stored as actual characters. 
+        For <span className="font-semibold">scanned PDFs</span> or image-based documents, the extracted text may be limited or unavailable. 
+        For scanned documents, you may need OCR (Optical Character Recognition) software for better results.
+      </div>
+      
+      <input
+        type="file"
+        accept="application/pdf"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={e => handleFiles(e.target.files)}
+      />
+      <div
+        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
+        onClick={() => fileInputRef.current?.click()}
+        onDrop={handleDrop}
+        onDragOver={e => e.preventDefault()}
+      >
+        <span className="text-gray-500">Drag & drop a PDF file here, or click to select</span>
+      </div>
+      {file && (
+        <div className="mb-6">
+          <button
+            className="btn btn-primary mb-4"
+            onClick={handleExtract}
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Extracting...' : 'Extract Text'}
+          </button>
+          {isProcessing && (
+            <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
+              <div
+                className="bg-accent h-3 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              ></div>
             </div>
+          )}
+        </div>
+      )}
+      {fullText && (
+        <div className="mb-4">
+          <button className="btn btn-success mr-2" onClick={handleDownload}>Download as .txt</button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigator.clipboard.writeText(fullText)}
+          >
+            Copy All Text
+          </button>
+        </div>
+      )}
+      {textByPage.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-2">Text by Page</h2>
+          <div className="space-y-4">
+            {textByPage.map((txt, idx) => (
+              <div key={idx} className="bg-slate-50 dark:bg-slate-800 rounded p-3 shadow-sm">
+                <div className="font-semibold mb-1">Page {idx + 1}</div>
+                <pre className="whitespace-pre-wrap text-xs text-gray-800 dark:text-gray-200">{txt}</pre>
+              </div>
+            ))}
           </div>
-        )}
-        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-      </main>
+        </div>
+      )}
+      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
     </PDFSuiteLayout>
   );
 };

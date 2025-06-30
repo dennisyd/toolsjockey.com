@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { PDFDocument, rgb, degrees } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 
 // Supported image types
 const IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'webp'];
@@ -10,8 +10,6 @@ const WatermarkAdder = () => {
   const [file, setFile] = useState<File | null>(null);
   const [fileType, setFileType] = useState<'image' | 'pdf' | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [watermarkType, setWatermarkType] = useState<'text' | 'image'>('text');
-  const [watermarkText, setWatermarkText] = useState('Sample Watermark');
   const [watermarkImage, setWatermarkImage] = useState<File | null>(null);
   const [watermarkImageUrl, setWatermarkImageUrl] = useState<string | null>(null);
   const [opacity, setOpacity] = useState(0.5);
@@ -69,22 +67,9 @@ const WatermarkAdder = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
         ctx.globalAlpha = opacity;
-        // Watermark
-        if (watermarkType === 'text') {
-          ctx.font = `${Math.floor(canvas.width / 15)}px sans-serif`;
-          ctx.fillStyle = '#fff';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          let x = canvas.width / 2, y = canvas.height / 2;
-          if (position === 'top-left') { x = 60; y = 40; }
-          if (position === 'top-right') { x = canvas.width - 60; y = 40; }
-          if (position === 'bottom-left') { x = 60; y = canvas.height - 40; }
-          if (position === 'bottom-right') { x = canvas.width - 60; y = canvas.height - 40; }
-          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-          ctx.lineWidth = 4;
-          ctx.strokeText(watermarkText, x, y);
-          ctx.fillText(watermarkText, x, y);
-        } else if (watermarkType === 'image' && watermarkImageUrl) {
+        
+        // Image watermark
+        if (watermarkImageUrl) {
           const wmImg = new window.Image();
           wmImg.onload = () => {
             let wmW = canvas.width / 4, wmH = (wmImg.height / wmImg.width) * wmW;
@@ -98,8 +83,9 @@ const WatermarkAdder = () => {
           };
           wmImg.src = watermarkImageUrl;
           return;
+        } else {
+          resolve(canvas.toDataURL('image/png'));
         }
-        resolve(canvas.toDataURL('image/png'));
       };
       img.src = imgUrl;
     });
@@ -107,54 +93,57 @@ const WatermarkAdder = () => {
 
   // Helper: Add watermark to PDF using pdf-lib
   const addWatermarkToPDF = async (file: File) => {
+    if (!watermarkImage) return null;
+    
     const bytes = await file.arrayBuffer();
     const pdfDoc = await PDFDocument.load(bytes);
     const pages = pdfDoc.getPages();
+    
+    const imgBytes = await watermarkImage.arrayBuffer();
+    let embed, dims;
+    
+    if (watermarkImage.type.includes('png')) {
+      embed = await pdfDoc.embedPng(imgBytes);
+    } else {
+      embed = await pdfDoc.embedJpg(imgBytes);
+    }
+    
     for (const page of pages) {
       const { width, height } = page.getSize();
-      if (watermarkType === 'text') {
-        page.drawText(watermarkText, {
-          x: position.includes('left') ? 40 : position.includes('right') ? width - 200 : width / 2 - 100,
-          y: position.includes('top') ? height - 60 : position.includes('bottom') ? 40 : height / 2,
-          size: 48,
-          color: rgb(1, 1, 1),
-          opacity,
-          rotate: degrees(0),
-        });
-      } else if (watermarkType === 'image' && watermarkImage) {
-        const imgBytes = await watermarkImage.arrayBuffer();
-        let embed, dims;
-        if (watermarkImage.type.includes('png')) {
-          embed = await pdfDoc.embedPng(imgBytes);
-        } else {
-          embed = await pdfDoc.embedJpg(imgBytes);
-        }
-        dims = embed.scale(0.25);
-        let x = (width - dims.width) / 2, y = (height - dims.height) / 2;
-        if (position === 'top-left') { x = 40; y = height - dims.height - 40; }
-        if (position === 'top-right') { x = width - dims.width - 40; y = height - dims.height - 40; }
-        if (position === 'bottom-left') { x = 40; y = 40; }
-        if (position === 'bottom-right') { x = width - dims.width - 40; y = 40; }
-        page.drawImage(embed, {
-          x, y, width: dims.width, height: dims.height, opacity
-        });
-      }
+      dims = embed.scale(0.25);
+      
+      let x = (width - dims.width) / 2, y = (height - dims.height) / 2;
+      if (position === 'top-left') { x = 40; y = height - dims.height - 40; }
+      if (position === 'top-right') { x = width - dims.width - 40; y = height - dims.height - 40; }
+      if (position === 'bottom-left') { x = 40; y = 40; }
+      if (position === 'bottom-right') { x = width - dims.width - 40; y = 40; }
+      
+      page.drawImage(embed, {
+        x, y, width: dims.width, height: dims.height, opacity
+      });
     }
+    
     const pdfBytes = await pdfDoc.save();
     return URL.createObjectURL(new Blob([pdfBytes], { type: 'application/pdf' }));
   };
 
   // Main watermark handler
   const handleAddWatermark = async () => {
-    if (!file || !fileType) return;
+    if (!file || !fileType || !watermarkImage) return;
     setIsProcessing(true);
-    if (fileType === 'image' && preview) {
-      const url = await drawWatermarkOnCanvas(preview);
-      setResultUrl(url);
-    } else if (fileType === 'pdf') {
-      const url = await addWatermarkToPDF(file);
-      setResultUrl(url);
+    
+    try {
+      if (fileType === 'image' && preview) {
+        const url = await drawWatermarkOnCanvas(preview);
+        setResultUrl(url);
+      } else if (fileType === 'pdf') {
+        const url = await addWatermarkToPDF(file);
+        if (url) setResultUrl(url);
+      }
+    } catch (error) {
+      console.error("Error adding watermark:", error);
     }
+    
     setIsProcessing(false);
   };
 
@@ -191,39 +180,29 @@ const WatermarkAdder = () => {
           </div>
         )}
       </div>
+      
       {/* Watermark options */}
       {file && fileType && (
         <div className="flex flex-col gap-4">
-          <div className="flex gap-4 items-center">
-            <label className="font-semibold">Watermark type:</label>
-            <select value={watermarkType} onChange={e => setWatermarkType(e.target.value as any)} className="p-2 border rounded">
-              <option value="text">Text</option>
-              <option value="image">Image</option>
-            </select>
+          <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400 dark:border-blue-600 p-4 rounded text-blue-900 dark:text-blue-100 text-sm mb-4">
+            <strong>Note:</strong> Upload an image to use as a watermark. The watermark will be applied to your document.
           </div>
-          {watermarkType === 'text' ? (
-            <input
-              type="text"
-              value={watermarkText}
-              onChange={e => setWatermarkText(e.target.value)}
-              className="p-2 border rounded w-full"
-              placeholder="Enter watermark text"
-            />
-          ) : (
-            <div {...getWatermarkRootProps()} className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-accent transition-colors">
-              <input {...getWatermarkInputProps()} />
-              {!watermarkImageUrl ? (
-                <span className="text-gray-500">Drag & drop watermark image, or click to select</span>
-              ) : (
-                <img src={watermarkImageUrl} alt="Watermark preview" className="max-h-24 mx-auto" />
-              )}
-            </div>
-          )}
+          
+          <div {...getWatermarkRootProps()} className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-accent transition-colors">
+            <input {...getWatermarkInputProps()} />
+            {!watermarkImageUrl ? (
+              <span className="text-gray-500">Drag & drop watermark image, or click to select</span>
+            ) : (
+              <img src={watermarkImageUrl} alt="Watermark preview" className="max-h-24 mx-auto" />
+            )}
+          </div>
+          
           <div className="flex gap-4 items-center">
             <label className="font-semibold">Opacity:</label>
             <input type="range" min={0.1} max={1} step={0.05} value={opacity} onChange={e => setOpacity(Number(e.target.value))} />
             <span>{Math.round(opacity * 100)}%</span>
           </div>
+          
           <div className="flex gap-4 items-center">
             <label className="font-semibold">Position:</label>
             <select value={position} onChange={e => setPosition(e.target.value as any)} className="p-2 border rounded">
@@ -234,11 +213,17 @@ const WatermarkAdder = () => {
               <option value="bottom-right">Bottom Right</option>
             </select>
           </div>
-          <button className="btn btn-primary w-full" onClick={handleAddWatermark} disabled={isProcessing || (watermarkType === 'image' && !watermarkImage && !watermarkImageUrl)}>
+          
+          <button 
+            className="btn btn-primary w-full" 
+            onClick={handleAddWatermark} 
+            disabled={isProcessing || !watermarkImage}
+          >
             {isProcessing ? 'Processing...' : 'Add Watermark'}
           </button>
         </div>
       )}
+      
       {/* Result preview and download */}
       {resultUrl && (
         <div className="flex flex-col gap-2 items-center mt-4">
@@ -250,8 +235,9 @@ const WatermarkAdder = () => {
           <button className="btn btn-primary mt-2" onClick={handleDownload}>Download</button>
         </div>
       )}
+      
       {/* Hidden canvas for image processing */}
-      <canvas ref={canvasRef} className="hidden"></canvas>
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
 };

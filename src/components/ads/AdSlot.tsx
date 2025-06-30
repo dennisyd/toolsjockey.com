@@ -23,6 +23,9 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
   
   // Check if we're on the batch-pdf-form-filler page
   const isBatchPdfFormFillerPage = location.pathname.includes('batch-pdf-form-filler');
+  
+  // Check if we're in the PDF tools section
+  const isPDFToolsPage = location.pathname.includes('/pdf-tools/') || location.pathname === '/pdf-tools';
 
   useEffect(() => {
     // Simple ad-blocker detection: try to load a known ad class
@@ -64,7 +67,8 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
   const currentSize = size || slotSizes[slot];
   
   // 300x250 style ad space - Don't show privacy badge on batch-pdf-form-filler page
-  if ((currentSize === '300x250' || slot === 'sidebar') && !isBatchPdfFormFillerPage) {
+  // Also don't show privacy badge in sidebar for PDF tools pages (as they already have one)
+  if ((currentSize === '300x250' || slot === 'sidebar') && !isBatchPdfFormFillerPage && !isPDFToolsPage) {
     return (
       <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>
         <div className="feature-highlight bg-blue-50 border border-blue-200 dark:bg-primary-light dark:border-primary-dark rounded-lg p-4 text-center shadow-sm">
@@ -75,7 +79,7 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
       </div>
     );
   } else if (currentSize === '300x250' || slot === 'sidebar') {
-    // Empty sidebar for batch-pdf-form-filler page
+    // Empty sidebar for batch-pdf-form-filler page or PDF tools pages
     return (
       <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>
         <div className="bg-gray-100 dark:bg-primary border border-gray-300 dark:border-gray-700 rounded h-full w-full"></div>
@@ -83,7 +87,7 @@ const AdSlot = ({ slot, size, className = '', children }: AdSlotProps) => {
     );
   }
   
-  // 728x90 style ad space
+  // 728x90 style ad space - For footer slot in PDF tools, show the tools preview instead of privacy badge
   if (currentSize === '728x90' || slot === 'header' || slot === 'footer') {
     return (
       <div className={`ad-slot ${className}`} style={{ minHeight: currentSize }}>

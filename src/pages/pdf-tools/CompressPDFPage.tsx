@@ -10,10 +10,7 @@ const CompressPDFPage: React.FC = () => {
 
   return (
     <PDFSuiteLayout title="Compress PDF">
-      <main className="container-app mx-auto px-2 md:px-0 py-8">
-        <h1 className="text-2xl font-bold mb-4">Compress PDF</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">This tool is not available. Client-side PDF compression is not currently supported.</p>
-      </main>
+      <p className="text-gray-600 dark:text-gray-300 mb-8">This tool is not available. Client-side PDF compression is not currently supported.</p>
     </PDFSuiteLayout>
   );
 };
