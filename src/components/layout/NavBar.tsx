@@ -4,8 +4,6 @@ import { toolsConfig } from '../../utils/toolsConfig';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Color scheme
-const bgDark = 'bg-primary';
-const textLight = 'text-white';
 const accent = 'text-[#ffe066]'; // Yellow for hover
 const accentBg = 'bg-[#ffe066]';
 
@@ -45,8 +43,8 @@ const NavBar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className={`sticky top-0 z-40 ${bgDark} ${textLight} shadow flex flex-col`}>
-      <div className="flex items-center justify-between px-3 py-1 min-h-[48px] border-b border-primary">
+    <>
+      <div className="flex items-center justify-between px-3 py-1 min-h-[48px]">
         {/* Logo and Brand (left only) */}
         <div className="flex items-center gap-3 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
@@ -188,7 +186,7 @@ const NavBar: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };
 

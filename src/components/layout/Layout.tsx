@@ -2,7 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import DonationBanner from './DonationBanner';
-// import TickerTape from '../TickerTape';
+import TickerTape from '../TickerTape';
 
 const pdfToolPaths = [
   '/merge-pdf',
@@ -29,7 +29,7 @@ const Layout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      {/* <TickerTape /> */}
+      <TickerTape />
       <main className="flex-grow">
         <Outlet />
       </main>
