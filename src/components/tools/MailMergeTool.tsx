@@ -11,21 +11,38 @@ const transforms = {
   uppercase: (v: string) => v.toUpperCase(),
   lowercase: (v: string) => v.toLowerCase(),
   title: (v: string) => v.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.substr(1).toLowerCase()),
+  date: (v: string) => {
+    // Try to detect and format Excel date numbers (stored as days since 1/1/1900)
+    const numValue = Number(v);
+    if (!isNaN(numValue) && numValue > 1000 && numValue < 100000) {
+      try {
+        // Convert Excel date number to JavaScript date
+        const date = new Date(1900, 0, numValue - 1); // -1 because Excel's day 1 is Jan 1, 1900
+        if (isNaN(date.getTime())) return v; // Return original if invalid
+        
+        // Format as MM/DD/YYYY
+        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+      } catch (e) {
+        return v; // Return original on error
+      }
+    }
+    return v; // Return original if not a number or not in range
+  }
 };
 
 // Pre-built templates
 const templateLibrary = [
   {
     name: 'Business Letter',
-    content: `Dear {{Name}},\n\nThank you for your interest in {{Company}}. We are pleased to confirm your {{Position}} role.\n\nYour start date: {{StartDate}}\nYour manager: {{Manager}}\nYour email: {{Email}}\n\nWelcome to the team!\n\nBest regards,\nHR Department`,
+    content: `Dear {{Name}},\n\nThank you for your interest in {{Company}}. We are pleased to confirm your {{Position}} role.\n\nYour start date: {{StartDate|date}}\nYour manager: {{Manager}}\nYour email: {{Email}}\n\nWelcome to the team!\n\nBest regards,\nHR Department`,
   },
   {
     name: 'Event Invitation',
-    content: `Dear {{Name}},\n\nYou're invited to {{EventName}}!\n\nDate: {{Date}}\nTime: {{Time}}\nLocation: {{Location}}\nRSVP: {{RSVPEmail}}\n\nWe look forward to seeing you there!\n\nBest regards,\n{{OrganizerName}}`,
+    content: `Dear {{Name}},\n\nYou're invited to {{EventName}}!\n\nDate: {{Date|date}}\nTime: {{Time}}\nLocation: {{Location}}\nRSVP: {{RSVPEmail}}\n\nWe look forward to seeing you there!\n\nBest regards,\n{{OrganizerName}}`,
   },
   {
     name: 'Invoice Template',
-    content: 'INVOICE\n\nBill To: {{CustomerName}}\nCompany: {{CustomerCompany}}\nEmail: {{CustomerEmail}}\n\nInvoice #: {{InvoiceNumber}}\nDate: {{Date}}\nAmount: ${{Amount}}\nDue Date: {{DueDate}}\n\nDescription: {{Description}}\n\nThank you for your business!',
+    content: 'INVOICE\n\nBill To: {{CustomerName}}\nCompany: {{CustomerCompany}}\nEmail: {{CustomerEmail}}\n\nInvoice #: {{InvoiceNumber}}\nDate: {{Date|date}}\nAmount: ${{Amount}}\nDue Date: {{DueDate|date}}\n\nDescription: {{Description}}\n\nThank you for your business!',
   },
 ];
 
@@ -43,8 +60,16 @@ function applyTemplate(template: string, row: Record<string, string>) {
   return template.replace(/{{(\w+)(\|\w+)?}}/g, (_unused, col, transform) => {
     let value = row[col] || '';
     if (transform) {
-      const fn = transforms[transform.slice(1) as keyof typeof transforms];
+      const transformName = transform.slice(1) as keyof typeof transforms;
+      const fn = transforms[transformName];
       if (fn) value = fn(value);
+    } else {
+      // Auto-detect dates even without explicit transform
+      const numValue = Number(value);
+      if (!isNaN(numValue) && numValue > 1000 && numValue < 100000) {
+        // Looks like an Excel date number
+        value = transforms.date(value);
+      }
     }
     return value;
   });
