@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
+import AdSlot from '../components/ads/AdSlot';
 
 const Blog: React.FC = () => {
   const mainArticle = blogPosts.find(post => post.pinned);
@@ -19,10 +20,8 @@ const Blog: React.FC = () => {
         </nav>
       </div>
 
-      {/* Top Ad Placeholder */}
-      <div className="w-full h-16 bg-gray-200 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 mb-8">
-        [Ad Slot: Blog Header]
-      </div>
+      {/* SaaS Message Banner */}
+      <AdSlot slot="header" className="mb-8" />
 
       {/* Main Article (teaser) */}
       {mainArticle && (
@@ -58,9 +57,7 @@ const Blog: React.FC = () => {
       )}
 
       {/* Middle Ad Placeholder */}
-      <div className="w-full h-16 bg-gray-200 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 mb-8">
-        [Ad Slot: Blog Middle]
-      </div>
+      <AdSlot slot="footer" className="mb-8" />
 
       {/* Other Articles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -94,9 +91,7 @@ const Blog: React.FC = () => {
       </div>
 
       {/* Bottom Ad Placeholder */}
-      <div className="w-full h-16 bg-gray-200 dark:bg-gray-800 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 mt-12">
-        [Ad Slot: Blog Footer]
-      </div>
+      <AdSlot slot="footer" className="mt-12" />
     </div>
   );
 };

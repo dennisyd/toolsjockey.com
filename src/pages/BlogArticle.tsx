@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
+import AdSlot from '../components/ads/AdSlot'; 
 
 const BlogArticle: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,9 @@ const BlogArticle: React.FC = () => {
 
   return (
     <div className="container-app max-w-3xl mx-auto px-4 pb-16 pt-8">
+      {/* SaaS Message Banner */}
+      <AdSlot slot="header" className="mb-8" />
+      
       <div className="bg-white dark:bg-primary-light rounded-xl shadow-lg overflow-hidden mb-8">
         <img src={article.image} alt={article.title} className="w-full h-56 object-cover" />
         <div className="p-6">
@@ -35,6 +39,10 @@ const BlogArticle: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* SaaS Message Banner at the bottom */}
+      <AdSlot slot="footer" className="mb-8" />
+      
       <Link to="/blog" className="inline-block px-4 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors">← Back to Blog</Link>
     </div>
   );

@@ -17,6 +17,7 @@ const groupLabels: Record<string, string> = {
   word: 'Word/Docs',
   quick: 'Quick',
   converter: 'Converters',
+  video: 'Video Tools',
 };
 
 // Group tools by category
