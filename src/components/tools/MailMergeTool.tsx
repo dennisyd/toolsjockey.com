@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
-import { HelpCircle, FileSpreadsheet, FileText, Info, ChevronDown, ChevronRight } from 'lucide-react';
+import { HelpCircle, FileSpreadsheet, FileText, Info, ChevronDown, ChevronRight, FileType, File } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 
 // Utility: Text transforms
 const transforms = {
@@ -33,6 +35,9 @@ const sampleData = [
   { Name: 'Jane Doe', Email: 'jane@example.com', Company: 'XYZ Inc', Position: 'Director' },
 ];
 
+// Document format types
+type DocumentFormat = 'txt' | 'pdf' | 'docx';
+
 // Utility: Apply template to a row
 function applyTemplate(template: string, row: Record<string, string>) {
   return template.replace(/{{(\w+)(\|\w+)?}}/g, (_unused, col, transform) => {
@@ -60,6 +65,7 @@ const MailMergeTool: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [showSampleData, setShowSampleData] = useState(false);
+  const [documentFormat, setDocumentFormat] = useState<DocumentFormat>('txt');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Process CSV file
@@ -184,28 +190,120 @@ const MailMergeTool: React.FC = () => {
     }, 100);
   };
 
-  // Download single
-  const downloadSingle = () => {
+  // Create PDF from text content
+  const createPDF = (content: string): Blob => {
+    const doc = new jsPDF();
+    
+    // Split content by newlines and add to PDF
+    const lines = content.split('\n');
+    let y = 20;
+    
+    lines.forEach(line => {
+      doc.text(line, 20, y);
+      y += 7; // Increase y position for next line
+    });
+    
+    return doc.output('blob');
+  };
+
+  // Create Word document from text content
+  const createWordDoc = async (content: string): Promise<Blob> => {
+    // Split content by newlines
+    const paragraphs = content.split('\n');
+    
+    // Create document with paragraphs
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: paragraphs.map(text => 
+            new Paragraph({
+              children: [new TextRun(text)]
+            })
+          )
+        }
+      ]
+    });
+    
+    // Generate blob
+    return await Packer.toBlob(doc);
+  };
+
+  // Download single document
+  const downloadSingle = async () => {
     if (!mergeResults.length) return;
-    const blob = new Blob([mergeResults[previewIndex]], { type: 'text/plain' });
+    
+    const content = mergeResults[previewIndex];
+    let blob: Blob;
+    let fileExtension: string;
+    
+    switch (documentFormat) {
+      case 'pdf':
+        blob = createPDF(content);
+        fileExtension = 'pdf';
+        break;
+      case 'docx':
+        blob = await createWordDoc(content);
+        fileExtension = 'docx';
+        break;
+      case 'txt':
+      default:
+        blob = new Blob([content], { type: 'text/plain' });
+        fileExtension = 'txt';
+        break;
+    }
+    
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `document_${previewIndex + 1}.txt`;
+    a.download = `document_${previewIndex + 1}.${fileExtension}`;
     a.click();
   };
 
   // Download all as ZIP
   const downloadAll = async () => {
     if (!mergeResults.length) return;
+    
+    setIsProcessing(true);
     const zip = new JSZip();
-    mergeResults.forEach((content, i) => {
-      zip.file(`document_${i + 1}.txt`, content);
-    });
-    const blob = await zip.generateAsync({ type: 'blob' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'mailmerge_documents.zip';
-    a.click();
+    
+    try {
+      // Process each document
+      for (let i = 0; i < mergeResults.length; i++) {
+        const content = mergeResults[i];
+        let blob: Blob;
+        let fileExtension: string;
+        
+        switch (documentFormat) {
+          case 'pdf':
+            blob = createPDF(content);
+            fileExtension = 'pdf';
+            break;
+          case 'docx':
+            blob = await createWordDoc(content);
+            fileExtension = 'docx';
+            break;
+          case 'txt':
+          default:
+            blob = new Blob([content], { type: 'text/plain' });
+            fileExtension = 'txt';
+            break;
+        }
+        
+        // Add file to zip
+        zip.file(`document_${i + 1}.${fileExtension}`, blob);
+      }
+      
+      // Generate and download zip
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `mailmerge_documents.zip`;
+      a.click();
+    } catch (error) {
+      setShowToast(`Error creating ZIP: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Placeholder validation
@@ -246,6 +344,7 @@ const MailMergeTool: React.FC = () => {
                 <li>Upload a CSV or Excel file with your data (first row should contain column headers)</li>
                 <li>Create or select a template with placeholders like <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{"{{ColumnName}}"}</code></li>
                 <li>Generate documents to preview the merged results</li>
+                <li>Choose your preferred document format (TXT, PDF, or Word)</li>
                 <li>Download individual documents or all as a ZIP file</li>
               </ol>
               <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
@@ -399,11 +498,53 @@ const MailMergeTool: React.FC = () => {
           >
             {isMerging ? 'Merging...' : 'Generate Documents'}
           </button>
+          
           {mergeResults.length > 0 && (
             <>
-              <button className="bg-blue-600 text-white rounded px-3 py-1" onClick={downloadSingle}>Download Current</button>
-              <button className="bg-blue-700 text-white rounded px-3 py-1" onClick={downloadAll}>Download All as ZIP</button>
-              <span className="text-xs text-gray-500 ml-2">{mergeResults.length} documents generated</span>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium">Format:</label>
+                <div className="flex border rounded overflow-hidden">
+                  <button 
+                    className={`flex items-center gap-1 px-3 py-1 text-sm ${documentFormat === 'txt' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}
+                    onClick={() => setDocumentFormat('txt')}
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>TXT</span>
+                  </button>
+                  <button 
+                    className={`flex items-center gap-1 px-3 py-1 text-sm ${documentFormat === 'pdf' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}
+                    onClick={() => setDocumentFormat('pdf')}
+                  >
+                    <File className="w-4 h-4" />
+                    <span>PDF</span>
+                  </button>
+                  <button 
+                    className={`flex items-center gap-1 px-3 py-1 text-sm ${documentFormat === 'docx' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}
+                    onClick={() => setDocumentFormat('docx')}
+                  >
+                    <FileType className="w-4 h-4" />
+                    <span>Word</span>
+                  </button>
+                </div>
+              </div>
+              
+              <button 
+                className="bg-blue-600 text-white rounded px-3 py-1 flex items-center gap-1" 
+                onClick={downloadSingle}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : 'Download Current'}
+              </button>
+              
+              <button 
+                className="bg-blue-700 text-white rounded px-3 py-1 flex items-center gap-1" 
+                onClick={downloadAll}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : 'Download All as ZIP'}
+              </button>
+              
+              <span className="text-xs text-gray-500">{mergeResults.length} documents generated</span>
             </>
           )}
         </div>
