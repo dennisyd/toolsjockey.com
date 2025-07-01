@@ -1,83 +1,42 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, SkipBack, SkipForward } from 'lucide-react';
 
 interface VideoPreviewProps {
   src: string;
   poster?: string;
   title?: string;
-  onTimeUpdate?: (currentTime: number) => void;
   onDurationChange?: (duration: number) => void;
-  markers?: { start?: number; end?: number };
+  onTimeUpdate?: (time: number) => void;
+  markers?: {
+    start: number;
+    end: number;
+  };
   className?: string;
   disabled?: boolean;
 }
 
-const VideoPreview: React.FC<VideoPreviewProps> = ({
-  src,
-  poster,
-  title,
-  onTimeUpdate,
-  onDurationChange,
-  markers,
-  className = '',
-  disabled = false,
-}) => {
+const VideoPreview = forwardRef<HTMLVideoElement, VideoPreviewProps>((
+  { src, poster, onTimeUpdate, onDurationChange, markers, className = '', disabled = false },
+  ref
+) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const internalVideoRef = useRef<HTMLVideoElement>(null);
+  
+  // Use forwarded ref or internal ref
+  const videoRef = (ref as React.RefObject<HTMLVideoElement>) || internalVideoRef;
 
   // Update video time when markers change
   useEffect(() => {
-    if (videoRef.current && markers?.start !== undefined) {
+    if (markers && videoRef.current) {
       videoRef.current.currentTime = markers.start;
-      setCurrentTime(markers.start);
     }
-  }, [markers?.start]);
+  }, [markers]);
 
-  // Handle video events
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      const time = videoRef.current.currentTime;
-      setCurrentTime(time);
-      
-      if (onTimeUpdate) {
-        onTimeUpdate(time);
-      }
-      
-      // If end marker is set and we've reached it, pause the video
-      if (markers?.end !== undefined && time >= markers.end) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-        
-        // Optionally loop back to start marker
-        if (markers?.start !== undefined) {
-          videoRef.current.currentTime = markers.start;
-          setCurrentTime(markers.start);
-        }
-      }
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      const videoDuration = videoRef.current.duration;
-      setDuration(videoDuration);
-      
-      if (onDurationChange) {
-        onDurationChange(videoDuration);
-      }
-      
-      // Set initial time to start marker if provided
-      if (markers?.start !== undefined) {
-        videoRef.current.currentTime = markers.start;
-        setCurrentTime(markers.start);
-      }
-    }
-  };
-
-  const handlePlayPause = () => {
+  // Handle play/pause
+  const togglePlay = () => {
     if (disabled) return;
     
     if (videoRef.current) {
@@ -90,7 +49,8 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
     }
   };
 
-  const handleMuteToggle = () => {
+  // Handle mute/unmute
+  const toggleMute = () => {
     if (disabled) return;
     
     if (videoRef.current) {
@@ -99,153 +59,211 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
     }
   };
 
+  // Handle seek
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
     
-    const seekTime = parseFloat(e.target.value);
+    const time = parseFloat(e.target.value);
+    setCurrentTime(time);
+    
     if (videoRef.current) {
-      videoRef.current.currentTime = seekTime;
-      setCurrentTime(seekTime);
+      videoRef.current.currentTime = time;
     }
   };
 
-  const handleSkipForward = () => {
+  // Handle time update
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const time = videoRef.current.currentTime;
+      setCurrentTime(time);
+      
+      if (onTimeUpdate) {
+        onTimeUpdate(time);
+      }
+    }
+  };
+
+  // Handle duration change
+  const handleDurationChange = () => {
+    if (videoRef.current) {
+      const videoDuration = videoRef.current.duration;
+      setDuration(videoDuration);
+      
+      if (onDurationChange) {
+        onDurationChange(videoDuration);
+      }
+    }
+  };
+
+  // Handle seeking backward
+  const seekBackward = () => {
     if (disabled) return;
     
     if (videoRef.current) {
-      const newTime = Math.min(videoRef.current.currentTime + 5, duration);
+      const newTime = Math.max(0, videoRef.current.currentTime - 5);
       videoRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
   };
 
-  const handleSkipBack = () => {
+  // Handle seeking forward
+  const seekForward = () => {
     if (disabled) return;
     
     if (videoRef.current) {
-      const newTime = Math.max(videoRef.current.currentTime - 5, 0);
+      const newTime = Math.min(duration, videoRef.current.currentTime + 5);
       videoRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
   };
 
-  // Format time (seconds) to MM:SS
+  // Format time as MM:SS
   const formatTime = (time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+    
+    // Event listeners
+    const handleDurationChange = () => {
+      if (onDurationChange && videoElement.duration) {
+        onDurationChange(videoElement.duration);
+      }
+    };
+    
+    const handleTimeUpdate = () => {
+      if (onTimeUpdate) {
+        onTimeUpdate(videoElement.currentTime);
+      }
+    };
+    
+    // Add event listeners
+    videoElement.addEventListener('durationchange', handleDurationChange);
+    videoElement.addEventListener('timeupdate', handleTimeUpdate);
+    
+    // Initial duration (if already loaded)
+    if (videoElement.duration && onDurationChange) {
+      onDurationChange(videoElement.duration);
+    }
+    
+    return () => {
+      videoElement.removeEventListener('durationchange', handleDurationChange);
+      videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+    };
+  }, [videoRef, onDurationChange, onTimeUpdate]);
+  
+  // Skip to marker position
+  const skipToPosition = (time: number) => {
+    if (videoRef.current && !disabled) {
+      videoRef.current.currentTime = time;
+      videoRef.current.play();
+    }
+  };
+
   return (
-    <div className={`relative ${className}`}>
-      {title && (
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{title}</h3>
-      )}
-      
-      <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+    <div className={`video-player ${className}`}>
+      <div className="relative">
         <video
           ref={videoRef}
           src={src}
           poster={poster}
-          className="w-full h-full"
+          className="w-full rounded-lg"
           onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onEnded={() => setIsPlaying(false)}
-          muted={isMuted}
-          playsInline
+          onDurationChange={handleDurationChange}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
         />
         
-        {/* Video controls overlay */}
-        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 ${disabled ? 'opacity-70' : ''}`}>
-          {/* Progress bar with markers */}
-          <div className="relative">
-            {/* Markers */}
-            {markers?.start !== undefined && (
-              <div 
-                className="absolute top-1/2 w-1 h-4 bg-blue-500 -translate-y-1/2 pointer-events-none z-10"
-                style={{ left: `${(markers.start / duration) * 100}%` }}
-              />
-            )}
-            {markers?.end !== undefined && (
-              <div 
-                className="absolute top-1/2 w-1 h-4 bg-red-500 -translate-y-1/2 pointer-events-none z-10"
-                style={{ left: `${(markers.end / duration) * 100}%` }}
-              />
-            )}
-            
-            {/* Progress range input */}
-            <input
-              type="range"
-              min="0"
-              max={duration || 100}
-              value={currentTime}
-              onChange={handleSeek}
-              disabled={disabled}
-              className={`w-full h-1.5 bg-gray-400 rounded-lg appearance-none ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-              style={{
-                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
-                  (currentTime / (duration || 1)) * 100
-                }%, #9ca3af ${(currentTime / (duration || 1)) * 100}%, #9ca3af 100%)`,
-              }}
-            />
-          </div>
+        <div className="mt-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+          {/* Progress bar */}
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            value={currentTime}
+            onChange={handleSeek}
+            disabled={disabled}
+            className={`w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full appearance-none cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            style={{
+              background: duration
+                ? `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(currentTime / duration) * 100}%, #d1d5db ${(currentTime / duration) * 100}%, #d1d5db 100%)`
+                : undefined,
+            }}
+          />
           
-          {/* Time display and controls */}
-          <div className="flex items-center justify-between mt-2">
-            <div className="text-white text-sm">
-              {formatTime(currentTime)} / {formatTime(duration || 0)}
+          {/* Controls */}
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={seekBackward}
+                disabled={disabled}
+                className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title="Back 5 seconds"
+              >
+                <SkipBack className="w-4 h-4" />
+              </button>
+              
+              <button
+                onClick={togglePlay}
+                disabled={disabled}
+                className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </button>
+              
+              <button
+                onClick={seekForward}
+                disabled={disabled}
+                className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title="Forward 5 seconds"
+              >
+                <SkipForward className="w-4 h-4" />
+              </button>
+              
+              <button
+                onClick={toggleMute}
+                disabled={disabled}
+                className={`p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleSkipBack}
-                disabled={disabled}
-                className={`text-white hover:text-blue-400 transition-colors ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
-                aria-label="Skip back 5 seconds"
-              >
-                <SkipBack className="h-5 w-5" />
-              </button>
-              
-              <button
-                onClick={handlePlayPause}
-                disabled={disabled}
-                className={`text-white hover:text-blue-400 transition-colors ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-              >
-                {isPlaying ? (
-                  <Pause className="h-6 w-6" />
-                ) : (
-                  <Play className="h-6 w-6" />
-                )}
-              </button>
-              
-              <button
-                onClick={handleSkipForward}
-                disabled={disabled}
-                className={`text-white hover:text-blue-400 transition-colors ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
-                aria-label="Skip forward 5 seconds"
-              >
-                <SkipForward className="h-5 w-5" />
-              </button>
-              
-              <button
-                onClick={handleMuteToggle}
-                disabled={disabled}
-                className={`text-white hover:text-blue-400 transition-colors ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? (
-                  <VolumeX className="h-5 w-5" />
-                ) : (
-                  <Volume2 className="h-5 w-5" />
-                )}
-              </button>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              {formatTime(currentTime)} / {formatTime(duration)}
             </div>
           </div>
         </div>
+        
+        {markers && (
+          <div className="mt-2 flex gap-2">
+            <button
+              onClick={() => skipToPosition(markers.start || 0)}
+              disabled={disabled}
+              className={`px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Skip to Start Marker
+            </button>
+            <button
+              onClick={() => skipToPosition((markers.end || 0) - 2)}
+              disabled={disabled}
+              className={`px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Skip to End Marker
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+});
+
+VideoPreview.displayName = 'VideoPreview';
 
 export default VideoPreview; 

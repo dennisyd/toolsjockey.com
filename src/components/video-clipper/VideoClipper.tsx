@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, AlertCircle, Download as DownloadIcon } from 'lucide-react';
 import FileUploader from '../shared/FileUploader';
 import VideoPreview from '../shared/VideoPreview';
 import TimelineSlider from './TimelineSlider';
@@ -7,6 +7,7 @@ import ClipPreview from './ClipPreview';
 import ProgressBar from '../shared/ProgressBar';
 import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoProcessor } from '../../hooks/useVideoProcessor';
+import { formatFileSize } from '../../utils/fileUtils';
 
 interface VideoClip {
   id: string;
@@ -17,6 +18,7 @@ interface VideoClip {
   processed?: boolean;
   url?: string;
   size?: number;
+  format?: string;
 }
 
 // Check if SharedArrayBuffer is supported
@@ -43,10 +45,27 @@ const VideoClipper: React.FC = () => {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [currentClipId, setCurrentClipId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
+  // Format options
+  const [clipFormat, setClipFormat] = useState<'copy' | 'mp4' | 'webm'>('copy');
   
   // FFmpeg state
   const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError } = useFFmpeg();
   const { processVideo, isProcessing, progress, currentTask, error } = useVideoProcessor();
+  
+  // Refs
+  const videoPreviewRef = useRef<HTMLVideoElement>(null);
+  
+  // Auto-hide success message after 5 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
   
   // Load FFmpeg when component mounts
   useEffect(() => {
@@ -87,6 +106,8 @@ const VideoClipper: React.FC = () => {
     setSourceVideo(file);
     setSourceVideoUrl(url);
     setClips([]);
+    setErrorMessage(null);
+    setSuccessMessage(`Video loaded: ${file.name} (${formatFileSize(file.size)})`);
   };
   
   // Handle duration change
@@ -109,10 +130,22 @@ const VideoClipper: React.FC = () => {
       endTime: Math.min(videoDuration, currentTime + 2),
       duration: 4, // Default 4 seconds
       name: `Clip ${clips.length + 1}`,
+      format: getVideoExtension(sourceVideo.name),
     };
     
     setClips([...clips, newClip]);
     setCurrentClipId(newClip.id);
+    
+    // Scroll to the clip section
+    setTimeout(() => {
+      document.getElementById('clips-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+  
+  // Get video extension from filename
+  const getVideoExtension = (filename: string): string => {
+    const extension = filename.split('.').pop()?.toLowerCase() || 'mp4';
+    return extension === 'mov' ? 'mp4' : extension; // Convert MOV to MP4 for compatibility
   };
   
   // Update clip
@@ -139,13 +172,15 @@ const VideoClipper: React.FC = () => {
     setClips(clips.filter(clip => clip.id !== id));
     
     if (currentClipId === id) {
-      setCurrentClipId(clips.length > 1 ? clips[0].id : null);
+      setCurrentClipId(clips.length > 1 ? clips.filter(c => c.id !== id)[0]?.id : null);
     }
     
     // Revoke URL if it exists
     if (clipToRemove?.url) {
       URL.revokeObjectURL(clipToRemove.url);
     }
+    
+    setSuccessMessage(`Clip "${clipToRemove?.name || ''}" removed`);
   };
   
   // Process clip
@@ -155,15 +190,50 @@ const VideoClipper: React.FC = () => {
     const clip = clips.find(c => c.id === clipId);
     if (!clip) return;
     
+    // Reset any previous error
+    setErrorMessage(null);
+    
     try {
-      const result = await processVideo(sourceVideo, {
-        command: [
+      // Determine output format and commands
+      let outputExtension = clip.format || 'mp4';
+      let outputMimeType = sourceVideo.type || 'video/mp4';
+      let command: string[] = [];
+      
+      if (clipFormat === 'copy') {
+        // Use copy mode (fast but may have accuracy issues at cut points)
+        command = [
           '-ss', clip.startTime.toString(),
           '-t', clip.duration.toString(),
           '-c', 'copy'
-        ],
-        outputExtension: sourceVideo.name.split('.').pop() || 'mp4',
-        outputMimeType: sourceVideo.type || 'video/mp4',
+        ];
+      } else if (clipFormat === 'mp4') {
+        // Use mp4 with h.264 encoding (slower but more accurate)
+        outputExtension = 'mp4';
+        outputMimeType = 'video/mp4';
+        command = [
+          '-ss', clip.startTime.toString(),
+          '-t', clip.duration.toString(),
+          '-c:v', 'libx264', 
+          '-preset', 'fast',
+          '-c:a', 'aac'
+        ];
+      } else if (clipFormat === 'webm') {
+        // Use webm with VP9 encoding
+        outputExtension = 'webm';
+        outputMimeType = 'video/webm';
+        command = [
+          '-ss', clip.startTime.toString(),
+          '-t', clip.duration.toString(),
+          '-c:v', 'vp9',
+          '-b:v', '1M',
+          '-c:a', 'libopus'
+        ];
+      }
+      
+      const result = await processVideo(sourceVideo, {
+        command: command,
+        outputExtension: outputExtension,
+        outputMimeType: outputMimeType,
       });
       
       // Update clip with processed data
@@ -171,7 +241,15 @@ const VideoClipper: React.FC = () => {
         processed: true,
         url: result.url,
         size: result.size,
+        format: outputExtension,
       });
+      
+      setSuccessMessage(`Clip "${clip.name}" processed successfully! Click Download to save.`);
+      
+      // Auto-scroll to the processed clip
+      setTimeout(() => {
+        document.getElementById(`clip-${clipId}`)?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
       
     } catch (err) {
       console.error('Error processing clip:', err);
@@ -186,14 +264,44 @@ const VideoClipper: React.FC = () => {
     
     const a = document.createElement('a');
     a.href = clip.url;
-    a.download = `${clip.name}.${sourceVideo?.name.split('.').pop() || 'mp4'}`;
+    a.download = `${clip.name}.${clip.format || 'mp4'}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    
+    setSuccessMessage(`Downloading clip "${clip.name}"`);
+  };
+
+  // Download all clips as zip
+  const downloadAllClips = () => {
+    const processedClips = clips.filter(clip => clip.processed && clip.url);
+    if (processedClips.length === 0) {
+      setErrorMessage('No processed clips to download');
+      return;
+    }
+    
+    // For multiple clips, download them individually in sequence
+    processedClips.forEach((clip, index) => {
+      setTimeout(() => {
+        if (clip.url) {
+          const a = document.createElement('a');
+          a.href = clip.url;
+          a.download = `${clip.name}.${clip.format || 'mp4'}`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      }, index * 1000); // Delay each download by 1 second to avoid browser issues
+    });
+    
+    setSuccessMessage(`Downloading ${processedClips.length} clips...`);
   };
   
   // Get current clip
   const currentClip = currentClipId ? clips.find(clip => clip.id === currentClipId) : null;
+  
+  // Count of processed clips
+  const processedClipsCount = clips.filter(clip => clip.processed).length;
   
   return (
     <div className="w-full max-w-5xl mx-auto bg-white dark:bg-primary-light rounded-lg shadow-lg">
@@ -216,6 +324,19 @@ const VideoClipper: React.FC = () => {
                 <strong>Browser Compatibility Issue:</strong> Your browser doesn't support SharedArrayBuffer, 
                 which is required for optimal video processing. The clipper will attempt to use a fallback method,
                 but for best results, please use Chrome, Edge, or Firefox with HTTPS.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success message */}
+      {successMessage && (
+        <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 m-4">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-green-700 dark:text-green-400">
+                {successMessage}
               </p>
             </div>
           </div>
@@ -253,6 +374,7 @@ const VideoClipper: React.FC = () => {
           <div className="p-6 border-t border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Video Preview</h2>
             <VideoPreview
+              ref={videoPreviewRef}
               src={sourceVideoUrl}
               title={sourceVideo.name}
               onDurationChange={handleDurationChange}
@@ -274,47 +396,138 @@ const VideoClipper: React.FC = () => {
                 disabled={isProcessing}
               />
             </div>
+
+            {/* Clip format selection */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Clip Format:
+              </label>
+              <div className="flex flex-wrap gap-3">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="clipFormat"
+                    value="copy"
+                    checked={clipFormat === 'copy'}
+                    onChange={() => setClipFormat('copy')}
+                    disabled={isProcessing}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    Original (Fast)
+                  </span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="clipFormat"
+                    value="mp4"
+                    checked={clipFormat === 'mp4'}
+                    onChange={() => setClipFormat('mp4')}
+                    disabled={isProcessing}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    MP4 (H.264)
+                  </span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="clipFormat"
+                    value="webm"
+                    checked={clipFormat === 'webm'}
+                    onChange={() => setClipFormat('webm')}
+                    disabled={isProcessing}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    WebM (VP9)
+                  </span>
+                </label>
+              </div>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Original is fastest but may have issues at cut points. MP4 and WebM are more accurate but slower.
+              </p>
+            </div>
           </div>
           
           {/* Clips section */}
-          <div className="p-6 border-t border-gray-200 dark:border-gray-700">
+          <div id="clips-section" className="p-6 border-t border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">Clips</h2>
-              <button
-                onClick={addClip}
-                disabled={!sourceVideo || isProcessing || !isFFmpegLoaded}
-                className={`flex items-center px-3 py-1.5 rounded-md text-white
-                  ${!sourceVideo || isProcessing || !isFFmpegLoaded
-                    ? 'bg-blue-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                  } transition-colors`}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Add Clip
-              </button>
+              <div>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Clips</h2>
+                {clips.length > 0 && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {clips.length} clip{clips.length > 1 ? 's' : ''} created, {processedClipsCount} processed
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {processedClipsCount > 1 && (
+                  <button
+                    onClick={downloadAllClips}
+                    disabled={isProcessing}
+                    className={`flex items-center px-3 py-1.5 rounded-md text-white bg-green-600 hover:bg-green-700 transition-colors`}
+                  >
+                    <DownloadIcon className="w-4 h-4 mr-1" />
+                    Download All
+                  </button>
+                )}
+                <button
+                  onClick={addClip}
+                  disabled={!sourceVideo || isProcessing || !isFFmpegLoaded}
+                  className={`flex items-center px-3 py-1.5 rounded-md text-white
+                    ${!sourceVideo || isProcessing || !isFFmpegLoaded
+                      ? 'bg-blue-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                    } transition-colors`}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Clip
+                </button>
+              </div>
             </div>
             
             {clips.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
+                <div className="mb-2">
+                  <Plus className="w-8 h-8 mx-auto text-gray-400" />
+                </div>
                 <p>No clips created yet. Add a clip to start trimming.</p>
+                <p className="text-sm mt-2">
+                  Tip: Navigate to a point in the video, then click "Add Clip" to create a 4-second clip around that point.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {clips.map(clip => (
-                  <ClipPreview
-                    key={clip.id}
-                    clip={clip}
-                    isSelected={clip.id === currentClipId}
-                    isProcessing={isProcessing && currentClipId === clip.id}
-                    onSelect={() => setCurrentClipId(clip.id)}
-                    onRemove={() => removeClip(clip.id)}
-                    onProcess={() => processClip(clip.id)}
-                    onDownload={() => downloadClip(clip.id)}
-                    onNameChange={(name) => updateClip(clip.id, { name })}
-                    onTimeChange={(startTime, endTime) => updateClip(clip.id, { startTime, endTime })}
-                    disabled={isProcessing}
-                  />
+                  <div id={`clip-${clip.id}`} key={clip.id}>
+                    <ClipPreview
+                      clip={clip}
+                      isSelected={clip.id === currentClipId}
+                      isProcessing={isProcessing && currentClipId === clip.id}
+                      onSelect={() => setCurrentClipId(clip.id)}
+                      onRemove={() => removeClip(clip.id)}
+                      onProcess={() => processClip(clip.id)}
+                      onDownload={() => downloadClip(clip.id)}
+                      onNameChange={(name) => updateClip(clip.id, { name })}
+                      onTimeChange={(startTime, endTime) => updateClip(clip.id, { startTime, endTime })}
+                      disabled={isProcessing}
+                    />
+                  </div>
                 ))}
+              </div>
+            )}
+            
+            {clips.length > 0 && !clips.some(c => c.processed) && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm rounded border border-blue-200 dark:border-blue-800">
+                <strong>How to download clips:</strong>
+                <ol className="list-decimal list-inside mt-1 ml-2">
+                  <li>Click the "Process Clip" button for each clip you want to download</li>
+                  <li>Wait for processing to complete</li>
+                  <li>Click the "Download" button that appears</li>
+                </ol>
               </div>
             )}
           </div>

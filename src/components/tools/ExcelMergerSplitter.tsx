@@ -105,19 +105,64 @@ const ExcelMergerSplitter: React.FC = () => {
   // When mergeStrategy or selectedFiles change, update join key options and sheet selection
   React.useEffect(() => {
     if (mergeStrategy === 'columns' && selectedFiles.length > 0) {
-      const f = uploaded[selectedFiles[0]];
-      if (f) {
+      // Reset warning when changing strategy
+      setWarning('');
+      
+      // Get headers from all selected files to find common columns
+      const fileHeaders: string[][] = [];
+      
+      // First, collect headers from all files
+      selectedFiles.forEach(fileIdx => {
+        const f = uploaded[fileIdx];
+        if (!f) return;
+        
         let header: string[] = [];
         if (f.name.endsWith('.csv')) {
-          header = f.preview[0] || [];
+          header = f.preview[0]?.map(h => (h ?? '').toString().trim()) || [];
+          if (header.length > 0) {
+            fileHeaders.push(header);
+          }
         } else {
-          // Use selected sheet or default to first
-          const sheetName = selectedSheets[selectedFiles[0]] || f.sheets[0];
-          const ws = XLSX.read(f.file, { type: 'array' }).Sheets[sheetName];
-          header = (XLSX.utils.sheet_to_json(ws, { header: 1 })[0] as (string | number | boolean | null)[] || []).map(cell => cell == null ? '' : String(cell));
+          // For Excel files, we'll use the preview data we already have
+          header = f.preview[0]?.map(h => (h ?? '').toString().trim()) || [];
+          if (header.length > 0) {
+            fileHeaders.push(header);
+          }
         }
-        setJoinKeyOptions(header.map(h => (h ?? '').toString()));
-        setJoinKey(header[0] || '');
+      });
+      
+      // For immediate feedback, set options from what we have
+      if (fileHeaders.length > 0) {
+        const firstFileColumns = fileHeaders[0];
+        
+        if (!firstFileColumns || firstFileColumns.length === 0) {
+          setJoinKeyOptions([]);
+          setJoinKey('');
+          setWarning('Could not detect column headers. Please check your files have headers in the first row.');
+          return;
+        }
+        
+        // Find columns that exist in all files
+        const commonColumns = firstFileColumns.filter(col => 
+          col && col.trim() !== '' && fileHeaders.every(headers => 
+            headers.some(h => h && h.toLowerCase() === col.toLowerCase())
+          )
+        );
+        
+        if (commonColumns.length > 0) {
+          setJoinKeyOptions(commonColumns);
+          setJoinKey(commonColumns[0]);
+          setWarning('');
+        } else {
+          setJoinKeyOptions(firstFileColumns);
+          setJoinKey(firstFileColumns[0] || '');
+          if (fileHeaders.length === selectedFiles.length && fileHeaders.length > 1) {
+            setWarning('Warning: No common columns found across all files. Column joining may not work correctly.');
+          }
+        }
+      } else {
+        setJoinKeyOptions([]);
+        setJoinKey('');
       }
     }
   }, [mergeStrategy, selectedFiles, uploaded, selectedSheets]);
@@ -125,6 +170,14 @@ const ExcelMergerSplitter: React.FC = () => {
   // Sheet selection handler
   const handleSheetChange = (fileIdx: number, sheet: string) => {
     setSelectedSheets(prev => ({ ...prev, [fileIdx]: sheet }));
+    // When changing sheets, we might need to update our key options
+    if (mergeStrategy === 'columns') {
+      // Schedule a refresh of key options
+      setTimeout(() => {
+        const event = new Event('sheetChanged');
+        window.dispatchEvent(event);
+      }, 100);
+    }
   };
 
   // Mapping UI handler
@@ -204,14 +257,66 @@ const ExcelMergerSplitter: React.FC = () => {
     setIsProcessing(true);
     setWarning('');
     setMergeReport('');
+    
     try {
+      // Validate files first
+      if (selectedFiles.length < 2) {
+        throw new Error('Please select at least 2 files to merge');
+      }
+      
+      if (!joinKey || joinKey.trim() === '') {
+        throw new Error('Please select a valid key column for joining');
+      }
+
       // Gather selected files and parse data
       const files = selectedFiles.map(idx => uploaded[idx]);
       const allData: { header: string[]; rows: string[][]; fileName: string; keyIdx: number; keyMap: Map<string, string[]> }[] = [];
+      
+      // First, check if all files have the key column
+      let missingKeyFiles: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        let header: string[] = [];
+        
+        try {
+          if (f.name.endsWith('.csv')) {
+            const text = await f.file.text();
+            const parsed = Papa.parse<string[]>(text, { skipEmptyLines: true });
+            if (parsed.data.length > 0) {
+              header = (parsed.data[0] || []).map(h => (h ?? '').toString());
+            }
+          } else {
+            const buf = await f.file.arrayBuffer();
+            const wb = XLSX.read(buf, { type: 'array' });
+            const sheetName = selectedSheets[selectedFiles[i]] || f.sheets[0];
+            const ws = wb.Sheets[sheetName];
+            const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            if (data.length > 0) {
+              header = ((data[0] || []) as any[]).map(h => (h ?? '').toString());
+            }
+          }
+          
+          const keyIdx = header.findIndex(h => 
+            h.trim().toLowerCase() === joinKey.trim().toLowerCase()
+          );
+          
+          if (keyIdx === -1) {
+            missingKeyFiles.push(f.name);
+          }
+        } catch (e) {
+          throw new Error(`Error processing file "${f.name}": ${e instanceof Error ? e.message : 'unknown error'}`);
+        }
+      }
+      
+      if (missingKeyFiles.length > 0) {
+        throw new Error(`Key column "${joinKey}" not found in these files: ${missingKeyFiles.join(', ')}`);
+      }
+      
+      // Now process all files with confidence the key column exists
       for (let i = 0; i < files.length; i++) {
         const f = files[i];
         let data: string[][] = [];
-        let header: string[] = [];
+        
         if (f.name.endsWith('.csv')) {
           const text = await f.file.text();
           const parsed = Papa.parse<string[]>(text, { skipEmptyLines: true });
@@ -223,38 +328,54 @@ const ExcelMergerSplitter: React.FC = () => {
           const ws = wb.Sheets[sheetName];
           data = XLSX.utils.sheet_to_json(ws, { header: 1 });
         }
+        
         if (data.length > 0) {
-          header = data[0].map(h => (h ?? '').toString());
-          const keyIdx = header.findIndex(h => h.trim().toLowerCase() === joinKey.trim().toLowerCase());
-          
-          // Check if the key column was found
-          if (keyIdx === -1) {
-            throw new Error(`Key column "${joinKey}" not found in file "${f.name}". Available columns: ${header.join(', ')}`);
-          }
+          const header = data[0].map(h => (h ?? '').toString());
+          const keyIdx = header.findIndex(h => 
+            h.trim().toLowerCase() === joinKey.trim().toLowerCase()
+          );
           
           // Map key to row
           const keyMap = new Map<string, string[]>();
           data.slice(1).forEach(row => {
             if (keyIdx < 0 || keyIdx >= row.length) return;
-            const key = (row[keyIdx] ?? '').toString();
+            const key = (row[keyIdx] ?? '').toString().trim();
             if (key) keyMap.set(key, row);
           });
-          allData.push({ header, rows: data.slice(1), fileName: f.name, keyIdx, keyMap });
+          
+          allData.push({ 
+            header, 
+            rows: data.slice(1), 
+            fileName: f.name, 
+            keyIdx, 
+            keyMap 
+          });
         }
       }
-      if (allData.length === 0) throw new Error('No data to merge');
+      
+      if (allData.length < 2) {
+        throw new Error('Need at least 2 files with valid data to merge');
+      }
+      
       // Build unified header (from mapping or all headers)
       let unifiedHeader: string[] = [];
       if (Object.keys(columnMapping).length > 0) {
         // Use mapped columns
         const mapped = new Set<string>();
-        Object.values(columnMapping).forEach(map => Object.values(map).forEach(col => mapped.add(col)));
+        Object.values(columnMapping).forEach(map => 
+          Object.values(map).forEach(col => mapped.add(col))
+        );
         unifiedHeader = Array.from(mapped);
       } else {
+        // Start with first file's header 
         unifiedHeader = [...allData[0].header];
+        
+        // Add unique headers from other files
         for (let i = 1; i < allData.length; i++) {
           allData[i].header.forEach(h => {
-            if (!unifiedHeader.includes(h)) unifiedHeader.push(h);
+            if (!unifiedHeader.some(uh => uh.toLowerCase() === h.toLowerCase())) {
+              unifiedHeader.push(h);
+            }
           });
         }
       }
@@ -472,6 +593,25 @@ const ExcelMergerSplitter: React.FC = () => {
           <span>Merge by Columns (Join/Combine)</span>
         </label>
       </div>
+
+      {/* Add explanation for selected strategy */}
+      <div className="text-xs border-l-4 border-blue-300 pl-2 mb-4 bg-blue-50 p-2 rounded">
+        {mergeStrategy === 'rows' ? (
+          <p><strong>Merge by Rows:</strong> Stacks files on top of each other. All files are combined vertically with their columns aligned by header names.</p>
+        ) : (
+          <>
+            <p><strong>Merge by Columns:</strong> Combines files side-by-side using a common key column (like a database JOIN).</p>
+            <p className="mt-1">This requires:</p>
+            <ul className="list-disc ml-4">
+              <li>All files must have at least one column with matching values (e.g., ID, Name, Email)</li>
+              <li>Select this common column as the "Key column for join"</li>
+              <li>Rows will be matched across files based on matching values in this key column</li>
+            </ul>
+            <p className="mt-1 text-orange-600">Note: This works best when files have different columns but share a common identifier column.</p>
+          </>
+        )}
+      </div>
+      
       {mergeStrategy === 'columns' && (
         <>
           <div className="mb-2">
@@ -486,7 +626,153 @@ const ExcelMergerSplitter: React.FC = () => {
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
+            <div className="text-xs text-gray-500 mt-1 italic">This is the column that will be used to match rows between files</div>
           </div>
+          
+          {/* Show file preview with column highlighting */}
+          {selectedFiles.length > 0 && (
+            <div className="mb-4">
+              <div className="font-medium text-xs mb-1">Uploaded Files (showing key column):</div>
+              <div className="overflow-auto max-h-64 border rounded">
+                {selectedFiles.map(idx => {
+                  const f = uploaded[idx];
+                  if (!f) return null;
+                  
+                  const keyColIndex = f.preview[0]?.findIndex(h => 
+                    (h?.toString() || '').trim().toLowerCase() === joinKey.trim().toLowerCase()
+                  ) || -1;
+                  
+                  return (
+                    <div key={f.name + idx} className="p-2 border-b">
+                      <div className="font-semibold text-xs mb-1">{f.name}</div>
+                      <table className="text-[10px] w-full border">
+                        <tbody>
+                          {f.preview.map((row, rowIndex) => (
+                            <tr key={rowIndex}>
+                              {row.map((cell, cellIndex) => (
+                                <td 
+                                  key={cellIndex}
+                                  className={`border px-1 py-0.5 ${rowIndex === 0 && cellIndex === keyColIndex ? 'bg-yellow-100 font-semibold' : ''} ${rowIndex > 0 && cellIndex === keyColIndex ? 'bg-yellow-50' : ''}`}
+                                >
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
+          {/* Visual example toggle */}
+          <div className="mb-4">
+            <button
+              type="button"
+              className="text-xs bg-slate-200 px-2 py-1 rounded"
+              onClick={() => {
+                const example = document.getElementById('merge-by-columns-example');
+                if (example) {
+                  example.style.display = example.style.display === 'none' ? 'block' : 'none';
+                }
+              }}
+            >
+              Toggle Example Visualization
+            </button>
+          </div>
+          
+          {/* Visual example of how column merging works */}
+          <div id="merge-by-columns-example" className="bg-slate-50 border p-3 rounded mb-4 text-xs" style={{display: 'none'}}>
+            <h4 className="font-bold mb-2">How Column Merging Works - Example:</h4>
+            <div className="grid grid-cols-2 gap-4 mb-2">
+              <div>
+                <div className="font-semibold mb-1">File 1: Employees.xlsx</div>
+                <table className="w-full border text-center">
+                  <thead className="bg-slate-200">
+                    <tr>
+                      <th className="border p-1 bg-yellow-100">ID</th>
+                      <th className="border p-1">Name</th>
+                      <th className="border p-1">Department</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border p-1 bg-yellow-100">101</td>
+                      <td className="border p-1">Alice</td>
+                      <td className="border p-1">Sales</td>
+                    </tr>
+                    <tr>
+                      <td className="border p-1 bg-yellow-100">102</td>
+                      <td className="border p-1">Bob</td>
+                      <td className="border p-1">Marketing</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <div className="font-semibold mb-1">File 2: Salaries.xlsx</div>
+                <table className="w-full border text-center">
+                  <thead className="bg-slate-200">
+                    <tr>
+                      <th className="border p-1 bg-yellow-100">ID</th>
+                      <th className="border p-1">Salary</th>
+                      <th className="border p-1">Bonus</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border p-1 bg-yellow-100">101</td>
+                      <td className="border p-1">$75,000</td>
+                      <td className="border p-1">$5,000</td>
+                    </tr>
+                    <tr>
+                      <td className="border p-1 bg-yellow-100">102</td>
+                      <td className="border p-1">$65,000</td>
+                      <td className="border p-1">$3,000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <div className="font-semibold mb-1">Result (after merging with ID as key column):</div>
+              <table className="w-full border text-center">
+                <thead className="bg-slate-200">
+                  <tr>
+                    <th className="border p-1 bg-yellow-100">ID</th>
+                    <th className="border p-1">Name</th>
+                    <th className="border p-1">Department</th>
+                    <th className="border p-1">Salary</th>
+                    <th className="border p-1">Bonus</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border p-1 bg-yellow-100">101</td>
+                    <td className="border p-1">Alice</td>
+                    <td className="border p-1">Sales</td>
+                    <td className="border p-1">$75,000</td>
+                    <td className="border p-1">$5,000</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-1 bg-yellow-100">102</td>
+                    <td className="border p-1">Bob</td>
+                    <td className="border p-1">Marketing</td>
+                    <td className="border p-1">$65,000</td>
+                    <td className="border p-1">$3,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-2 text-gray-600 italic">
+              Note: In this example, "ID" is the key column used to match rows between files.
+            </div>
+          </div>
+          
           <div className="mb-2">
             <label className="font-medium text-xs mr-2">Join type:</label>
             <select
@@ -495,11 +781,12 @@ const ExcelMergerSplitter: React.FC = () => {
               onChange={e => setJoinType(e.target.value as any)}
               aria-label="Join type"
             >
-              <option value="left">Left Join (default)</option>
-              <option value="inner">Inner Join (only matching keys)</option>
-              <option value="right">Right Join</option>
-              <option value="outer">Full Outer Join</option>
+              <option value="left">Left Join (keep all rows from first file)</option>
+              <option value="inner">Inner Join (only keep rows that match in ALL files)</option>
+              <option value="right">Right Join (keep all rows from last file)</option>
+              <option value="outer">Full Outer Join (keep all rows from all files)</option>
             </select>
+            <div className="text-xs text-gray-500 mt-1 italic">Controls which rows are kept in the final result</div>
           </div>
           {/* Sheet selection for each file */}
           <div className="mb-2">

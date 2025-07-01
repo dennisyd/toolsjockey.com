@@ -230,6 +230,11 @@ const VideoCompressor: React.FC = () => {
       // Clear any error messages
       setErrorMessage(null);
       
+      // If the compressed file is larger, show a warning
+      if (compressedSize > originalSize) {
+        setErrorMessage("Note: The compressed file is larger than the original. This can happen with certain video types or when the source is already highly compressed. Try different settings or a different video.");
+      }
+      
     } catch (err) {
       console.error('Error compressing video:', err);
       
@@ -339,8 +344,10 @@ const VideoCompressor: React.FC = () => {
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         Size: {formatFileSize(compressionResult.size)}
                         {compressionRatio !== null && (
-                          <span className="ml-2 text-green-600 dark:text-green-400">
-                            ({Math.round((1 - compressionRatio) * 100)}% smaller)
+                          <span className={`ml-2 ${compressionRatio > 1 ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
+                            ({compressionRatio > 1 
+                              ? `${Math.round((compressionRatio - 1) * 100)}% larger` 
+                              : `${Math.round((1 - compressionRatio) * 100)}% smaller`})
                           </span>
                         )}
                       </span>

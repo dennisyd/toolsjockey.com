@@ -351,7 +351,7 @@ const AudioExtractor: React.FC = () => {
                   onTimeUpdate={handleTimeUpdate}
                   markers={{
                     start: audioSettings.startTime,
-                    end: audioSettings.endTime || undefined,
+                    end: audioSettings.endTime ?? videoDuration,
                   }}
                 />
                 <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">

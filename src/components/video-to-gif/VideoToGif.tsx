@@ -45,11 +45,11 @@ const VideoToGif: React.FC = () => {
   const [gifSettings, setGifSettings] = useState<GifSettings>({
     startTime: 0,
     endTime: null,
-    frameRate: 15, // Renamed from fps
-    quality: 75,
+    frameRate: 15, // Default to 15fps for better balance
+    quality: 90, // Increase default quality
     width: null,
     height: null,
-    loop: 0, // Renamed from loopCount
+    loop: 0, // 0 = infinite loops
   });
   
   // GIF result
@@ -63,9 +63,36 @@ const VideoToGif: React.FC = () => {
   
   // Load FFmpeg when component mounts
   useEffect(() => {
+    // Clear previous errors
+    setErrorMessage(null);
+    
+    // Attempt to load FFmpeg
     loadFFmpeg().catch(error => {
-      setErrorMessage(`Failed to load video processing engine: ${error.message}`);
+      console.error("FFmpeg loading error:", error);
+      
+      // Check for specific browser issues
+      const isChrome = navigator.userAgent.indexOf('Chrome') > -1;
+      const isFirefox = navigator.userAgent.indexOf('Firefox') > -1;
+      const isSecureContext = window.isSecureContext;
+      
+      let message = `Failed to load video processing engine: ${error.message}`;
+      
+      // Add more helpful context
+      if (error.message && error.message.includes('SharedArrayBuffer')) {
+        if (!isSecureContext) {
+          message = 'This tool requires a secure connection (HTTPS) to work properly. Please ensure you are using a secure connection.';
+        } else if (!isChrome && !isFirefox) {
+          message = 'This tool works best in Chrome or Firefox. Please try using one of these browsers.';
+        }
+      }
+      
+      setErrorMessage(message);
     });
+    
+    // Add retry button if loading fails
+    return () => {
+      // Clean up code
+    };
   }, [loadFFmpeg]);
   
   // Clean up URLs when component unmounts
@@ -86,11 +113,30 @@ const VideoToGif: React.FC = () => {
     if (sourceVideo && sourceVideoUrl) {
       // Create a video element to get dimensions
       const video = document.createElement('video');
+      
       video.onloadedmetadata = () => {
         setVideoWidth(video.videoWidth);
         setVideoHeight(video.videoHeight);
+        console.log("Video dimensions detected:", video.videoWidth, "x", video.videoHeight);
       };
+      
+      // Add error handling
+      video.onerror = (e) => {
+        console.error("Error loading video for dimension detection:", e);
+        setErrorMessage("Could not load video. The file may be corrupted or in an unsupported format.");
+      };
+      
+      // Set default dimensions as fallback
       video.src = sourceVideoUrl;
+      
+      // Set reasonable defaults if we can't detect dimensions
+      setTimeout(() => {
+        if (!videoWidth || !videoHeight) {
+          console.warn("Using default video dimensions after timeout");
+          setVideoWidth(640);
+          setVideoHeight(480);
+        }
+      }, 3000); // 3 second fallback
     }
   }, [sourceVideo, sourceVideoUrl]);
   
@@ -99,6 +145,12 @@ const VideoToGif: React.FC = () => {
     if (files.length === 0) return;
     
     const file = files[0];
+    
+    // Validate file is a video
+    if (!file.type.startsWith('video/')) {
+      setErrorMessage('Please select a valid video file');
+      return;
+    }
     
     // Revoke previous URLs
     if (sourceVideoUrl) {
@@ -111,17 +163,26 @@ const VideoToGif: React.FC = () => {
       setGifSize(null);
     }
     
+    // Reset error state
+    setErrorMessage(null);
+    
     // Create a new URL for the video
     const url = URL.createObjectURL(file);
     
     setSourceVideo(file);
     setSourceVideoUrl(url);
     
+    // Reset video dimensions to force re-detection
+    setVideoWidth(null);
+    setVideoHeight(null);
+    
     // Reset GIF settings
     setGifSettings(prev => ({
       ...prev,
       startTime: 0,
       endTime: Math.min(5, videoDuration || 5),
+      width: null,
+      height: null,
     }));
   };
   
@@ -156,20 +217,48 @@ const VideoToGif: React.FC = () => {
     if (!sourceVideo || !isFFmpegLoaded) return;
     
     try {
+      // Reset any previous error
+      setErrorMessage(null);
+      
+      // Ensure we have valid dimensions
+      if (!videoWidth || !videoHeight) {
+        throw new Error("Video dimensions could not be detected");
+      }
+      
+      // Calculate dimensions while maintaining aspect ratio
+      const targetWidth = gifSettings.width || (videoWidth > 800 ? 800 : videoWidth); // Default to max 800px width if none specified
+      const targetHeight = gifSettings.height || Math.round((targetWidth / videoWidth) * videoHeight);
+      
       // Calculate height if null (maintain aspect ratio)
-      let scaleFilter = `scale=${gifSettings.width}:`;
-      if (gifSettings.height) {
-        scaleFilter += gifSettings.height;
+      let scaleFilter = `scale=${targetWidth}:`;
+      if (targetHeight) {
+        scaleFilter += targetHeight;
       } else {
         scaleFilter += '-1';
       }
       
       // Build the filter complex command
-      const filterComplex = `fps=${gifSettings.frameRate},${scaleFilter}:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=${Math.min(256, Math.max(2, Math.floor(gifSettings.quality * 2.56)))}[p];[s1][p]paletteuse`;
+      const paletteColors = Math.min(256, Math.max(16, Math.floor(gifSettings.quality * 2.56))); // At least 16 colors
+      const filterComplex = `fps=${gifSettings.frameRate},${scaleFilter}:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=${paletteColors}:reserve_transparent=0:stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a`;
       
       // Calculate the duration - handle null endTime
       const endTime = gifSettings.endTime === null ? videoDuration : gifSettings.endTime;
-      const duration = endTime - gifSettings.startTime;
+      const duration = Math.max(0.1, endTime - gifSettings.startTime);
+      
+      console.log("GIF conversion settings:", {
+        startTime: gifSettings.startTime,
+        duration,
+        filterComplex,
+        width: targetWidth,
+        height: targetHeight,
+        frameRate: gifSettings.frameRate,
+        loop: gifSettings.loop
+      });
+      
+      // Show a warning for large GIFs
+      if (targetWidth * targetHeight * gifSettings.frameRate * duration > 50000000) { // Rough estimate for large GIFs
+        console.warn("This will be a large GIF and may take a while to generate");
+      }
       
       const result = await processVideo(sourceVideo, {
         command: [
@@ -243,6 +332,14 @@ const VideoToGif: React.FC = () => {
               <p className="text-sm text-red-700 dark:text-red-400">
                 {errorMessage || ffmpegError || error}
               </p>
+              {ffmpegError && (
+                <button 
+                  onClick={() => loadFFmpeg()}
+                  className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                >
+                  Retry Loading
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -274,7 +371,7 @@ const VideoToGif: React.FC = () => {
                   onTimeUpdate={handleTimeUpdate}
                   markers={{
                     start: gifSettings.startTime,
-                    end: gifSettings.endTime || undefined,
+                    end: gifSettings.endTime ?? videoDuration,
                   }}
                 />
                 <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">

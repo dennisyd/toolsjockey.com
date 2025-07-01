@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatFileSize } from '../../utils/fileUtils';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface SizeComparisonProps {
   originalSize: number;
@@ -14,11 +15,14 @@ const SizeComparison: React.FC<SizeComparisonProps> = ({
 }) => {
   // Calculate size reduction
   const sizeDifference = originalSize - compressedSize;
-  const percentReduction = (sizeDifference / originalSize) * 100;
+  const isLarger = sizeDifference < 0;
+  const absoluteSizeDiff = Math.abs(sizeDifference);
+  const percentChange = Math.abs((sizeDifference / originalSize) * 100);
   
   // Determine bar widths for visualization
-  const originalBarWidth = '100%';
-  const compressedBarWidth = `${Math.max(5, (compressedSize / originalSize) * 100)}%`;
+  const maxBarWidth = Math.max(originalSize, compressedSize);
+  const originalBarWidth = `${(originalSize / maxBarWidth) * 100}%`;
+  const compressedBarWidth = `${(compressedSize / maxBarWidth) * 100}%`;
   
   return (
     <div>
@@ -54,7 +58,7 @@ const SizeComparison: React.FC<SizeComparisonProps> = ({
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
             <div
-              className="bg-green-500 h-4 rounded-full"
+              className={`${isLarger ? 'bg-orange-500' : 'bg-green-500'} h-4 rounded-full`}
               style={{ width: compressedBarWidth }}
             />
           </div>
@@ -64,16 +68,21 @@ const SizeComparison: React.FC<SizeComparisonProps> = ({
       {/* Summary statistics */}
       <div className="mt-6 grid grid-cols-2 gap-4 text-center">
         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Space Saved</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {isLarger ? 'Size Increased' : 'Space Saved'}
+          </p>
           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-            {formatFileSize(sizeDifference)}
+            {formatFileSize(absoluteSizeDiff)}
           </p>
         </div>
         
-        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Reduction</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-            {isEstimate ? '~' : ''}{Math.round(percentReduction)}%
+        <div className={`p-3 ${isLarger ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20'} rounded-lg`}>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {isLarger ? 'Increase' : 'Reduction'}
+          </p>
+          <p className={`text-lg font-semibold flex items-center justify-center ${isLarger ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`}>
+            {isLarger ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
+            {isEstimate ? '~' : ''}{Math.round(percentChange)}%
           </p>
         </div>
       </div>
@@ -82,6 +91,22 @@ const SizeComparison: React.FC<SizeComparisonProps> = ({
         <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 italic text-center">
           * These are estimated values. Actual compression results may vary.
         </p>
+      )}
+      
+      {isLarger && !isEstimate && (
+        <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+          <p className="text-sm text-orange-700 dark:text-orange-300">
+            <strong>Note:</strong> The compressed file is larger than the original. This can happen when:
+          </p>
+          <ul className="text-xs text-orange-600 dark:text-orange-300 list-disc list-inside mt-1">
+            <li>The source video is already highly optimized</li>
+            <li>The selected quality settings are too high</li>
+            <li>The video codec requires more space for certain content types</li>
+          </ul>
+          <p className="text-xs text-orange-600 dark:text-orange-300 mt-1">
+            Try using lower quality settings or a different compression preset.
+          </p>
+        </div>
       )}
     </div>
   );
