@@ -189,8 +189,12 @@ const ExcelMergerSplitter: React.FC = () => {
       });
       setPreviewData([unifiedHeader, ...mergedRows]);
       setStep(3);
+      setMergeReport(`${mergedRows.length} rows merged successfully from ${files.length} files.`);
     } catch (e) {
-      setWarning('Error merging files. Please check file formats.');
+      console.error("Excel merge error:", e);
+      setWarning(`Error merging files by rows: ${e instanceof Error ? e.message : 'Please check file formats.'}`);
+      setIsProcessing(false);
+      return; // Prevent proceeding when there's an error
     }
     setIsProcessing(false);
   };
@@ -222,9 +226,16 @@ const ExcelMergerSplitter: React.FC = () => {
         if (data.length > 0) {
           header = data[0].map(h => (h ?? '').toString());
           const keyIdx = header.findIndex(h => h.trim().toLowerCase() === joinKey.trim().toLowerCase());
+          
+          // Check if the key column was found
+          if (keyIdx === -1) {
+            throw new Error(`Key column "${joinKey}" not found in file "${f.name}". Available columns: ${header.join(', ')}`);
+          }
+          
           // Map key to row
           const keyMap = new Map<string, string[]>();
           data.slice(1).forEach(row => {
+            if (keyIdx < 0 || keyIdx >= row.length) return;
             const key = (row[keyIdx] ?? '').toString();
             if (key) keyMap.set(key, row);
           });
@@ -292,7 +303,10 @@ const ExcelMergerSplitter: React.FC = () => {
       setStep(3);
       setMergeReport(`${mergedRows.length} rows merged. ${matched} fully matched, ${unmatched} with missing data.`);
     } catch (e) {
-      setWarning('Error merging files by columns. Please check file formats and key column.');
+      console.error("Excel merge error:", e);
+      setWarning(`Error merging files by columns: ${e instanceof Error ? e.message : 'Please check file formats and key column.'}`);
+      setIsProcessing(false);
+      return; // Prevent proceeding to next step when there's an error
     }
     setIsProcessing(false);
   };
@@ -538,6 +552,7 @@ const ExcelMergerSplitter: React.FC = () => {
           onClick={mergeByColumns}
           disabled={isProcessing || selectedFiles.length < 2 || !joinKey}
           aria-disabled={isProcessing || selectedFiles.length < 2 || !joinKey}
+          title={!joinKey ? "Please select a key column" : ""}
         >
           {isProcessing ? 'Processing...' : 'Generate Preview'}
         </button>

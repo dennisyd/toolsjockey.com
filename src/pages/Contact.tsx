@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // Update this URL to your actual form handling endpoint on your other domain
-const FORM_ENDPOINT = 'https://your-other-domain.com/api/contact';
+// const FORM_ENDPOINT = 'https://your-other-domain.com/api/contact';
 
 const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [copySuccess, setCopySuccess] = useState('');
   const [showCopyOption, setShowCopyOption] = useState(false);
-  const [showDirectOption, setShowDirectOption] = useState(true); // Default to direct submission
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Get form data
@@ -28,38 +25,7 @@ const Contact: React.FC = () => {
       return;
     }
     
-    if (showDirectOption) {
-      // Direct form submission to server endpoint
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch(FORM_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ 
-            name, 
-            email, 
-            message,
-            subject: 'Contact Form Submission from ToolsJockey.com'
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Server responded with an error');
-        }
-        
-        setSubmitted(true);
-      } catch (err) {
-        console.error('Form submission error:', err);
-        setError('Failed to send message. Please try another method or email us directly.');
-      } finally {
-        setLoading(false);
-      }
-    } else if (showCopyOption) {
+    if (showCopyOption) {
       // Create formatted message for copying
       const formattedMessage = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
       
@@ -108,44 +74,26 @@ const Contact: React.FC = () => {
         ) : (
           <>
             <div className="mb-4">
-              <div className="flex justify-center flex-wrap gap-2">
+              <div className="flex justify-center space-x-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowDirectOption(true);
-                    setShowCopyOption(false);
-                  }}
-                  className={`px-4 py-2 rounded-md ${showDirectOption ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
-                >
-                  Submit Directly
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowDirectOption(false);
-                    setShowCopyOption(false);
-                  }}
-                  className={`px-4 py-2 rounded-md ${!showDirectOption && !showCopyOption ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
+                  onClick={() => setShowCopyOption(false)}
+                  className={`px-4 py-2 rounded-md ${!showCopyOption ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
                 >
                   Use Email Client
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowDirectOption(false);
-                    setShowCopyOption(true);
-                  }}
+                  onClick={() => setShowCopyOption(true)}
                   className={`px-4 py-2 rounded-md ${showCopyOption ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
                 >
                   Copy to Clipboard
                 </button>
               </div>
               <p className="text-center text-sm mt-2 text-gray-500 dark:text-gray-400">
-                {showDirectOption ? 
-                  "Submit the form directly - no email client needed" : 
-                  showCopyOption ? 
-                    "Copy your message and send it manually from your preferred email app" : 
-                    "This will open your default email client with a pre-filled message"}
+                {showCopyOption ? 
+                  "Copy your message and send it manually from your preferred email app" : 
+                  "This will open your default email client with a pre-filled message"}
               </p>
             </div>
             
@@ -172,28 +120,11 @@ const Contact: React.FC = () => {
                 <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
               </div>
               
-              {error && (
-                <div className="text-red-500 text-sm">{error}</div>
-              )}
-              
               <button 
                 type="submit" 
-                className="btn btn-primary w-full flex justify-center items-center"
-                disabled={loading}
+                className="btn btn-primary w-full"
               >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Sending...
-                  </>
-                ) : (
-                  showDirectOption ? 'Submit Message' : 
-                  showCopyOption ? 'Copy Message' : 
-                  'Send Message'
-                )}
+                {showCopyOption ? 'Copy Message' : 'Send Message'}
               </button>
             </form>
           </>
