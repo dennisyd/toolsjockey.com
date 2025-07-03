@@ -323,6 +323,8 @@ const loadFFmpegOnce = async (): Promise<void> => {
       }
       
       isLoaded = true;
+      isLoading = false; // Reset loading state on success
+      loadingPromise = null; // Clear the loading promise
       loadAttempts = 0; // Reset attempts on success
       clearTimeout(timeout);
       console.log(`FFmpeg loaded successfully (using ${useCDN ? 'CDN' : 'local'} files)`);
@@ -353,12 +355,9 @@ const loadFFmpegOnce = async (): Promise<void> => {
         }, 3000); // Increased delay for production
       } else {
         clearTimeout(timeout);
-        reject(err);
-      }
-    } finally {
-      if (!isLoaded) {
         isLoading = false;
         loadingPromise = null;
+        reject(err);
       }
     }
   });
@@ -408,16 +407,47 @@ export const useFFmpeg = () => {
     }
   }, [isFFmpegLoaded]);
   
-  // Check if FFmpeg is already loaded on mount
+  // Check if FFmpeg is already loaded on mount and sync with global state
   useEffect(() => {
     // If already loaded globally, just update state
     if (isLoaded && ffmpegInstance) {
+      console.log('FFmpeg already loaded globally, updating component state');
       setIsFFmpegLoaded(true);
+      setIsFFmpegLoading(false);
       setFFmpegLoadingProgress(100);
       return;
     }
     
-    // Otherwise, load FFmpeg
+    // If currently loading globally, sync the loading state
+    if (isLoading) {
+      console.log('FFmpeg loading globally, syncing component state');
+      setIsFFmpegLoading(true);
+      
+      // Poll for completion
+      const checkInterval = setInterval(() => {
+        if (isLoaded && ffmpegInstance) {
+          console.log('Global FFmpeg loading completed, updating component state');
+          setIsFFmpegLoaded(true);
+          setIsFFmpegLoading(false);
+          setFFmpegLoadingProgress(100);
+          clearInterval(checkInterval);
+        } else if (!isLoading) {
+          // Loading stopped but not loaded - probably an error
+          console.log('Global FFmpeg loading stopped without success');
+          setIsFFmpegLoading(false);
+          clearInterval(checkInterval);
+        }
+      }, 500);
+      
+      // Clean up interval after reasonable time
+      setTimeout(() => {
+        clearInterval(checkInterval);
+      }, 60000);
+      
+      return () => clearInterval(checkInterval);
+    }
+    
+    // Otherwise, start loading FFmpeg
     loadFFmpeg();
   }, [loadFFmpeg]);
   
