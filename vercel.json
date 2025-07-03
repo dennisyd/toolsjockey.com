@@ -38,11 +38,15 @@
         },
         {
           "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin-allow-popups"
+          "value": "same-origin"
         },
         {
           "key": "Cross-Origin-Embedder-Policy",
-          "value": "credentialless"
+          "value": "require-corp"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "cross-origin"
         },
         {
           "key": "Content-Security-Policy",
