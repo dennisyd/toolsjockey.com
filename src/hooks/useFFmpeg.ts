@@ -456,8 +456,33 @@ export const useFFmpeg = () => {
       // Read the output file
       const data = ffmpeg.FS('readFile', outputFileName);
       
-      // Create a blob URL
-      const blob = new Blob([data.buffer], { type: outputMimeType });
+      // Create a blob URL with proper buffer handling
+      let blob: Blob;
+      try {
+        // Strategy 1: Try data.buffer.slice() for proper buffer handling
+        if (data.buffer && data.buffer.byteLength > 0) {
+          blob = new Blob([data.buffer.slice()], { type: outputMimeType });
+        } else if (data.length > 0) {
+          // Strategy 2: Use the data directly if it has length
+          blob = new Blob([data], { type: outputMimeType });
+        } else {
+          throw new Error('Output file data is empty');
+        }
+        
+        // Validate blob has content
+        if (blob.size === 0) {
+          throw new Error('Created blob is empty');
+        }
+      } catch (blobError) {
+        // Strategy 3: Fallback with Uint8Array conversion
+        console.warn('Blob creation strategy failed, trying fallback:', blobError);
+        const uint8Array = new Uint8Array(data);
+        blob = new Blob([uint8Array], { type: outputMimeType });
+        
+        if (blob.size === 0) {
+          throw new Error('All blob creation strategies failed - output file may be corrupted');
+        }
+      }
       const url = URL.createObjectURL(blob);
       
       // Clean up

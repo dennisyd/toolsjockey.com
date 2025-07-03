@@ -84,7 +84,34 @@ const FFmpegTest: React.FC = () => {
 
       // Read result
       const audioData = ffmpeg.FS('readFile', 'output.mp3');
-      const blob = new Blob([audioData.buffer], { type: 'audio/mpeg' });
+      
+      // Create blob with proper buffer handling
+      let blob: Blob;
+      try {
+        // Strategy 1: Try data.buffer.slice() for proper buffer handling
+        if (audioData.buffer && audioData.buffer.byteLength > 0) {
+          blob = new Blob([audioData.buffer.slice()], { type: 'audio/mpeg' });
+        } else if (audioData.length > 0) {
+          // Strategy 2: Use the data directly if it has length
+          blob = new Blob([audioData], { type: 'audio/mpeg' });
+        } else {
+          throw new Error('Output file data is empty');
+        }
+        
+        // Validate blob has content
+        if (blob.size === 0) {
+          throw new Error('Created blob is empty');
+        }
+      } catch (blobError) {
+        // Strategy 3: Fallback with Uint8Array conversion
+        console.warn('Blob creation strategy failed, trying fallback:', blobError);
+        const uint8Array = new Uint8Array(audioData);
+        blob = new Blob([uint8Array], { type: 'audio/mpeg' });
+        
+        if (blob.size === 0) {
+          throw new Error('All blob creation strategies failed - output file may be corrupted');
+        }
+      }
       const url = URL.createObjectURL(blob);
 
       // Clean up
