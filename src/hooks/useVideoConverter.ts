@@ -259,16 +259,45 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
           console.log('Options object:', options);
           console.log('Files before conversion:', ffmpeg.FS('readdir', '/'));
           
+          let commandSucceeded = false;
+          
           try {
             await ffmpeg.run(...args);
-            console.log('FFmpeg command completed successfully');
+            console.log('Main FFmpeg command completed');
+            
+            // Check immediately if file was created
+            const postCommandFiles = ffmpeg.FS('readdir', '/');
+            if (postCommandFiles.includes(outputFilename)) {
+              console.log('Main command succeeded - output file created');
+              commandSucceeded = true;
+            } else {
+              throw new Error('Main command did not create output file');
+            }
           } catch (ffmpegRunError) {
             console.warn('Main FFmpeg command failed, trying fallback:', ffmpegRunError);
             
             // Try the simple fallback command
             console.log('Trying fallback command:', fallbackArgs.join(' '));
-            await ffmpeg.run(...fallbackArgs);
-            console.log('Fallback FFmpeg command completed successfully');
+            try {
+              await ffmpeg.run(...fallbackArgs);
+              console.log('Fallback FFmpeg command completed');
+              
+              // Check if fallback created the file
+              const postFallbackFiles = ffmpeg.FS('readdir', '/');
+              if (postFallbackFiles.includes(outputFilename)) {
+                console.log('Fallback command succeeded - output file created');
+                commandSucceeded = true;
+              } else {
+                throw new Error('Fallback command also did not create output file');
+              }
+            } catch (fallbackError) {
+              console.error('Fallback command also failed:', fallbackError);
+              throw new Error('Both main and fallback FFmpeg commands failed');
+            }
+          }
+          
+          if (!commandSucceeded) {
+            throw new Error('FFmpeg command completed but no output file was created');
           }
           
           // Check if output file was actually created
