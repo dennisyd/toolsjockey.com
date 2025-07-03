@@ -70,15 +70,27 @@ const AudioExtractor: React.FC = () => {
   // Load FFmpeg when component mounts
   useEffect(() => {
     const loadFFmpegWithRetry = async () => {
+      // If FFmpeg is already loaded globally, no need to load again
+      if (isFFmpegLoaded) {
+        console.log('FFmpeg already loaded when component mounted');
+        return;
+      }
+      
+      // If FFmpeg is currently loading, just wait
+      if (isFFmpegLoading) {
+        console.log('FFmpeg already loading when component mounted, waiting...');
+        return;
+      }
+      
       try {
-        console.log('Attempting to load FFmpeg');
+        console.log('Attempting to load FFmpeg in AudioExtractor');
         await loadFFmpeg();
-        console.log('FFmpeg loaded successfully in component');
+        console.log('FFmpeg loaded successfully in AudioExtractor');
       } catch (error) {
         console.error('Error in initial FFmpeg load:', error);
-        // If we're in Chrome, which should be fully supported, try one more time
-        if (isChrome) {
-          console.log('Retrying FFmpeg load in Chrome');
+        // For Chrome users, we can be more aggressive with retries
+        if (isChrome && !isFFmpegLoading) {
+          console.log('Retrying FFmpeg load in Chrome after delay');
           setTimeout(async () => {
             try {
               await loadFFmpeg();
@@ -87,13 +99,13 @@ const AudioExtractor: React.FC = () => {
               console.error('FFmpeg load retry failed:', retryError);
               // Error is already handled by the hook
             }
-          }, 3000); // Wait 3 seconds before retry
+          }, 2000); // Reduced delay from 3 seconds to 2 seconds
         }
       }
     };
     
     loadFFmpegWithRetry();
-  }, [loadFFmpeg]);
+  }, [loadFFmpeg, isFFmpegLoaded, isFFmpegLoading]);
   
   // Update error message when FFmpeg error changes
   useEffect(() => {
@@ -188,11 +200,23 @@ const AudioExtractor: React.FC = () => {
       return;
     }
     
+    // Check if FFmpeg is loaded and ready
     if (!isFFmpegLoaded) {
+      // If currently loading, wait a bit and try again
+      if (isFFmpegLoading) {
+        setErrorMessage('Audio processing engine is still loading. Please wait a moment and try again.');
+        return;
+      }
+      
       try {
         setErrorMessage(null);
         console.log('FFmpeg not loaded, attempting to load before extraction');
         await loadFFmpeg();
+        
+        // Double-check that it's actually loaded after the load attempt
+        if (!isFFmpegLoaded) {
+          throw new Error('FFmpeg failed to load properly');
+        }
       } catch (err) {
         console.error('Failed to load FFmpeg before extraction:', err);
         setErrorMessage('Failed to load audio processing engine. Please refresh the page and try again.');

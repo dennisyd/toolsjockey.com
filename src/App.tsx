@@ -126,17 +126,20 @@ const LoadingFallback = () => (
 
 function App() {
   useEffect(() => {
-    // Pre-load FFmpeg when the app starts
+    // Pre-load FFmpeg when the app starts - but only in a background way
+    // Let individual components handle their own loading properly
     const preloadFFmpeg = async () => {
       try {
         const ffmpeg = getFFmpeg();
+        // Only check if it's already loaded, don't force loading here
+        // This avoids race conditions with component-level loading
         if (!ffmpeg.isLoaded()) {
-          console.log('Preloading FFmpeg at app level...');
-          await ffmpeg.load();
-          console.log('FFmpeg preloaded successfully');
+          console.log('FFmpeg not yet loaded, components will handle loading as needed');
+        } else {
+          console.log('FFmpeg already loaded');
         }
       } catch (error) {
-        console.error('Error preloading FFmpeg:', error);
+        console.log('FFmpeg preload check failed, components will handle loading:', error);
         // Individual components will handle FFmpeg loading if needed
       }
     };
