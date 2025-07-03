@@ -58,8 +58,8 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       args.push('-b:v', options.bitrate);
     }
     
-    // Framerate (skip if 'original' is specified)
-    if (options.framerate && options.framerate !== 'original') {
+    // Framerate (skip if 'original' is specified or invalid)
+    if (options.framerate && options.framerate !== 'original' && !isNaN(Number(options.framerate))) {
       args.push('-r', options.framerate);
     }
     
@@ -77,13 +77,17 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       }
     }
     
-    // Audio channels (skip if 'original' is specified)
-    if (options.audioChannels && options.audioChannels !== 'original') {
+    // Audio channels (skip if 'original' is specified or invalid)
+    if (options.audioChannels && 
+        options.audioChannels !== 'original' && 
+        !isNaN(Number(options.audioChannels))) {
       args.push('-ac', options.audioChannels);
     }
     
-    // Audio sample rate (skip if 'original' is specified)
-    if (options.audioSampleRate && options.audioSampleRate !== 'original') {
+    // Audio sample rate (skip if 'original' is specified or invalid)
+    if (options.audioSampleRate && 
+        options.audioSampleRate !== 'original' && 
+        !isNaN(Number(options.audioSampleRate))) {
       args.push('-ar', options.audioSampleRate);
     }
     
@@ -195,32 +199,54 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
         console.log('FFmpeg command args:', args);
         
         // Validate command arguments before running
-        for (let i = 0; i < args.length; i++) {
-          const arg = args[i];
-          if (arg === '-ac' && i + 1 < args.length) {
-            const value = args[i + 1];
-            if (isNaN(Number(value))) {
+        console.log('Validating FFmpeg arguments:', args);
+        for (let j = 0; j < args.length; j++) {
+          const arg = args[j];
+          if (arg === '-ac' && j + 1 < args.length) {
+            const value = args[j + 1];
+            if (value === 'original' || isNaN(Number(value))) {
+              console.error(`Invalid audio channels value: "${value}". Expected a number.`);
               throw new Error(`Invalid audio channels value: "${value}". Expected a number.`);
             }
           }
-          if (arg === '-ar' && i + 1 < args.length) {
-            const value = args[i + 1];
-            if (isNaN(Number(value))) {
+          if (arg === '-ar' && j + 1 < args.length) {
+            const value = args[j + 1];
+            if (value === 'original' || isNaN(Number(value))) {
+              console.error(`Invalid audio sample rate value: "${value}". Expected a number.`);
               throw new Error(`Invalid audio sample rate value: "${value}". Expected a number.`);
             }
           }
-          if (arg === '-r' && i + 1 < args.length) {
-            const value = args[i + 1];
-            if (isNaN(Number(value))) {
+          if (arg === '-r' && j + 1 < args.length) {
+            const value = args[j + 1];
+            if (value === 'original' || isNaN(Number(value))) {
+              console.error(`Invalid framerate value: "${value}". Expected a number.`);
               throw new Error(`Invalid framerate value: "${value}". Expected a number.`);
             }
           }
         }
         
         try {
+          console.log('Running FFmpeg with command:', args.join(' '));
           await ffmpeg.run(...args);
+          console.log('FFmpeg command completed successfully');
+          
+          // Check if output file was actually created
+          const fileList = ffmpeg.FS('readdir', '/');
+          console.log('Files in FFmpeg filesystem after conversion:', fileList);
+          
+          if (!fileList.includes(outputFilename)) {
+            throw new Error(`Output file ${outputFilename} was not created. The conversion may have failed silently.`);
+          }
         } catch (ffmpegError) {
           console.error('FFmpeg conversion failed:', ffmpegError);
+          
+          // Check what files are in the filesystem for debugging
+          try {
+            const fileList = ffmpeg.FS('readdir', '/');
+            console.log('Files in filesystem during error:', fileList);
+          } catch (e) {
+            console.log('Could not read filesystem during error');
+          }
           
           // Provide more specific error messages
           const errorMsg = ffmpegError instanceof Error ? ffmpegError.message : String(ffmpegError);
@@ -228,6 +254,8 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
             throw new Error(`Invalid conversion settings: ${errorMsg}. Please check your audio and video settings.`);
           } else if (errorMsg.includes('codec') || errorMsg.includes('format')) {
             throw new Error(`Unsupported format or codec: ${errorMsg}. Try different output settings.`);
+          } else if (errorMsg.includes('not created')) {
+            throw new Error(`Conversion failed: ${errorMsg}. This usually means the FFmpeg command failed. Please try different settings.`);
           } else {
             throw new Error(`Video conversion failed: ${errorMsg}`);
           }
