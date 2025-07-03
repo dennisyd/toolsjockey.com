@@ -31,11 +31,21 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
     const args: string[] = [
       '-i', inputFilename,
       '-y', // Overwrite output files without asking
+      '-movflags', '+faststart', // Optimize for web playback
     ];
     
-    // Video codec
+    // Video codec with fallback
     if (options.videoCodec) {
       args.push('-c:v', options.videoCodec);
+    } else {
+      // Default codec based on output format
+      if (options.outputFormat === 'mp4') {
+        args.push('-c:v', 'libx264');
+      } else if (options.outputFormat === 'webm') {
+        args.push('-c:v', 'libvpx-vp9');
+      } else if (options.outputFormat === 'avi') {
+        args.push('-c:v', 'libx264');
+      }
     }
     
     // Resolution
@@ -53,9 +63,18 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       args.push('-r', options.framerate);
     }
     
-    // Audio codec
+    // Audio codec with fallback
     if (options.audioCodec) {
       args.push('-c:a', options.audioCodec);
+    } else {
+      // Default audio codec based on output format
+      if (options.outputFormat === 'mp4') {
+        args.push('-c:a', 'aac');
+      } else if (options.outputFormat === 'webm') {
+        args.push('-c:a', 'libopus');
+      } else if (options.outputFormat === 'avi') {
+        args.push('-c:a', 'aac');
+      }
     }
     
     // Audio channels
@@ -84,13 +103,19 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       args.push('-an');
     }
     
-    // Compression level
-    if (options.compressionLevel === 'low') {
-      args.push('-crf', '28');
-    } else if (options.compressionLevel === 'medium') {
-      args.push('-crf', '23');
-    } else if (options.compressionLevel === 'high') {
-      args.push('-crf', '18');
+    // Compression level (only for h264/h265 codecs)
+    const videoCodec = options.videoCodec || (options.outputFormat === 'mp4' ? 'libx264' : 'libx264');
+    if (videoCodec.includes('x264') || videoCodec.includes('x265')) {
+      if (options.compressionLevel === 'low') {
+        args.push('-crf', '28');
+      } else if (options.compressionLevel === 'medium') {
+        args.push('-crf', '23');
+      } else if (options.compressionLevel === 'high') {
+        args.push('-crf', '18');
+      } else {
+        // Default to medium quality
+        args.push('-crf', '23');
+      }
     }
     
     // Output filename must be the last argument
@@ -166,35 +191,84 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
         checkAbort();
         setCurrentTask(`Converting file ${i + 1} of ${files.length}...`);
         const args = getFFmpegArgs(inputFilename, outputFilename, options);
-        await ffmpeg.run(...args);
+        
+        console.log('FFmpeg command args:', args);
+        
+        try {
+          await ffmpeg.run(...args);
+        } catch (ffmpegError) {
+          console.error('FFmpeg conversion failed:', ffmpegError);
+          throw new Error(`Video conversion failed: ${ffmpegError instanceof Error ? ffmpegError.message : 'Unknown FFmpeg error'}`);
+        }
         
         // Read the output file from the virtual file system
         checkAbort();
         setCurrentTask(`Finalizing file ${i + 1} of ${files.length}...`);
-        const data = ffmpeg.FS('readFile', outputFilename);
         
-        // Create a Blob from the file data
-        const blob = new Blob([data.buffer], { type: `video/${options.outputFormat}` });
-        const url = URL.createObjectURL(blob);
-        
-        // Add to converted files
-        const convertedFile: ConvertedFile = {
-          id: uuidv4(),
-          originalId: file.id,
-          name: getOutputFileName(file, options),
-          size: blob.size,
-          url,
-          format: options.outputFormat,
-          metadata: {
-            // Could extract metadata from the converted file if needed
-          },
-        };
-        
-        newConvertedFiles.push(convertedFile);
-        
-        // Clean up files from the virtual file system
-        ffmpeg.FS('unlink', inputFilename);
-        ffmpeg.FS('unlink', outputFilename);
+        // Check if output file exists before reading
+        try {
+          const data = ffmpeg.FS('readFile', outputFilename);
+          
+          // Create a Blob from the file data with multiple fallback strategies
+          let blob: Blob;
+          try {
+            // Strategy 1: Try data.buffer.slice() for proper buffer handling
+            if (data.buffer && data.buffer.byteLength > 0) {
+              blob = new Blob([data.buffer.slice()], { type: `video/${options.outputFormat}` });
+            } else if (data.length > 0) {
+              // Strategy 2: Use the data directly if it has length
+              blob = new Blob([data], { type: `video/${options.outputFormat}` });
+            } else {
+              throw new Error('Output file data is empty');
+            }
+            
+            // Validate blob has content
+            if (blob.size === 0) {
+              throw new Error('Created blob is empty');
+            }
+          } catch (blobError) {
+            // Strategy 3: Fallback with Uint8Array conversion
+            console.warn('Blob creation strategy failed, trying fallback:', blobError);
+            const uint8Array = new Uint8Array(data);
+            blob = new Blob([uint8Array], { type: `video/${options.outputFormat}` });
+            
+            if (blob.size === 0) {
+              throw new Error('All blob creation strategies failed - output file may be corrupted');
+            }
+          }
+          const url = URL.createObjectURL(blob);
+          
+          // Add to converted files
+          const convertedFile: ConvertedFile = {
+            id: uuidv4(),
+            originalId: file.id,
+            name: getOutputFileName(file, options),
+            size: blob.size,
+            url,
+            format: options.outputFormat,
+            metadata: {
+              // Could extract metadata from the converted file if needed
+            },
+          };
+          
+          newConvertedFiles.push(convertedFile);
+          
+        } catch (fileError) {
+          console.error(`Failed to read output file ${outputFilename}:`, fileError);
+          throw new Error(`Failed to process converted file: ${fileError instanceof Error ? fileError.message : 'Unknown error'}`);
+        } finally {
+          // Clean up files from the virtual file system
+          try {
+            ffmpeg.FS('unlink', inputFilename);
+          } catch (e) {
+            console.warn('Failed to cleanup input file:', e);
+          }
+          try {
+            ffmpeg.FS('unlink', outputFilename);
+          } catch (e) {
+            console.warn('Failed to cleanup output file:', e);
+          }
+        }
       }
       
       setConvertedFiles(prev => [...prev, ...newConvertedFiles]);
