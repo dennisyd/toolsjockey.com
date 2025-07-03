@@ -16,6 +16,9 @@ import { AlertCircle, X, RefreshCw } from 'lucide-react';
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
 
+// Check if browser is Chrome
+const isChrome = navigator.userAgent.indexOf("Chrome") > -1;
+
 // Detect browser
 const detectBrowser = () => {
   const userAgent = navigator.userAgent.toLowerCase();
@@ -31,17 +34,17 @@ const VideoConverter: React.FC = () => {
   const [videoFiles, setVideoFiles] = useState<VideoFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('mp4');
   const [quality, setQuality] = useState<string>('medium'); // low, medium, high, custom
-  const [resolution, setResolution] = useState<string>('');
-  const [bitrate, setBitrate] = useState<string>('');
-  const [framerate, setFramerate] = useState<string>('');
+  const [resolution, setResolution] = useState<string>('original');
+  const [bitrate, setBitrate] = useState<string>('auto');
+  const [framerate, setFramerate] = useState<string>('original');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [videoCodec, setVideoCodec] = useState<string>('');
-  const [audioCodec, setAudioCodec] = useState<string>('');
-  const [audioChannels, setAudioChannels] = useState<string>('2');
-  const [audioSampleRate, setAudioSampleRate] = useState<string>('44100');
+  const [videoCodec, setVideoCodec] = useState<string>('auto');
+  const [audioCodec, setAudioCodec] = useState<string>('auto');
+  const [audioChannels, setAudioChannels] = useState<string>('original');
+  const [audioSampleRate, setAudioSampleRate] = useState<string>('original');
   const [compressionLevel, setCompressionLevel] = useState<string>('medium');
-  const [showCompatWarning, setShowCompatWarning] = useState(!isSharedArrayBufferSupported);
+  const [showCompatWarning, setShowCompatWarning] = useState(!isSharedArrayBufferSupported && !isChrome);
 
   // Custom hooks
   const { 
@@ -147,7 +150,7 @@ const VideoConverter: React.FC = () => {
       </div>
 
       {/* SharedArrayBuffer warning */}
-      {!isSharedArrayBufferSupported && showCompatWarning && (
+      {!isSharedArrayBufferSupported && !isChrome && showCompatWarning && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 m-4 relative">
           <button 
             onClick={dismissCompatWarning}

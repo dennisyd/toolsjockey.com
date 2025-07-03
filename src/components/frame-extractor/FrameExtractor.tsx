@@ -30,6 +30,9 @@ interface ExtractionSettings {
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
 
+// Check if browser is Chrome
+const isChrome = navigator.userAgent.indexOf("Chrome") > -1;
+
 // Privacy Badge Component
 const PrivacyBadge: React.FC = () => (
   <div className="inline-flex items-center bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded text-xs text-green-800 dark:text-green-300 mt-2">
@@ -331,8 +334,8 @@ const FrameExtractor: React.FC = () => {
         <PrivacyBadge />
       </div>
 
-      {/* SharedArrayBuffer warning */}
-      {!isSharedArrayBufferSupported && (
+      {/* SharedArrayBuffer warning - only show for non-Chrome browsers that don't support it */}
+      {!isSharedArrayBufferSupported && !isChrome && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 m-4">
           <div className="flex">
             <AlertCircle className="h-6 w-6 text-yellow-500" />

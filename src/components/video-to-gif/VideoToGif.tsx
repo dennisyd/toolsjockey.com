@@ -22,6 +22,9 @@ interface GifSettings {
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
 
+// Check if browser is Chrome
+const isChrome = navigator.userAgent.indexOf("Chrome") > -1;
+
 // Privacy Badge Component
 const PrivacyBadge: React.FC = () => (
   <div className="inline-flex items-center bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded text-xs text-green-800 dark:text-green-300 mt-2">
@@ -308,12 +311,12 @@ const VideoToGif: React.FC = () => {
       </div>
 
       {/* SharedArrayBuffer warning */}
-      {!isSharedArrayBufferSupported && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 m-4">
+      {!isSharedArrayBufferSupported && !isChrome && (
+        <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 m-4">
           <div className="flex">
-            <AlertCircle className="h-6 w-6 text-yellow-500" />
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
+            <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-300 mr-2" />
+            <div>
+              <p className="text-sm text-yellow-700 dark:text-yellow-200">
                 <strong>Browser Compatibility Issue:</strong> Your browser doesn't support SharedArrayBuffer, 
                 which is required for optimal video processing. The converter will attempt to use a fallback method,
                 but for best results, please use Chrome, Edge, or Firefox with HTTPS.
