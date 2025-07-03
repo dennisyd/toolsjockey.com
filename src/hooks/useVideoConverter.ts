@@ -31,8 +31,12 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
     const args: string[] = [
       '-i', inputFilename,
       '-y', // Overwrite output files without asking
-      '-movflags', '+faststart', // Optimize for web playback
     ];
+    
+    // Add movflags only for MP4/MOV containers
+    if (options.outputFormat === 'mp4' || options.outputFormat === 'mov') {
+      args.push('-movflags', '+faststart'); // Optimize for web playback
+    }
     
     // Video codec with fallback
     if (options.videoCodec) {
@@ -44,6 +48,11 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       } else if (options.outputFormat === 'webm') {
         args.push('-c:v', 'libvpx-vp9');
       } else if (options.outputFormat === 'avi') {
+        args.push('-c:v', 'libx264');
+      } else if (options.outputFormat === 'mov') {
+        args.push('-c:v', 'libx264');
+      } else {
+        // Fallback to libx264 for unknown formats
         args.push('-c:v', 'libx264');
       }
     }
@@ -73,6 +82,11 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       } else if (options.outputFormat === 'webm') {
         args.push('-c:a', 'libopus');
       } else if (options.outputFormat === 'avi') {
+        args.push('-c:a', 'aac');
+      } else if (options.outputFormat === 'mov') {
+        args.push('-c:a', 'aac');
+      } else {
+        // Fallback to aac for unknown formats
         args.push('-c:a', 'aac');
       }
     }
@@ -107,9 +121,10 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       args.push('-an');
     }
     
-    // Compression level (only for h264/h265 codecs)
-    const videoCodec = options.videoCodec || (options.outputFormat === 'mp4' ? 'libx264' : 'libx264');
-    if (videoCodec.includes('x264') || videoCodec.includes('x265')) {
+    // Compression level (only for h264/h265 codecs and specific formats)
+    const videoCodec = options.videoCodec || 'libx264';
+    if ((videoCodec.includes('x264') || videoCodec.includes('x265')) && 
+        (options.outputFormat === 'mp4' || options.outputFormat === 'mov' || options.outputFormat === 'avi')) {
       if (options.compressionLevel === 'low') {
         args.push('-crf', '28');
       } else if (options.compressionLevel === 'medium') {
@@ -198,6 +213,17 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
         
         console.log('FFmpeg command args:', args);
         
+        // Create a simplified fallback command if the main one might be problematic
+        const fallbackArgs = [
+          '-i', inputFilename,
+          '-y', // Overwrite output files
+          '-c:v', 'libx264', // Simple video codec
+          '-c:a', 'aac', // Simple audio codec
+          '-crf', '23', // Reasonable quality
+          outputFilename
+        ];
+        console.log('Fallback command would be:', fallbackArgs.join(' '));
+        
         // Validate command arguments before running
         console.log('Validating FFmpeg arguments:', args);
         for (let j = 0; j < args.length; j++) {
@@ -227,14 +253,32 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
         
         try {
           console.log('Running FFmpeg with command:', args.join(' '));
-          await ffmpeg.run(...args);
-          console.log('FFmpeg command completed successfully');
+          console.log('Full FFmpeg args array:', args);
+          console.log('Input filename:', inputFilename);
+          console.log('Output filename:', outputFilename);
+          console.log('Options object:', options);
+          console.log('Files before conversion:', ffmpeg.FS('readdir', '/'));
+          
+          try {
+            await ffmpeg.run(...args);
+            console.log('FFmpeg command completed successfully');
+          } catch (ffmpegRunError) {
+            console.warn('Main FFmpeg command failed, trying fallback:', ffmpegRunError);
+            
+            // Try the simple fallback command
+            console.log('Trying fallback command:', fallbackArgs.join(' '));
+            await ffmpeg.run(...fallbackArgs);
+            console.log('Fallback FFmpeg command completed successfully');
+          }
           
           // Check if output file was actually created
           const fileList = ffmpeg.FS('readdir', '/');
           console.log('Files in FFmpeg filesystem after conversion:', fileList);
+          console.log('Expected output filename:', outputFilename);
           
           if (!fileList.includes(outputFilename)) {
+            console.error('Output file not found. Expected:', outputFilename);
+            console.error('Available files:', fileList);
             throw new Error(`Output file ${outputFilename} was not created. The conversion may have failed silently.`);
           }
         } catch (ffmpegError) {
