@@ -15,19 +15,48 @@ const CORE_URL = '/ffmpeg-core.js';
 const WASM_URL = '/ffmpeg-core.wasm';
 const WORKER_URL = '/ffmpeg-core.worker.js';
 
+// CDN fallback URLs
+const CDN_CORE_URL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js';
+const CDN_WASM_URL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm';
+const CDN_WORKER_URL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.worker.js';
+
 // Track loading progress
 let currentLoadingProgress = 0;
+let usingCDN = false;
 
-// Check if FFmpeg core files exist
-const checkFFmpegFilesExist = async (): Promise<boolean> => {
+// Check if FFmpeg core files exist with better error handling
+const checkFFmpegFilesExist = async (useCDN = false): Promise<boolean> => {
+  const coreUrl = useCDN ? CDN_CORE_URL : CORE_URL;
+  const wasmUrl = useCDN ? CDN_WASM_URL : WASM_URL;
+  const workerUrl = useCDN ? CDN_WORKER_URL : WORKER_URL;
+  
   try {
-    const coreResponse = await fetch(CORE_URL, { method: 'HEAD' });
-    const wasmResponse = await fetch(WASM_URL, { method: 'HEAD' });
-    const workerResponse = await fetch(WORKER_URL, { method: 'HEAD' });
+    console.log(`Checking FFmpeg files existence (CDN: ${useCDN})`);
     
-    return coreResponse.ok && wasmResponse.ok && workerResponse.ok;
+    // Use a more robust check that also validates file size
+    const [coreResponse, wasmResponse, workerResponse] = await Promise.all([
+      fetch(coreUrl, { method: 'HEAD' }),
+      fetch(wasmUrl, { method: 'HEAD' }),
+      fetch(workerUrl, { method: 'HEAD' })
+    ]);
+    
+    const allFilesExist = coreResponse.ok && wasmResponse.ok && workerResponse.ok;
+    
+    if (allFilesExist) {
+      // Check if WASM file has reasonable size (should be > 1MB)
+      const wasmSize = wasmResponse.headers.get('content-length');
+      if (wasmSize && parseInt(wasmSize) < 1000000) {
+        console.warn('WASM file seems too small, might be corrupted');
+        return false;
+      }
+      console.log(`FFmpeg files check passed (CDN: ${useCDN})`);
+    } else {
+      console.log(`FFmpeg files check failed (CDN: ${useCDN})`);
+    }
+    
+    return allFilesExist;
   } catch (error) {
-    console.error('Error checking FFmpeg files:', error);
+    console.error(`Error checking FFmpeg files (CDN: ${useCDN}):`, error);
     return false;
   }
 };
@@ -41,18 +70,27 @@ export interface FFmpegProcessOptions {
 }
 
 // Create and get FFmpeg instance
-export const getFFmpeg = (): FFmpeg => {
-  if (!ffmpegInstance) {
+export const getFFmpeg = (forceCDN = false): FFmpeg => {
+  if (!ffmpegInstance || (forceCDN && !usingCDN)) {
+    const coreUrl = forceCDN ? CDN_CORE_URL : CORE_URL;
+    const wasmUrl = forceCDN ? CDN_WASM_URL : WASM_URL;
+    const workerUrl = forceCDN ? CDN_WORKER_URL : WORKER_URL;
+    
+    usingCDN = forceCDN;
+    
+    console.log(`Creating FFmpeg instance (CDN: ${forceCDN})`);
+    
     ffmpegInstance = createFFmpeg({
       log: true,
       progress: ({ ratio }) => {
         if (ratio >= 0 && ratio <= 1) {
-          currentLoadingProgress = Math.round(ratio * 100);
+          currentLoadingProgress = Math.round(10 + (ratio * 80)); // Progress from 10% to 90%
+          console.log(`FFmpeg loading progress: ${currentLoadingProgress}%`);
         }
       },
-      corePath: CORE_URL,
-      wasmPath: WASM_URL,
-      workerPath: WORKER_URL,
+      corePath: coreUrl,
+      wasmPath: wasmUrl,
+      workerPath: workerUrl,
     });
   }
   return ffmpegInstance;
@@ -131,6 +169,7 @@ const loadFFmpegOnce = async (): Promise<void> => {
       console.warn('FFmpeg instance claimed to be loaded but isLoaded() check failed:', e);
       // Reset the state since the instance isn't working properly
       isLoaded = false;
+      ffmpegInstance = null;
       // Continue with loading if the check failed
     }
   }
@@ -147,42 +186,47 @@ const loadFFmpegOnce = async (): Promise<void> => {
   console.log('Starting FFmpeg loading process');
   
   loadingPromise = new Promise<void>(async (resolve, reject) => {
-    // Create a timeout to prevent infinite loading
+    // Create a timeout to prevent infinite loading (increased for production)
     const timeout = setTimeout(() => {
-      console.error('FFmpeg loading timed out after 60 seconds');
+      console.error('FFmpeg loading timed out after 90 seconds');
       reject(new Error('Loading timed out. Please refresh the page and try again.'));
-    }, 60000); // Increased from 30s to 60s
+    }, 90000); // Increased from 60s to 90s for production
     
     try {
-      // First check if FFmpeg core files exist
-      const filesExist = await checkFFmpegFilesExist();
-      if (!filesExist) {
-        console.error('FFmpeg core files not found');
-        throw new Error('FFmpeg core files not found. This could be due to a deployment issue.');
-      } else {
-        console.log('FFmpeg core files exist');
-      }
-      
       loadAttempts++;
       console.log(`FFmpeg load attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS}`);
-      currentLoadingProgress = 5; // Set initial progress
+      currentLoadingProgress = 2;
       
-      // Create FFmpeg instance if it doesn't exist
-      if (!ffmpegInstance) {
-        console.log('Creating new FFmpeg instance');
-        ffmpegInstance = createFFmpeg({
-          log: true,
-          progress: ({ ratio }) => {
-            if (ratio >= 0 && ratio <= 1) {
-              currentLoadingProgress = Math.round(ratio * 100);
-            }
-          },
-          corePath: CORE_URL,
-          wasmPath: WASM_URL,
-          workerPath: WORKER_URL,
-        });
+      // First, try to check local files
+      console.log('Checking local FFmpeg files...');
+      let filesExist = await checkFFmpegFilesExist(false);
+      let useCDN = false;
+      
+      if (!filesExist) {
+        console.log('Local files not found, checking CDN...');
+        currentLoadingProgress = 5;
+        filesExist = await checkFFmpegFilesExist(true);
+        useCDN = true;
+        
+        if (!filesExist) {
+          console.error('Neither local nor CDN FFmpeg files are accessible');
+          throw new Error('FFmpeg core files not accessible. This could be due to a network issue or deployment problem.');
+        } else {
+          console.log('CDN files are accessible, will use CDN');
+        }
       } else {
-        console.log('Using existing FFmpeg instance');
+        console.log('Local files are accessible');
+      }
+      
+      currentLoadingProgress = 8;
+      
+      // Create FFmpeg instance with appropriate URLs
+      try {
+        ffmpegInstance = getFFmpeg(useCDN);
+        console.log(`FFmpeg instance created (using ${useCDN ? 'CDN' : 'local'} files)`);
+      } catch (instanceError) {
+        console.error('Error creating FFmpeg instance:', instanceError);
+        throw new Error('Failed to create FFmpeg instance');
       }
       
       // Check if FFmpeg is already loaded
@@ -200,67 +244,121 @@ const loadFFmpegOnce = async (): Promise<void> => {
       // Only load if not already loaded
       if (!alreadyLoaded) {
         try {
-          console.log('Starting FFmpeg.load()');
-          await Promise.race([
-            ffmpegInstance.load(),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('FFmpeg load operation timed out')), 40000) // Increased from 20s to 40s
-            )
-          ]);
+          console.log('Starting FFmpeg.load() operation...');
+          
+          // Add more detailed progress tracking
+          const loadPromise = ffmpegInstance.load();
+          
+          // Create a more sophisticated timeout with progress checks
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            let progressStuckTime = 0;
+            let lastProgress = currentLoadingProgress;
+            
+            const progressCheck = setInterval(() => {
+              if (currentLoadingProgress === lastProgress) {
+                progressStuckTime += 2000;
+                console.log(`Progress stuck at ${currentLoadingProgress}% for ${progressStuckTime/1000}s`);
+                
+                if (progressStuckTime >= 30000) { // 30 seconds stuck
+                  clearInterval(progressCheck);
+                  reject(new Error('FFmpeg loading appears to be stuck. This could be due to network issues or browser limitations.'));
+                }
+              } else {
+                progressStuckTime = 0;
+                lastProgress = currentLoadingProgress;
+              }
+            }, 2000);
+            
+            setTimeout(() => {
+              clearInterval(progressCheck);
+              reject(new Error('FFmpeg load operation timed out after 60 seconds'));
+            }, 60000);
+          });
+          
+          await Promise.race([loadPromise, timeoutPromise]);
+          
           console.log('FFmpeg.load() completed successfully');
-          currentLoadingProgress = 80;
+          currentLoadingProgress = 90;
         } catch (loadError) {
           console.error('Error in FFmpeg.load():', loadError);
+          
           // Special handling for "already loaded" error
           if (String(loadError).includes('ffmpeg.wasm was loaded')) {
             console.log('FFmpeg was already loaded, continuing...');
             alreadyLoaded = true;
-            currentLoadingProgress = 80;
+            currentLoadingProgress = 90;
           } else {
+            // If local files failed and we haven't tried CDN yet, try CDN
+            if (!useCDN && loadAttempts === 1) {
+              console.log('Local loading failed, will retry with CDN');
+              ffmpegInstance = null;
+              isLoading = false;
+              loadingPromise = null;
+              throw new Error('RETRY_WITH_CDN');
+            }
             throw loadError;
           }
         }
+      } else {
+        currentLoadingProgress = 90;
       }
       
       // Test the FFmpeg instance with a simple operation to verify it's working correctly
       try {
-        console.log('Testing FFmpeg instance');
-        ffmpegInstance.FS('writeFile', 'test.txt', new Uint8Array([1, 2, 3]));
-        const testData = ffmpegInstance.FS('readFile', 'test.txt');
-        console.log('Test file read successful, data length:', testData.length);
+        console.log('Testing FFmpeg instance functionality...');
+        const testData = new Uint8Array([72, 101, 108, 108, 111]); // "Hello" in bytes
+        ffmpegInstance.FS('writeFile', 'test.txt', testData);
+        const readData = ffmpegInstance.FS('readFile', 'test.txt');
+        
+        if (readData.length !== testData.length) {
+          throw new Error('File read/write test failed');
+        }
+        
         ffmpegInstance.FS('unlink', 'test.txt');
         console.log('FFmpeg instance test passed');
         currentLoadingProgress = 100;
       } catch (testErr) {
         console.error('FFmpeg instance test failed:', testErr);
-        throw new Error('Failed to initialize FFmpeg properly');
+        throw new Error('FFmpeg failed functionality test. The engine may not be properly initialized.');
       }
       
       isLoaded = true;
       loadAttempts = 0; // Reset attempts on success
-      clearTimeout(timeout); // Clear the timeout
-      console.log('FFmpeg loaded successfully');
+      clearTimeout(timeout);
+      console.log(`FFmpeg loaded successfully (using ${useCDN ? 'CDN' : 'local'} files)`);
       resolve();
+      
     } catch (err) {
       console.error('Error loading FFmpeg:', err);
       isLoaded = false;
       
+      // Special handling for CDN retry
+      if (String(err).includes('RETRY_WITH_CDN')) {
+        clearTimeout(timeout);
+        console.log('Retrying with CDN fallback...');
+        setTimeout(() => {
+          loadFFmpegOnce().then(resolve).catch(reject);
+        }, 1000);
+        return;
+      }
+      
       // If we haven't reached max attempts, try again with a delay
       if (loadAttempts < MAX_LOAD_ATTEMPTS) {
         console.log(`Retrying FFmpeg load (attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS})`);
-        clearTimeout(timeout); // Clear the main timeout
+        clearTimeout(timeout);
         setTimeout(() => {
           isLoading = false;
           loadingPromise = null;
           loadFFmpegOnce().then(resolve).catch(reject);
-        }, 2000); // Wait 2 seconds before retrying
+        }, 3000); // Increased delay for production
       } else {
-        clearTimeout(timeout); // Clear the timeout
+        clearTimeout(timeout);
         reject(err);
       }
     } finally {
       if (!isLoaded) {
         isLoading = false;
+        loadingPromise = null;
       }
     }
   });
