@@ -268,16 +268,70 @@ const FrameExtractor: React.FC = () => {
   };
   
   // Download frame
-  const downloadFrame = (frameId: string) => {
+  const downloadFrame = async (frameId: string) => {
     const frame = frames.find(f => f.id === frameId);
     if (!frame) return;
     
-    const a = document.createElement('a');
-    a.href = frame.url;
-    a.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    try {
+      // Try to download using blob URL first
+      const a = document.createElement('a');
+      a.href = frame.url;
+      a.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
+      a.style.display = 'none';
+      
+      // Add error handling for the download
+      let downloadFailed = false;
+      a.addEventListener('error', async (e) => {
+        console.error('Blob URL download failed, trying fallback method:', e);
+        downloadFailed = true;
+        
+        // Fallback: Convert blob to data URL
+        try {
+          const response = await fetch(frame.url);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          
+          reader.onload = () => {
+            const dataUrl = reader.result as string;
+            const fallbackA = document.createElement('a');
+            fallbackA.href = dataUrl;
+            fallbackA.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
+            fallbackA.style.display = 'none';
+            
+            document.body.appendChild(fallbackA);
+            fallbackA.click();
+            
+            setTimeout(() => {
+              if (document.body.contains(fallbackA)) {
+                document.body.removeChild(fallbackA);
+              }
+            }, 100);
+          };
+          
+          reader.onerror = () => {
+            setErrorMessage('Failed to download frame. Please try again.');
+          };
+          
+          reader.readAsDataURL(blob);
+        } catch (fallbackError) {
+          console.error('Fallback download failed:', fallbackError);
+          setErrorMessage('Failed to download frame. Please try again.');
+        }
+      });
+      
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up after a short delay (only if download didn't fail)
+      setTimeout(() => {
+        if (!downloadFailed && document.body.contains(a)) {
+          document.body.removeChild(a);
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Error downloading frame:', error);
+      setErrorMessage('Failed to download frame. Please try again.');
+    }
   };
   
   // Download all frames as zip
@@ -286,13 +340,30 @@ const FrameExtractor: React.FC = () => {
     // For simplicity, we'll just download each frame individually
     frames.forEach((frame, index) => {
       setTimeout(() => {
-        const a = document.createElement('a');
-        a.href = frame.url;
-        a.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }, index * 100); // Stagger downloads by 100ms each
+        try {
+          const a = document.createElement('a');
+          a.href = frame.url;
+          a.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
+          a.style.display = 'none';
+          
+          // Add error handling for the download
+          a.addEventListener('error', (e) => {
+            console.error('Download error for frame:', frame.id, e);
+          });
+          
+          document.body.appendChild(a);
+          a.click();
+          
+          // Clean up after a short delay
+          setTimeout(() => {
+            if (document.body.contains(a)) {
+              document.body.removeChild(a);
+            }
+          }, 100);
+        } catch (error) {
+          console.error('Error downloading frame:', frame.id, error);
+        }
+      }, index * 200); // Increased delay to 200ms for better reliability
     });
   };
   
