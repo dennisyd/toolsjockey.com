@@ -58,8 +58,8 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       args.push('-b:v', options.bitrate);
     }
     
-    // Framerate
-    if (options.framerate) {
+    // Framerate (skip if 'original' is specified)
+    if (options.framerate && options.framerate !== 'original') {
       args.push('-r', options.framerate);
     }
     
@@ -77,13 +77,13 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       }
     }
     
-    // Audio channels
-    if (options.audioChannels) {
+    // Audio channels (skip if 'original' is specified)
+    if (options.audioChannels && options.audioChannels !== 'original') {
       args.push('-ac', options.audioChannels);
     }
     
-    // Audio sample rate
-    if (options.audioSampleRate) {
+    // Audio sample rate (skip if 'original' is specified)
+    if (options.audioSampleRate && options.audioSampleRate !== 'original') {
       args.push('-ar', options.audioSampleRate);
     }
     
@@ -194,11 +194,43 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
         
         console.log('FFmpeg command args:', args);
         
+        // Validate command arguments before running
+        for (let i = 0; i < args.length; i++) {
+          const arg = args[i];
+          if (arg === '-ac' && i + 1 < args.length) {
+            const value = args[i + 1];
+            if (isNaN(Number(value))) {
+              throw new Error(`Invalid audio channels value: "${value}". Expected a number.`);
+            }
+          }
+          if (arg === '-ar' && i + 1 < args.length) {
+            const value = args[i + 1];
+            if (isNaN(Number(value))) {
+              throw new Error(`Invalid audio sample rate value: "${value}". Expected a number.`);
+            }
+          }
+          if (arg === '-r' && i + 1 < args.length) {
+            const value = args[i + 1];
+            if (isNaN(Number(value))) {
+              throw new Error(`Invalid framerate value: "${value}". Expected a number.`);
+            }
+          }
+        }
+        
         try {
           await ffmpeg.run(...args);
         } catch (ffmpegError) {
           console.error('FFmpeg conversion failed:', ffmpegError);
-          throw new Error(`Video conversion failed: ${ffmpegError instanceof Error ? ffmpegError.message : 'Unknown FFmpeg error'}`);
+          
+          // Provide more specific error messages
+          const errorMsg = ffmpegError instanceof Error ? ffmpegError.message : String(ffmpegError);
+          if (errorMsg.includes('Expected number')) {
+            throw new Error(`Invalid conversion settings: ${errorMsg}. Please check your audio and video settings.`);
+          } else if (errorMsg.includes('codec') || errorMsg.includes('format')) {
+            throw new Error(`Unsupported format or codec: ${errorMsg}. Try different output settings.`);
+          } else {
+            throw new Error(`Video conversion failed: ${errorMsg}`);
+          }
         }
         
         // Read the output file from the virtual file system
