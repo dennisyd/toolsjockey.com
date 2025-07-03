@@ -32,10 +32,15 @@ export const useVideoProcessor = () => {
     setCurrentTask('Initializing...');
     setError(null);
 
+    // Generate unique IDs for input and output files
+    const uniqueId = uuidv4();
+    const inputFileName = `input-${uniqueId}${getFileExtension(file.name)}`;
+    const outputFileName = `output-${uniqueId}.${options.outputExtension}`;
+
+    console.log(`Processing video: Input=${inputFileName}, Output=${outputFileName}`);
+
     try {
       const ffmpeg = getFFmpeg();
-      const inputFileName = `input-${uuidv4()}${getFileExtension(file.name)}`;
-      const outputFileName = `output-${uuidv4()}.${options.outputExtension}`;
 
       // Check if this is a concat operation (for video merging)
       const isConcat = options.command.includes('-f') && 
@@ -47,7 +52,20 @@ export const useVideoProcessor = () => {
       if (!isConcat) {
         // Write file to memory
         setCurrentTask('Loading video...');
+        console.log(`Writing input file: ${inputFileName}`);
         ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
+        
+        // Verify the file was written
+        try {
+          const fileList = ffmpeg.FS('readdir', '/');
+          if (!fileList.includes(inputFileName)) {
+            throw new Error(`Failed to write input file ${inputFileName}`);
+          }
+          console.log(`Input file written successfully: ${inputFileName}`);
+        } catch (readErr) {
+          console.error('Error verifying input file:', readErr);
+          throw new Error(`Failed to verify input file: ${readErr instanceof Error ? readErr.message : 'Unknown error'}`);
+        }
       }
 
       // Set up progress handler
@@ -62,27 +80,95 @@ export const useVideoProcessor = () => {
       // Run FFmpeg command
       setCurrentTask('Processing video...');
       
+      // Prepare the command with proper input file reference
+      const finalCommand: string[] = [];
+      
+      // Process the command array to replace any 'input' placeholders with the actual input filename
+      for (let i = 0; i < options.command.length; i++) {
+        if (options.command[i] === '-i' && i + 1 < options.command.length && options.command[i + 1] === 'input') {
+          finalCommand.push('-i', inputFileName);
+          i++; // Skip the 'input' placeholder
+        } else {
+          finalCommand.push(options.command[i]);
+        }
+      }
+      
+      // Log the final command for debugging
+      console.log('Running FFmpeg command:', isConcat ? 
+        [...finalCommand, outputFileName].join(' ') : 
+        (!finalCommand.includes('-i') ? 
+          ['-i', inputFileName, ...finalCommand, outputFileName].join(' ') : 
+          [...finalCommand, outputFileName].join(' ')
+        )
+      );
+      
       if (isConcat) {
         // For concat operations, we don't need the input file parameter
-        await ffmpeg.run(...options.command, outputFileName);
+        await ffmpeg.run(...finalCommand, outputFileName);
+      } else if (!finalCommand.includes('-i')) {
+        // If no input parameter was provided in the command, add it
+        await ffmpeg.run('-i', inputFileName, ...finalCommand, outputFileName);
       } else {
-        // For normal operations, use the input file
-        await ffmpeg.run('-i', inputFileName, ...options.command, outputFileName);
+        // Input is already in the command
+        await ffmpeg.run(...finalCommand, outputFileName);
       }
 
       // Read the result
       setCurrentTask('Finalizing...');
+      
+      // Check if the output file exists before trying to read it
+      const fileList = ffmpeg.FS('readdir', '/');
+      console.log('Files in FFmpeg filesystem after processing:', fileList);
+      
+      if (!fileList.includes(outputFileName)) {
+        throw new Error(`Output file ${outputFileName} was not created. This could be due to an FFmpeg error.`);
+      }
+      
+      console.log(`Reading output file: ${outputFileName}`);
       const data = ffmpeg.FS('readFile', outputFileName);
+      console.log(`Output file read successfully, size: ${data.length} bytes`);
 
-      // Create blob from the processed file
-      const blob = new Blob([data.buffer], { type: options.outputMimeType });
+      // Create blob from the processed file - ensure we use the correct buffer
+      let blob: Blob;
+      if (data.buffer && data.buffer.byteLength > 0) {
+        // If data has a buffer property, use it
+        blob = new Blob([data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)], { 
+          type: options.outputMimeType 
+        });
+      } else if (data instanceof Uint8Array) {
+        // If data is a Uint8Array, create blob directly
+        blob = new Blob([data], { type: options.outputMimeType });
+      } else {
+        // Fallback: convert to Uint8Array first
+        const uint8Array = new Uint8Array(data);
+        blob = new Blob([uint8Array], { type: options.outputMimeType });
+      }
+      
+      console.log(`Blob created successfully, size: ${blob.size} bytes`);
+      
+      // Verify blob has content
+      if (blob.size === 0) {
+        console.error('Created blob has 0 size, this indicates an issue with file processing');
+        throw new Error('Processed file is empty. This might indicate an FFmpeg processing error.');
+      }
+      
       const url = URL.createObjectURL(blob);
 
       // Clean up files from memory
-      if (!isConcat) {
-        ffmpeg.FS('unlink', inputFileName);
+      try {
+        if (!isConcat && fileList.includes(inputFileName)) {
+          console.log(`Removing input file: ${inputFileName}`);
+          ffmpeg.FS('unlink', inputFileName);
+        }
+        
+        if (fileList.includes(outputFileName)) {
+          console.log(`Removing output file: ${outputFileName}`);
+          ffmpeg.FS('unlink', outputFileName);
+        }
+      } catch (cleanupErr) {
+        console.warn('Error cleaning up FFmpeg files:', cleanupErr);
+        // Continue despite cleanup errors
       }
-      ffmpeg.FS('unlink', outputFileName);
 
       setProgress(100);
       setCurrentTask('Processing complete');
@@ -95,7 +181,28 @@ export const useVideoProcessor = () => {
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      console.error('Video processing error:', err);
       setError(errorMessage);
+      
+      // Try to clean up any files that might have been created
+      try {
+        const ffmpeg = getFFmpeg();
+        const fileList = ffmpeg.FS('readdir', '/');
+        console.log('Files in FFmpeg filesystem during error cleanup:', fileList);
+        
+        if (fileList.includes(inputFileName)) {
+          console.log(`Cleaning up input file: ${inputFileName}`);
+          ffmpeg.FS('unlink', inputFileName);
+        }
+        
+        if (fileList.includes(outputFileName)) {
+          console.log(`Cleaning up output file: ${outputFileName}`);
+          ffmpeg.FS('unlink', outputFileName);
+        }
+      } catch (cleanupErr) {
+        console.warn('Error during error cleanup:', cleanupErr);
+      }
+      
       throw new Error(`Video processing failed: ${errorMessage}`);
     } finally {
       setIsProcessing(false);

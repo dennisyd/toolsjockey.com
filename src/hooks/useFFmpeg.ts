@@ -7,13 +7,16 @@ let ffmpegInstance: FFmpeg | null = null;
 let isLoading = false;
 let isLoaded = false;
 let loadAttempts = 0;
-const MAX_LOAD_ATTEMPTS = 3;
+const MAX_LOAD_ATTEMPTS = 5;
 
 // Define local paths for FFmpeg core files
 // Use local files instead of CDN to avoid network issues
 const CORE_URL = '/ffmpeg-core.js';
 const WASM_URL = '/ffmpeg-core.wasm';
 const WORKER_URL = '/ffmpeg-core.worker.js';
+
+// Track loading progress
+let currentLoadingProgress = 0;
 
 // Check if FFmpeg core files exist
 const checkFFmpegFilesExist = async (): Promise<boolean> => {
@@ -42,8 +45,10 @@ export const getFFmpeg = (): FFmpeg => {
   if (!ffmpegInstance) {
     ffmpegInstance = createFFmpeg({
       log: true,
-      progress: () => {
-        // Progress handling is done in the hook
+      progress: ({ ratio }) => {
+        if (ratio >= 0 && ratio <= 1) {
+          currentLoadingProgress = Math.round(ratio * 100);
+        }
       },
       corePath: CORE_URL,
       wasmPath: WASM_URL,
@@ -101,6 +106,10 @@ const getDetailedErrorMessage = (error: any): string => {
     return 'Video processing engine is already loaded. This is likely a temporary issue. Please try your operation again.';
   }
   
+  if (errorString.includes('timed out')) {
+    return 'Loading timed out. This could be due to a slow network connection. Please try again or use a different network.';
+  }
+  
   // Default message for unknown errors
   return 'Video processing engine failed to load. Please refresh the page and try again.';
 };
@@ -115,50 +124,65 @@ const loadFFmpegOnce = async (): Promise<void> => {
     try {
       // Double check that the instance is actually working
       if (ffmpegInstance.isLoaded()) {
+        console.log('FFmpeg is already loaded and working properly');
         return;
       }
     } catch (e) {
       console.warn('FFmpeg instance claimed to be loaded but isLoaded() check failed:', e);
+      // Reset the state since the instance isn't working properly
+      isLoaded = false;
       // Continue with loading if the check failed
     }
   }
   
   // If currently loading, return the existing promise
   if (isLoading && loadingPromise) {
+    console.log('FFmpeg is already loading, waiting for existing promise');
     return loadingPromise;
   }
   
   // Start loading
   isLoading = true;
+  currentLoadingProgress = 0;
+  console.log('Starting FFmpeg loading process');
   
   loadingPromise = new Promise<void>(async (resolve, reject) => {
     // Create a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
-      console.error('FFmpeg loading timed out after 30 seconds');
+      console.error('FFmpeg loading timed out after 60 seconds');
       reject(new Error('Loading timed out. Please refresh the page and try again.'));
-    }, 30000); // 30 second timeout
+    }, 60000); // Increased from 30s to 60s
     
     try {
       // First check if FFmpeg core files exist
       const filesExist = await checkFFmpegFilesExist();
       if (!filesExist) {
+        console.error('FFmpeg core files not found');
         throw new Error('FFmpeg core files not found. This could be due to a deployment issue.');
+      } else {
+        console.log('FFmpeg core files exist');
       }
       
       loadAttempts++;
+      console.log(`FFmpeg load attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS}`);
+      currentLoadingProgress = 5; // Set initial progress
       
       // Create FFmpeg instance if it doesn't exist
       if (!ffmpegInstance) {
         console.log('Creating new FFmpeg instance');
         ffmpegInstance = createFFmpeg({
           log: true,
-          progress: () => {
-            // Progress handling is done in the hook
+          progress: ({ ratio }) => {
+            if (ratio >= 0 && ratio <= 1) {
+              currentLoadingProgress = Math.round(ratio * 100);
+            }
           },
           corePath: CORE_URL,
           wasmPath: WASM_URL,
           workerPath: WORKER_URL,
         });
+      } else {
+        console.log('Using existing FFmpeg instance');
       }
       
       // Check if FFmpeg is already loaded
@@ -171,6 +195,8 @@ const loadFFmpegOnce = async (): Promise<void> => {
         alreadyLoaded = false;
       }
       
+      currentLoadingProgress = 10;
+      
       // Only load if not already loaded
       if (!alreadyLoaded) {
         try {
@@ -178,16 +204,18 @@ const loadFFmpegOnce = async (): Promise<void> => {
           await Promise.race([
             ffmpegInstance.load(),
             new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('FFmpeg load operation timed out')), 20000)
+              setTimeout(() => reject(new Error('FFmpeg load operation timed out')), 40000) // Increased from 20s to 40s
             )
           ]);
           console.log('FFmpeg.load() completed successfully');
+          currentLoadingProgress = 80;
         } catch (loadError) {
           console.error('Error in FFmpeg.load():', loadError);
           // Special handling for "already loaded" error
           if (String(loadError).includes('ffmpeg.wasm was loaded')) {
             console.log('FFmpeg was already loaded, continuing...');
             alreadyLoaded = true;
+            currentLoadingProgress = 80;
           } else {
             throw loadError;
           }
@@ -198,9 +226,11 @@ const loadFFmpegOnce = async (): Promise<void> => {
       try {
         console.log('Testing FFmpeg instance');
         ffmpegInstance.FS('writeFile', 'test.txt', new Uint8Array([1, 2, 3]));
-        ffmpegInstance.FS('readFile', 'test.txt');
+        const testData = ffmpegInstance.FS('readFile', 'test.txt');
+        console.log('Test file read successful, data length:', testData.length);
         ffmpegInstance.FS('unlink', 'test.txt');
         console.log('FFmpeg instance test passed');
+        currentLoadingProgress = 100;
       } catch (testErr) {
         console.error('FFmpeg instance test failed:', testErr);
         throw new Error('Failed to initialize FFmpeg properly');
@@ -209,6 +239,7 @@ const loadFFmpegOnce = async (): Promise<void> => {
       isLoaded = true;
       loadAttempts = 0; // Reset attempts on success
       clearTimeout(timeout); // Clear the timeout
+      console.log('FFmpeg loaded successfully');
       resolve();
     } catch (err) {
       console.error('Error loading FFmpeg:', err);
@@ -228,8 +259,9 @@ const loadFFmpegOnce = async (): Promise<void> => {
         reject(err);
       }
     } finally {
-      isLoading = false;
-      loadingPromise = null;
+      if (!isLoaded) {
+        isLoading = false;
+      }
     }
   });
   
@@ -239,8 +271,19 @@ const loadFFmpegOnce = async (): Promise<void> => {
 export const useFFmpeg = () => {
   const [isFFmpegLoaded, setIsFFmpegLoaded] = useState(isLoaded);
   const [isFFmpegLoading, setIsFFmpegLoading] = useState(isLoading);
-  const [ffmpegLoadingProgress] = useState(0);
+  const [ffmpegLoadingProgress, setFFmpegLoadingProgress] = useState(currentLoadingProgress);
   const [error, setError] = useState<string | null>(null);
+  
+  // Update progress periodically when loading
+  useEffect(() => {
+    if (isFFmpegLoading) {
+      const progressInterval = setInterval(() => {
+        setFFmpegLoadingProgress(currentLoadingProgress);
+      }, 500);
+      
+      return () => clearInterval(progressInterval);
+    }
+  }, [isFFmpegLoading]);
   
   // Load FFmpeg
   const loadFFmpeg = useCallback(async () => {
@@ -255,6 +298,7 @@ export const useFFmpeg = () => {
       
       setIsFFmpegLoaded(true);
       setIsFFmpegLoading(false);
+      setFFmpegLoadingProgress(100);
     } catch (err) {
       console.error('Error in useFFmpeg hook:', err);
       
@@ -271,6 +315,7 @@ export const useFFmpeg = () => {
     // If already loaded globally, just update state
     if (isLoaded && ffmpegInstance) {
       setIsFFmpegLoaded(true);
+      setFFmpegLoadingProgress(100);
       return;
     }
     
@@ -344,6 +389,7 @@ export const useFFmpeg = () => {
     isLoading = false;
     loadingPromise = null;
     loadAttempts = 0;
+    currentLoadingProgress = 0;
     loadFFmpeg();
   }, [loadFFmpeg]);
   

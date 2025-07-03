@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, X } from 'lucide-react';
 import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoConverter } from '../../hooks/useVideoConverter';
 import { useFileHandler } from '../../hooks/useFileHandler';
-import FileUploader from './video-converter/FileUploader';
+import { AlertCircle, X } from 'lucide-react';
+import FileUploader from '../shared/FileUploader';
+import VideoPreview from '../shared/VideoPreview';
+import FFmpegStatus from '../shared/FFmpegStatus';
+import PrivacyBadge from '../shared/PrivacyBadge';
 import FormatSelector from './video-converter/FormatSelector';
 import QualitySettings from './video-converter/QualitySettings';
 import AdvancedOptions from './video-converter/AdvancedOptions';
-import VideoPreview from './video-converter/VideoPreview';
 import ConversionProgress from './video-converter/ConversionProgress';
 import DownloadSection from './video-converter/DownloadSection';
-import FFmpegStatus from '../shared/FFmpegStatus';
 import type { VideoFile, OutputFormat, ConversionOptions } from '../../types/video';
-import PrivacyBadge from './video-converter/PrivacyBadge';
 
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
@@ -61,18 +61,38 @@ const VideoConverter: React.FC = () => {
   const {
     isFFmpegLoaded,
     isFFmpegLoading,
-    error: ffmpegError,
     loadFFmpeg,
+    error: ffmpegError,
   } = useFFmpeg();
   
   const {
-    handleFileUpload,
-    handleFileDrop,
-    removeFile,
+    handleFileUpload: fileUploadHandler,
+    removeFile: removeFileById,
   } = useFileHandler({
     setVideoFiles,
     setErrorMessage,
   });
+
+  // Adapter functions to match component interfaces
+  const handleFileUpload = (files: File[]) => {
+    // Create a synthetic event to pass to the handler
+    const syntheticEvent = {
+      target: {
+        files: files,
+        value: ''
+      }
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    
+    fileUploadHandler(syntheticEvent);
+  };
+  
+  const removeFile = (file: File) => {
+    // Find the VideoFile with this File object
+    const videoFile = videoFiles.find(vf => vf.file === file);
+    if (videoFile) {
+      removeFileById(videoFile.id);
+    }
+  };
 
   // Auto-load FFmpeg when component mounts
   useEffect(() => {
@@ -208,9 +228,8 @@ const VideoConverter: React.FC = () => {
       {/* File uploader */}
       <FileUploader
         onFileUpload={handleFileUpload}
-        onFileDrop={handleFileDrop}
+        files={videoFiles.map(vf => vf.file)}
         onFileRemove={removeFile}
-        files={videoFiles}
         disabled={isConverting || isFFmpegLoading}
       />
 
@@ -256,11 +275,13 @@ const VideoConverter: React.FC = () => {
               compressionLevel,
             }}
             onChange={(options) => {
-              setVideoCodec(options.videoCodec);
-              setAudioCodec(options.audioCodec);
-              setAudioChannels(options.audioChannels);
-              setAudioSampleRate(options.audioSampleRate);
-              setCompressionLevel(options.compressionLevel);
+              if (typeof options === 'object') {
+                if ('videoCodec' in options) setVideoCodec(options.videoCodec || 'auto');
+                if ('audioCodec' in options) setAudioCodec(options.audioCodec || 'auto');
+                if ('audioChannels' in options) setAudioChannels(options.audioChannels || 'original');
+                if ('audioSampleRate' in options) setAudioSampleRate(options.audioSampleRate || 'original');
+                if ('compressionLevel' in options) setCompressionLevel(options.compressionLevel || 'medium');
+              }
             }}
             outputFormat={outputFormat}
             disabled={isConverting || isFFmpegLoading}
@@ -273,7 +294,9 @@ const VideoConverter: React.FC = () => {
         <div className="p-6 border-t border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold mb-4">Preview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <VideoPreview file={videoFiles[0]} />
+            <VideoPreview 
+              src={videoFiles[0].url}
+            />
             <div>
               <h3 className="font-medium mb-2">Video Information</h3>
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">

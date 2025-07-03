@@ -69,10 +69,30 @@ const AudioExtractor: React.FC = () => {
   
   // Load FFmpeg when component mounts
   useEffect(() => {
-    loadFFmpeg().catch(error => {
-      console.error('Error in initial FFmpeg load:', error);
-      // Error is already handled by the hook
-    });
+    const loadFFmpegWithRetry = async () => {
+      try {
+        console.log('Attempting to load FFmpeg');
+        await loadFFmpeg();
+        console.log('FFmpeg loaded successfully in component');
+      } catch (error) {
+        console.error('Error in initial FFmpeg load:', error);
+        // If we're in Chrome, which should be fully supported, try one more time
+        if (isChrome) {
+          console.log('Retrying FFmpeg load in Chrome');
+          setTimeout(async () => {
+            try {
+              await loadFFmpeg();
+              console.log('FFmpeg loaded successfully on retry');
+            } catch (retryError) {
+              console.error('FFmpeg load retry failed:', retryError);
+              // Error is already handled by the hook
+            }
+          }, 3000); // Wait 3 seconds before retry
+        }
+      }
+    };
+    
+    loadFFmpegWithRetry();
   }, [loadFFmpeg]);
   
   // Update error message when FFmpeg error changes
@@ -171,9 +191,11 @@ const AudioExtractor: React.FC = () => {
     if (!isFFmpegLoaded) {
       try {
         setErrorMessage(null);
+        console.log('FFmpeg not loaded, attempting to load before extraction');
         await loadFFmpeg();
       } catch (err) {
-        // Error is handled by the hook, we just need to return
+        console.error('Failed to load FFmpeg before extraction:', err);
+        setErrorMessage('Failed to load audio processing engine. Please refresh the page and try again.');
         return;
       }
     }
@@ -184,82 +206,201 @@ const AudioExtractor: React.FC = () => {
         URL.revokeObjectURL(audioResult.url);
       }
       
-      // Build FFmpeg command
-      const commands: string[] = [];
-      
-      // Time range parameters
-      if (audioSettings.startTime > 0) {
-        commands.push('-ss', audioSettings.startTime.toString());
-      }
-      
-      if (audioSettings.endTime !== null) {
-        const duration = audioSettings.endTime - audioSettings.startTime;
-        commands.push('-t', duration.toString());
-      }
-      
-      // Audio codec parameters
-      commands.push('-vn'); // No video
-      
-      // Format-specific parameters
-      switch (audioSettings.format) {
-        case 'mp3':
-          commands.push('-acodec', 'libmp3lame', '-ab', audioSettings.bitrate);
-          break;
-        case 'wav':
-          commands.push('-acodec', 'pcm_s16le');
-          break;
-        case 'aac':
-          commands.push('-acodec', 'aac', '-ab', audioSettings.bitrate);
-          break;
-        case 'ogg':
-          commands.push('-acodec', 'libvorbis', '-ab', audioSettings.bitrate);
-          break;
-      }
-      
-      // Preserve metadata if requested
-      if (audioSettings.preserveMetadata) {
-        commands.push('-map_metadata', '0');
-      }
-      
-      // Process the video
-      const result = await processVideo(sourceVideo, {
-        command: commands,
-        outputExtension: audioSettings.format,
-        outputMimeType: audioFormats[audioSettings.format].mimeType,
-      });
-      
-      // Calculate audio duration
-      const audioDuration = audioSettings.endTime !== null 
-        ? audioSettings.endTime - audioSettings.startTime 
-        : videoDuration - audioSettings.startTime;
-      
-      // Set the audio result
-      setAudioResult({
-        url: result.url,
-        size: result.size,
-        duration: audioDuration,
-        format: audioSettings.format,
-        filename: result.filename,
-      });
-      
-      // Clear any error messages
       setErrorMessage(null);
+      console.log('Starting audio extraction for:', sourceVideo.name);
+      console.log('Audio settings:', audioSettings);
+      
+      // Strategy 1: Try simple audio copy first (fastest and most compatible)
+      let extractionSuccessful = false;
+      let result: any = null;
+      
+      // Simple copy approach (no re-encoding) - try this first if no time range or format conversion needed
+      if (audioSettings.startTime === 0 && 
+          audioSettings.endTime === null && 
+          audioSettings.format === 'mp3') {
+        
+        console.log('Attempting simple audio copy extraction...');
+        
+        try {
+          const copyCommands = [
+            '-i', 'input',    // Input placeholder  
+            '-vn',        // No video
+            '-acodec', 'copy',  // Copy audio stream
+            '-f', 'mp3'   // Force MP3 container
+          ];
+          
+          result = await processVideo(sourceVideo, {
+            command: copyCommands,
+            outputExtension: audioSettings.format,
+            outputMimeType: audioFormats[audioSettings.format].mimeType,
+          });
+          
+          extractionSuccessful = true;
+          console.log('Simple copy extraction successful');
+          
+        } catch (copyError) {
+          console.log('Simple copy failed, will try re-encoding:', copyError);
+        }
+      }
+      
+      // Strategy 2: Re-encode with high compatibility settings
+      if (!extractionSuccessful) {
+        console.log('Attempting audio re-encoding extraction...');
+        
+        const commands: string[] = [];
+        
+        // Time range parameters (put BEFORE input for seeking efficiency)
+        if (audioSettings.startTime > 0) {
+          commands.push('-ss', audioSettings.startTime.toString());
+        }
+        
+        commands.push('-i', 'input'); // Input placeholder
+        
+        // Duration parameter (put AFTER input)
+        if (audioSettings.endTime !== null) {
+          const duration = audioSettings.endTime - audioSettings.startTime;
+          commands.push('-t', duration.toString());
+        }
+        
+        commands.push('-vn'); // No video
+        
+        // Format-specific audio encoding
+        switch (audioSettings.format) {
+          case 'mp3':
+            commands.push(
+              '-acodec', 'libmp3lame',
+              '-ab', audioSettings.bitrate,
+              '-ar', '44100',
+              '-ac', '2'
+            );
+            break;
+            
+          case 'wav':
+            commands.push(
+              '-acodec', 'pcm_s16le',
+              '-ar', '44100',
+              '-ac', '2'
+            );
+            break;
+            
+          case 'aac':
+            commands.push(
+              '-acodec', 'aac',
+              '-ab', audioSettings.bitrate,
+              '-ar', '44100',
+              '-ac', '2',
+              '-strict', 'experimental'
+            );
+            break;
+            
+          case 'ogg':
+            commands.push(
+              '-acodec', 'libvorbis',
+              '-ab', audioSettings.bitrate,
+              '-ar', '44100',
+              '-ac', '2'
+            );
+            break;
+        }
+        
+        // Add metadata preservation if requested
+        if (audioSettings.preserveMetadata) {
+          commands.push('-map_metadata', '0');
+        }
+        
+        commands.push('-f', audioSettings.format);
+        
+        console.log('Re-encoding with commands:', commands);
+        
+        try {
+          result = await processVideo(sourceVideo, {
+            command: commands,
+            outputExtension: audioSettings.format,
+            outputMimeType: audioFormats[audioSettings.format].mimeType,
+          });
+          
+          extractionSuccessful = true;
+          console.log('Re-encoding extraction successful');
+          
+        } catch (reencodeError) {
+          console.error('Re-encoding failed:', reencodeError);
+        }
+      }
+      
+      // Strategy 3: Fallback with minimal settings
+      if (!extractionSuccessful) {
+        console.log('Attempting fallback extraction with minimal settings...');
+        
+        const fallbackCommands = [
+          '-i', 'input',           // Input placeholder
+          '-vn',                    // No video
+          '-acodec', 'libmp3lame', // Force MP3 codec
+          '-ab', '128k',           // Lower bitrate
+          '-ar', '22050',          // Lower sample rate
+          '-ac', '1',              // Mono
+          '-f', 'mp3'              // Force MP3 format
+        ];
+        
+        console.log('Fallback commands:', fallbackCommands);
+        
+        try {
+          result = await processVideo(sourceVideo, {
+            command: fallbackCommands,
+            outputExtension: 'mp3', // Force MP3 for compatibility
+            outputMimeType: 'audio/mpeg',
+          });
+          
+          extractionSuccessful = true;
+          console.log('Fallback extraction successful');
+          
+        } catch (fallbackError) {
+          console.error('Fallback extraction failed:', fallbackError);
+          throw new Error('Unable to extract audio from this video. The video might use an unsupported codec, be corrupted, or not contain any audio streams.');
+        }
+      }
+      
+      if (extractionSuccessful && result) {
+        // Calculate audio duration
+        const audioDuration = audioSettings.endTime !== null 
+          ? audioSettings.endTime - audioSettings.startTime 
+          : videoDuration - audioSettings.startTime;
+        
+        setAudioResult({
+          url: result.url,
+          size: result.size,
+          duration: Math.max(0, audioDuration),
+          format: extractionSuccessful ? audioSettings.format : 'mp3',
+          filename: result.filename,
+        });
+        
+        console.log('Audio extraction completed successfully');
+      }
       
     } catch (err) {
       console.error('Error extracting audio:', err);
       
-      // Provide a more helpful error message
+      // Provide more specific error messages
+      let errorMsg = 'Failed to extract audio: ';
+      
       if (err instanceof Error) {
-        if (err.message.includes('memory') || err.message.includes('allocation')) {
-          setErrorMessage('Not enough memory to process this video. Try with a smaller video or a shorter section.');
-        } else if (err.message.includes('format') || err.message.includes('codec')) {
-          setErrorMessage('This video format may not be supported. Try converting it to MP4 first.');
+        const errStr = err.message.toLowerCase();
+        
+        if (errStr.includes('no audio')) {
+          errorMsg += 'This video does not contain any audio streams.';
+        } else if (errStr.includes('codec') || errStr.includes('format')) {
+          errorMsg += 'The video uses an unsupported audio codec. Try uploading a different video file.';
+        } else if (errStr.includes('memory') || errStr.includes('allocation')) {
+          errorMsg += 'Not enough memory to process this video. Try with a smaller file or shorter time range.';
+        } else if (errStr.includes('corrupted') || errStr.includes('invalid')) {
+          errorMsg += 'The video file appears to be corrupted or invalid.';
         } else {
-          setErrorMessage(`Failed to extract audio: ${err.message}`);
+          errorMsg += err.message;
         }
       } else {
-        setErrorMessage('Failed to extract audio due to an unknown error.');
+        errorMsg += 'Unknown error occurred during audio extraction.';
       }
+      
+      setErrorMessage(errorMsg);
     }
   };
   
