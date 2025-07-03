@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import FileUploader from './video-converter/FileUploader';
-import FormatSelector from './video-converter/FormatSelector';
-import QualitySettings from './video-converter/QualitySettings';
-import VideoPreview from './video-converter/VideoPreview';
-import ConversionProgress from './video-converter/ConversionProgress';
-import DownloadSection from './video-converter/DownloadSection';
-import PrivacyBadge from './video-converter/PrivacyBadge';
-import AdvancedOptions from './video-converter/AdvancedOptions';
+import { AlertCircle, X } from 'lucide-react';
 import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoConverter } from '../../hooks/useVideoConverter';
 import { useFileHandler } from '../../hooks/useFileHandler';
-import type { VideoFile, ConversionOptions, OutputFormat } from '../../types/video';
-import { AlertCircle, X, RefreshCw } from 'lucide-react';
+import FileUploader from './video-converter/FileUploader';
+import FormatSelector from './video-converter/FormatSelector';
+import QualitySettings from './video-converter/QualitySettings';
+import AdvancedOptions from './video-converter/AdvancedOptions';
+import VideoPreview from './video-converter/VideoPreview';
+import ConversionProgress from './video-converter/ConversionProgress';
+import DownloadSection from './video-converter/DownloadSection';
+import FFmpegStatus from '../shared/FFmpegStatus';
+import type { VideoFile, OutputFormat, ConversionOptions } from '../../types/video';
+import PrivacyBadge from './video-converter/PrivacyBadge';
 
 // Check if SharedArrayBuffer is supported
 const isSharedArrayBufferSupported = typeof SharedArrayBuffer !== 'undefined';
@@ -47,14 +48,6 @@ const VideoConverter: React.FC = () => {
   const [showCompatWarning, setShowCompatWarning] = useState(!isSharedArrayBufferSupported && !isChrome);
 
   // Custom hooks
-  const { 
-    isFFmpegLoaded, 
-    isFFmpegLoading,
-    error: ffmpegError,
-    loadFFmpeg,
-    retryLoadFFmpeg,
-  } = useFFmpeg();
-  
   const {
     isConverting,
     conversionProgress,
@@ -64,6 +57,13 @@ const VideoConverter: React.FC = () => {
     convert,
     abort,
   } = useVideoConverter();
+  
+  const {
+    isFFmpegLoaded,
+    isFFmpegLoading,
+    error: ffmpegError,
+    loadFFmpeg,
+  } = useFFmpeg();
   
   const {
     handleFileUpload,
@@ -188,36 +188,19 @@ const VideoConverter: React.FC = () => {
         </div>
       )}
 
-      {/* Error messages */}
-      {(errorMessage || ffmpegError) && (
+      {/* FFmpeg Status - handles loading and error states */}
+      <FFmpegStatus />
+
+      {/* Custom error messages (non-FFmpeg errors) */}
+      {errorMessage && !ffmpegError && (
         <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 m-4">
           <div className="flex">
             <AlertCircle className="h-6 w-6 text-red-500" />
             <div className="ml-3 flex-grow">
               <p className="text-sm text-red-700 dark:text-red-400">
-                {errorMessage || ffmpegError}
+                {errorMessage}
               </p>
-              {(errorMessage?.includes('video processing engine') || ffmpegError) && (
-                <button 
-                  onClick={retryLoadFFmpeg}
-                  className="mt-2 flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
-                >
-                  <RefreshCw size={16} className="mr-1" /> Retry Loading Video Engine
-                </button>
-              )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading indicator */}
-      {isFFmpegLoading && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 m-4">
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent mr-3"></div>
-            <p className="text-sm text-blue-700 dark:text-blue-400">
-              Loading video processing engine... This may take a moment.
-            </p>
           </div>
         </div>
       )}
