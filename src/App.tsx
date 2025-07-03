@@ -114,6 +114,7 @@ const FAQ = lazy(() => retryLazy(() => import('./pages/FAQ')));
 const Blog = lazy(() => retryLazy(() => import('./pages/Blog')));
 const BlogArticle = lazy(() => retryLazy(() => import('./pages/BlogArticle')));
 const MailMergeToolPage = lazy(() => retryLazy(() => import('./pages/tools/MailMergeToolPage')));
+const FFmpegTest = lazy(() => retryLazy(() => import('./pages/FFmpegTest')));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -222,6 +223,7 @@ function App() {
             <Route path="contact" element={<Contact />} />
             <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
+            <Route path="tools/ffmpeg-test" element={<FFmpegTest />} />
           </Route>
           <Route path="/tools" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
