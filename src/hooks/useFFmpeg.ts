@@ -132,6 +132,12 @@ const loadFFmpegOnce = async (): Promise<void> => {
   isLoading = true;
   
   loadingPromise = new Promise<void>(async (resolve, reject) => {
+    // Create a timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.error('FFmpeg loading timed out after 30 seconds');
+      reject(new Error('Loading timed out. Please refresh the page and try again.'));
+    }, 30000); // 30 second timeout
+    
     try {
       // First check if FFmpeg core files exist
       const filesExist = await checkFFmpegFilesExist();
@@ -143,6 +149,7 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       // Create FFmpeg instance if it doesn't exist
       if (!ffmpegInstance) {
+        console.log('Creating new FFmpeg instance');
         ffmpegInstance = createFFmpeg({
           log: true,
           progress: () => {
@@ -158,6 +165,7 @@ const loadFFmpegOnce = async (): Promise<void> => {
       let alreadyLoaded = false;
       try {
         alreadyLoaded = ffmpegInstance.isLoaded();
+        console.log('FFmpeg isLoaded check:', alreadyLoaded);
       } catch (e) {
         console.log('Error checking if FFmpeg is loaded:', e);
         alreadyLoaded = false;
@@ -166,8 +174,16 @@ const loadFFmpegOnce = async (): Promise<void> => {
       // Only load if not already loaded
       if (!alreadyLoaded) {
         try {
-          await ffmpegInstance.load();
+          console.log('Starting FFmpeg.load()');
+          await Promise.race([
+            ffmpegInstance.load(),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('FFmpeg load operation timed out')), 20000)
+            )
+          ]);
+          console.log('FFmpeg.load() completed successfully');
         } catch (loadError) {
+          console.error('Error in FFmpeg.load():', loadError);
           // Special handling for "already loaded" error
           if (String(loadError).includes('ffmpeg.wasm was loaded')) {
             console.log('FFmpeg was already loaded, continuing...');
@@ -180,9 +196,11 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       // Test the FFmpeg instance with a simple operation to verify it's working correctly
       try {
+        console.log('Testing FFmpeg instance');
         ffmpegInstance.FS('writeFile', 'test.txt', new Uint8Array([1, 2, 3]));
         ffmpegInstance.FS('readFile', 'test.txt');
         ffmpegInstance.FS('unlink', 'test.txt');
+        console.log('FFmpeg instance test passed');
       } catch (testErr) {
         console.error('FFmpeg instance test failed:', testErr);
         throw new Error('Failed to initialize FFmpeg properly');
@@ -190,6 +208,7 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       isLoaded = true;
       loadAttempts = 0; // Reset attempts on success
+      clearTimeout(timeout); // Clear the timeout
       resolve();
     } catch (err) {
       console.error('Error loading FFmpeg:', err);
@@ -197,12 +216,15 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       // If we haven't reached max attempts, try again with a delay
       if (loadAttempts < MAX_LOAD_ATTEMPTS) {
+        console.log(`Retrying FFmpeg load (attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS})`);
+        clearTimeout(timeout); // Clear the main timeout
         setTimeout(() => {
           isLoading = false;
           loadingPromise = null;
           loadFFmpegOnce().then(resolve).catch(reject);
         }, 2000); // Wait 2 seconds before retrying
       } else {
+        clearTimeout(timeout); // Clear the timeout
         reject(err);
       }
     } finally {

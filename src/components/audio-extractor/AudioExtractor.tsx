@@ -61,7 +61,7 @@ const AudioExtractor: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // FFmpeg state
-  const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError } = useFFmpeg();
+  const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError, retryLoadFFmpeg } = useFFmpeg();
   const { processVideo, isProcessing, progress, currentTask } = useVideoProcessor();
   
   // Load FFmpeg when component mounts
@@ -78,6 +78,24 @@ const AudioExtractor: React.FC = () => {
       setErrorMessage(ffmpegError);
     }
   }, [ffmpegError]);
+  
+  // Add a timeout to detect stalled loading
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (isFFmpegLoading) {
+      // If loading takes more than 20 seconds, show a message
+      timeoutId = setTimeout(() => {
+        if (isFFmpegLoading) {
+          setErrorMessage("Loading seems to be taking longer than expected. You may want to try refreshing the page or using a different browser.");
+        }
+      }, 20000);
+    }
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isFFmpegLoading]);
   
   // Clean up URLs when component unmounts
   useEffect(() => {
@@ -320,6 +338,24 @@ const AudioExtractor: React.FC = () => {
             <AlertCircle className="h-5 w-5 text-red-400 dark:text-red-300 mr-2" />
             <div>
               <p className="text-sm text-red-700 dark:text-red-200">{errorMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* FFmpeg error with retry button */}
+      {ffmpegError && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-600 m-4">
+          <div className="flex">
+            <AlertCircle className="h-5 w-5 text-red-400 dark:text-red-300 mr-2" />
+            <div className="flex-1">
+              <p className="text-sm text-red-700 dark:text-red-200">{ffmpegError}</p>
+              <button 
+                onClick={retryLoadFFmpeg}
+                className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+              >
+                Retry Loading
+              </button>
             </div>
           </div>
         </div>
