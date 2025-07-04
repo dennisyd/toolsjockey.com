@@ -1,22 +1,34 @@
-import { Link } from 'react-router-dom';
+import React from 'react';
 import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
+import { useAnalytics } from '../../hooks/useAnalytics';
+import ToolCard from '../../components/shared/ToolCard';
+import { 
+  FilmIcon, 
+  ArchiveBoxIcon, 
+  ArrowsUpDownIcon, 
+  ScissorsIcon,
+  SpeakerWaveIcon,
+  CameraIcon
+} from '@heroicons/react/24/outline';
 
 const VIDEO_TOOLS = [
-  { title: 'Video Converter', path: '/tools/video-converter', desc: 'Convert videos between formats (MP4, WebM, AVI, etc.).' },
-  { title: 'Video Compressor', path: '/tools/video-compressor', desc: 'Reduce video file size while maintaining quality.' },
-  { title: 'Video Merger', path: '/tools/video-merger', desc: 'Combine multiple videos into a single file.' },
-  { title: 'Video Clipper', path: '/tools/video-clipper', desc: 'Trim and cut videos with frame-accurate precision.' },
-  { title: 'Video to GIF', path: '/tools/video-to-gif', desc: 'Convert video clips to animated GIFs.' },
+  { title: 'Video Converter', path: '/tools/video-converter', desc: 'Convert videos between formats (MP4, WebM, AVI, etc.).', icon: FilmIcon },
+  { title: 'Video Compressor', path: '/tools/video-compressor', desc: 'Reduce video file size while maintaining quality.', icon: ArchiveBoxIcon },
+  { title: 'Video Merger', path: '/tools/video-merger', desc: 'Combine multiple videos into a single file.', icon: ArrowsUpDownIcon },
+  { title: 'Video Clipper', path: '/tools/video-clipper', desc: 'Trim and cut videos with frame-accurate precision.', icon: ScissorsIcon },
+  { title: 'Video to GIF', path: '/tools/video-to-gif', desc: 'Convert video clips to animated GIFs.', icon: FilmIcon },
 ];
 
 const AUDIO_TOOLS = [
-  { title: 'Audio Extractor', path: '/tools/audio-extractor', desc: 'Extract audio tracks from video files.' },
-  { title: 'Frame Extractor', path: '/tools/frame-extractor', desc: 'Extract individual frames from videos as images.' },
+  { title: 'Audio Extractor', path: '/tools/audio-extractor', desc: 'Extract audio tracks from video files.', icon: SpeakerWaveIcon },
+  { title: 'Frame Extractor', path: '/tools/frame-extractor', desc: 'Extract individual frames from videos as images.', icon: CameraIcon },
 ];
 
-const VideoToolsPage = () => {
+const VideoToolsPage: React.FC = () => {
+  useAnalytics();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -32,14 +44,13 @@ const VideoToolsPage = () => {
             <h2 className="text-xl font-semibold mb-4">Video Processing Tools</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {VIDEO_TOOLS.map((tool) => (
-                <Link
+                <ToolCard
                   key={tool.path}
-                  to={tool.path}
-                  className="block p-4 border border-gray-200 rounded-md hover:bg-blue-50 hover:border-blue-200 transition-colors"
-                >
-                  <h3 className="font-medium text-lg text-blue-700">{tool.title}</h3>
-                  <p className="text-gray-600 mt-1">{tool.desc}</p>
-                </Link>
+                  title={tool.title}
+                  description={tool.desc}
+                  path={tool.path}
+                  icon={tool.icon}
+                />
               ))}
             </div>
           </div>
@@ -48,14 +59,13 @@ const VideoToolsPage = () => {
             <h2 className="text-xl font-semibold mb-4">Audio & Frame Tools</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {AUDIO_TOOLS.map((tool) => (
-                <Link
+                <ToolCard
                   key={tool.path}
-                  to={tool.path}
-                  className="block p-4 border border-gray-200 rounded-md hover:bg-blue-50 hover:border-blue-200 transition-colors"
-                >
-                  <h3 className="font-medium text-lg text-blue-700">{tool.title}</h3>
-                  <p className="text-gray-600 mt-1">{tool.desc}</p>
-                </Link>
+                  title={tool.title}
+                  description={tool.desc}
+                  path={tool.path}
+                  icon={tool.icon}
+                />
               ))}
             </div>
           </div>

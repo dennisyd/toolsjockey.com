@@ -1,20 +1,23 @@
+import React from 'react';
 import { useEffect } from 'react';
 import HashGenerator from '../../components/tools/HashGenerator';
 import ToolPageLayout from '../../components/layout/ToolPageLayout';
-import { KeyIcon } from '@heroicons/react/24/outline';
+import { CpuChipIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
-const HashGeneratorPage = () => {
+const HashGeneratorPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   useEffect(() => {
-    document.title = 'Hash Generator (MD5, SHA256) - ToolsJockey.com';
+    document.title = 'Hash Generator - ToolsJockey.com';
   }, []);
 
   return (
     <ToolPageLayout
       toolId="hash-generator"
-      title="Hash Generator (MD5, SHA256)"
-      icon={KeyIcon}
+      title="Hash Generator"
+      icon={CpuChipIcon}
       group="developer"
-      relatedTools={['base64-encoder', 'css-minifier', 'json-formatter']}
     >
       <HashGenerator />
     </ToolPageLayout>

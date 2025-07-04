@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, QuestionMarkCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
+import { useAnalytics } from '../hooks/useAnalytics';
+
 // FAQ data: Add or edit questions/answers here
 type FAQItemType = {
   question: string;
@@ -519,7 +521,8 @@ const FAQItem: React.FC<{
 
 // Main FAQ page component with search/filter
 const FAQ: React.FC = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const { trackEngagement } = useAnalytics();
+  const [openItems, setOpenItems] = useState<number[]>([]);
   const [search, setSearch] = useState('');
 
   // Filtered FAQ list based on search
@@ -533,10 +536,19 @@ const FAQ: React.FC = () => {
     );
   }, [search]);
 
-  // Reset openIndex if search changes and current open item is filtered out
+  // Reset openItems if search changes and current open item is filtered out
   React.useEffect(() => {
-    if (openIndex !== null && !filteredFaqs[openIndex]) setOpenIndex(null);
-  }, [search, filteredFaqs, openIndex]);
+    if (openItems.length > 0 && !filteredFaqs[openItems[0]]) setOpenItems([]);
+  }, [search, filteredFaqs, openItems]);
+
+  const toggleItem = (index: number) => {
+    setOpenItems(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
+    trackEngagement('faq_expand', 1, { question_index: index });
+  };
 
   return (
     <div className="container-app max-w-2xl mx-auto px-2 sm:px-4 py-10 sm:py-16">
@@ -567,8 +579,8 @@ const FAQ: React.FC = () => {
               question={item.question}
               answer={item.answer}
               icon={item.icon}
-              isOpen={openIndex === idx}
-              onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+              isOpen={openItems.includes(idx)}
+              onClick={() => toggleItem(idx)}
             />
           ))
         )}

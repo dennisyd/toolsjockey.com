@@ -1,12 +1,16 @@
+import React from 'react';
 import { useEffect } from 'react';
 import CSVToolMerger from '../../components/tools/CSVToolMerger';
 import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import { TableCellsIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
-const CSVToolMergerPage = () => {
+const CSVToolMergerPage: React.FC = () => {
   useEffect(() => {
     document.title = 'CSV Merger - ToolsJockey.com';
   }, []);
+
+  useAnalytics(); // Automatically tracks page views and navigation
 
   return (
     <ToolPageLayout

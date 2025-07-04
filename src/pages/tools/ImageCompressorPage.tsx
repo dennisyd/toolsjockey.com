@@ -1,19 +1,22 @@
-import { useEffect } from 'react';
+import React from 'react';
+import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import ImageCompressorV2 from '../../components/tools/ImageCompressorV2';
-import { useAppStore } from '../../store/useAppStore';
+import { PhotoIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
-const ImageCompressorPage = () => {
-  const { addRecentlyUsedTool } = useAppStore();
+const ImageCompressorPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
   
-  useEffect(() => {
-    // Add this tool to recently used tools
-    addRecentlyUsedTool('image-compressor');
-    
-    // Update page title for SEO
-    document.title = 'Image Compressor - ToolsJockey.com';
-  }, [addRecentlyUsedTool]);
-  
-  return <ImageCompressorV2 />;
+  return (
+    <ToolPageLayout
+      toolId="image-compressor"
+      title="Image Compressor - Reduce Image File Sizes Instantly"
+      icon={PhotoIcon}
+      group="image"
+    >
+      <ImageCompressorV2 />
+    </ToolPageLayout>
+  );
 };
 
 export default ImageCompressorPage; 

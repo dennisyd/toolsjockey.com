@@ -3,8 +3,15 @@ import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { Helmet } from 'react-helmet';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const NotFound: React.FC = () => {
+  const { trackButtonClick, trackEngagement } = useAnalytics();
+  
+  React.useEffect(() => {
+    trackEngagement('404_page_view', 1, { url: window.location.pathname });
+  }, [trackEngagement]);
+
   return (
     <>
       <Helmet>
@@ -30,12 +37,14 @@ const NotFound: React.FC = () => {
             <Link 
               to="/" 
               className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              onClick={() => trackButtonClick('404_to_home', 'NotFound')}
             >
               Back to Home
             </Link>
             <Link 
               to="/tools" 
               className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              onClick={() => trackButtonClick('404_to_tools', 'NotFound')}
             >
               Browse All Tools
             </Link>

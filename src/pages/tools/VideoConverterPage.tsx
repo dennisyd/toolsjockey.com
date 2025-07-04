@@ -1,20 +1,21 @@
-import { useEffect } from 'react';
+import React from 'react';
+import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import VideoConverter from '../../components/tools/VideoConverter';
-import VideoToolLayout from '../../components/shared/VideoToolLayout';
+import { useAnalytics } from '../../hooks/useAnalytics';
+import { FilmIcon } from '@heroicons/react/24/outline';
 
-const VideoConverterPage = () => {
-  useEffect(() => {
-    document.title = 'Video Converter - ToolsJockey.com';
-  }, []);
-
+const VideoConverterPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   return (
-    <VideoToolLayout
-      title="Video Converter"
-      description="Convert videos between different formats without uploading to servers."
-      toolPath="video-converter"
+    <ToolPageLayout
+      toolId="video-converter"
+      title="Video Converter - Convert Videos Between Any Format"
+      icon={FilmIcon}
+      group="video"
     >
       <VideoConverter />
-    </VideoToolLayout>
+    </ToolPageLayout>
   );
 };
 

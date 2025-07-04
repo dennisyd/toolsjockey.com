@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
 import AdSlot from '../components/ads/AdSlot';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const Blog: React.FC = () => {
+  const { trackButtonClick } = useAnalytics();
   const mainArticle = blogPosts.find(post => post.pinned);
   const otherPosts = blogPosts.filter(post => !post.pinned);
   const [mainImgError, setMainImgError] = useState(false);
@@ -50,7 +52,13 @@ const Blog: React.FC = () => {
                 <span>·</span>
                 <span>{mainArticle.readTime}</span>
               </div>
-              <Link to={`/blog/${mainArticle.id}`} className="inline-block px-5 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors">Read Full Article</Link>
+              <Link 
+                to={`/blog/${mainArticle.id}`} 
+                className="inline-block px-5 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors"
+                onClick={() => trackButtonClick(`blog_main_${mainArticle.id}`, 'Blog')}
+              >
+                Read Full Article
+              </Link>
             </div>
           </div>
         </div>
@@ -84,7 +92,13 @@ const Blog: React.FC = () => {
                 <span>·</span>
                 <span>{post.readTime}</span>
               </div>
-              <Link to={`/blog/${post.id}`} className="mt-3 inline-block text-accent font-semibold hover:underline text-sm">Read More</Link>
+              <Link 
+                to={`/blog/${post.id}`} 
+                className="mt-3 inline-block text-accent font-semibold hover:underline text-sm"
+                onClick={() => trackButtonClick(`blog_card_${post.id}`, 'Blog')}
+              >
+                Read More
+              </Link>
             </div>
           </div>
         ))}
