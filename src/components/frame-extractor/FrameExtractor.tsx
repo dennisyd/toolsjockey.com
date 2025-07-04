@@ -18,6 +18,7 @@ interface ExtractedFrame {
   time: number;
   format: string;
   size: number;
+  blob?: Blob; // Store the actual blob data for reliable access
 }
 
 interface ExtractionSettings {
@@ -182,12 +183,17 @@ const FrameExtractor: React.FC = () => {
         outputMimeType: imageFormats[format].mimeType,
       });
       
+      // Get the blob from the URL
+      const response = await fetch(result.url);
+      const blob = await response.blob();
+      
       const newFrame: ExtractedFrame = {
         id: Date.now().toString(),
         url: result.url,
         time,
         format,
         size: result.size,
+        blob: blob, // Store the blob data
       };
       
       setFrames(prev => [newFrame, ...prev]);
@@ -259,12 +265,17 @@ const FrameExtractor: React.FC = () => {
           },
         });
         
+        // Get the blob from the URL
+        const response = await fetch(result.url);
+        const blob = await response.blob();
+        
         const newFrame: ExtractedFrame = {
           id: `frame-${i}-${Date.now()}`,
           url: result.url,
           time: frameTime,
           format,
           size: result.size,
+          blob: blob, // Store the blob data
         };
         
         newFrames.push(newFrame);
@@ -300,9 +311,14 @@ const FrameExtractor: React.FC = () => {
     analytics.trackCurrentPageButtonClick('download_frame', { format: frame.format });
     
     try {
-      // Fetch the blob directly from the URL
-      const response = await fetch(frame.url);
-      const blob = await response.blob();
+      // Use the stored blob if available, otherwise fetch it
+      let blob = frame.blob;
+      
+      if (!blob) {
+        // Fallback to fetching from URL if blob is not available
+        const response = await fetch(frame.url);
+        blob = await response.blob();
+      }
       
       // Create a direct download using the blob
       const blobUrl = URL.createObjectURL(blob);
@@ -363,14 +379,17 @@ const FrameExtractor: React.FC = () => {
         // Process frames in current batch
         const batchPromises = batchFrames.map(async (frame) => {
           try {
-            // Fetch the blob directly from the URL
-            const response = await fetch(frame.url);
+            // Use the stored blob if available, otherwise fetch it
+            let blob = frame.blob;
             
-            if (!response.ok) {
-              throw new Error(`Failed to fetch frame: ${response.status} ${response.statusText}`);
+            if (!blob) {
+              // Fallback to fetching from URL if blob is not available
+              const response = await fetch(frame.url);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch frame: ${response.status} ${response.statusText}`);
+              }
+              blob = await response.blob();
             }
-            
-            const blob = await response.blob();
             
             // Format timestamp for filename
             const timeFormatted = formatDuration(frame.time).replace(/:/g, '-');
