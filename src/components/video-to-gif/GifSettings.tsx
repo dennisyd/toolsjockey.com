@@ -31,21 +31,33 @@ const GifSettingsComponent: React.FC<GifSettingsProps> = ({
   disabled = false,
 }) => {
   // Calculate if this is a large video that might cause memory issues
-  const isLargeVideo = videoWidth * videoHeight > 1000000 || videoDuration > 300;
+  // More sophisticated calculation that considers both dimensions and duration
+  const gifDuration = settings.endTime !== null 
+    ? settings.endTime - settings.startTime 
+    : videoDuration - settings.startTime;
   
-  // Calculate estimated memory usage (very rough estimate)
+  // Only show warning if both dimensions are large AND duration is more than 1 second
+  // OR if dimensions are extremely large even with short duration
+  const isLargeVideo = 
+    (videoWidth * videoHeight > 1000000 && gifDuration > 1) || // Large dimensions and more than 1 second
+    (videoWidth * videoHeight > 2000000); // Extremely large dimensions regardless of duration
+  
+  // Calculate estimated memory usage (more accurate estimate)
   const estimatedMemoryMB = Math.round(
-    (videoWidth * videoHeight * settings.frameRate * 
-    (settings.endTime ? settings.endTime - settings.startTime : videoDuration - settings.startTime) * 4) / 
+    (videoWidth * videoHeight * settings.frameRate * gifDuration * 4) / 
     (1024 * 1024)
   );
   
-  // Calculate estimated GIF size (rough estimate)
+  // Calculate estimated GIF size (more accurate estimate)
+  // Consider color complexity - assume higher compression for shorter clips
+  const compressionFactor = gifDuration < 2 ? 12 : 8;
   const estimatedSizeMB = Math.round(
-    (videoWidth * videoHeight * settings.frameRate * 
-    (settings.endTime ? settings.endTime - settings.startTime : videoDuration - settings.startTime)) / 
-    (1024 * 1024 * 8)
+    (videoWidth * videoHeight * settings.frameRate * gifDuration) / 
+    (1024 * 1024 * compressionFactor)
   );
+
+  // Only show warning if estimated memory usage is high
+  const showWarning = isLargeVideo && estimatedMemoryMB > 15;
 
   // Handle time range changes
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,15 +148,10 @@ const GifSettingsComponent: React.FC<GifSettingsProps> = ({
     onSettingsChange({ loop });
   };
 
-  // Calculate GIF duration
-  const gifDuration = settings.endTime !== null 
-    ? settings.endTime - settings.startTime 
-    : videoDuration - settings.startTime;
-
   return (
     <div className="space-y-6">
       {/* Memory usage warning for large videos */}
-      {isLargeVideo && (
+      {showWarning && (
         <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 text-sm">
           <p className="text-yellow-700 dark:text-yellow-200">
             <strong>Large Video Warning:</strong> This video is quite large. Creating a GIF may use significant memory 

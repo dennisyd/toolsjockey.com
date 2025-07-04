@@ -252,25 +252,52 @@ const VideoToGif: React.FC = () => {
       const endTime = gifSettings.endTime === null ? videoDuration : gifSettings.endTime;
       const duration = Math.max(0.1, endTime - gifSettings.startTime);
       
-      // Adjust quality based on dimensions and duration to prevent OOM
-      const isLargeGif = targetWidth * targetHeight * duration > 10000000;
-      const paletteColors = isLargeGif 
-        ? Math.min(128, Math.max(16, Math.floor(gifSettings.quality * 1.28))) 
-        : Math.min(230, Math.max(16, Math.floor(gifSettings.quality * 2.30)));
-        
-      // Adjust frame rate for large GIFs
-      const adjustedFrameRate = isLargeGif && gifSettings.frameRate > 15 ? 15 : gifSettings.frameRate;
+      // More sophisticated calculation for large GIFs
+      // Consider both dimensions and duration
+      const pixelCount = targetWidth * targetHeight;
+      const isVeryShortClip = duration <= 1;
+      const isMediumClip = duration > 1 && duration <= 5;
+      const isLongClip = duration > 5;
       
-      // Use simpler dithering for large GIFs
-      const ditherMethod = isLargeGif ? 'floyd_steinberg' : 'sierra2_4a';
+      // Determine if this is a large GIF based on both dimensions and duration
+      const isLargeGif = 
+        (pixelCount > 300000 && isLongClip) || // Large dimensions and long duration
+        (pixelCount > 500000 && isMediumClip) || // Larger dimensions and medium duration
+        (pixelCount > 900000); // Very large dimensions regardless of duration
+      
+      // Adjust quality based on dimensions and duration to prevent OOM
+      // For very short clips, we can afford higher quality
+      const paletteColors = isVeryShortClip
+        ? Math.min(230, Math.max(16, Math.floor(gifSettings.quality * 2.30)))
+        : isLargeGif 
+          ? Math.min(128, Math.max(16, Math.floor(gifSettings.quality * 1.28))) 
+          : Math.min(200, Math.max(16, Math.floor(gifSettings.quality * 2.00)));
+        
+      // Adjust frame rate based on clip length and dimensions
+      const adjustedFrameRate = 
+        (isLargeGif && gifSettings.frameRate > 15) ? 15 :
+        (isVeryShortClip && pixelCount < 500000) ? gifSettings.frameRate : // Keep original framerate for short clips
+        gifSettings.frameRate;
+      
+      // Use simpler dithering for large GIFs, but better quality for short clips
+      const ditherMethod = 
+        isVeryShortClip ? 'sierra2_4a' :
+        isLargeGif ? 'floyd_steinberg' : 
+        'sierra2_4a';
       
       const filterComplex = `fps=${adjustedFrameRate},${scaleFilter}:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=${paletteColors}:reserve_transparent=0:stats_mode=diff[p];[s1][p]paletteuse=dither=${ditherMethod}`;
       
       // Limit duration for very large videos to prevent OOM
-      const maxDuration = isLargeGif ? 10 : 30;
-      const safeDuration = Math.min(duration, maxDuration);
+      // Allow longer durations for smaller dimensions
+      const maxDuration = 
+        (pixelCount > 800000) ? 10 : 
+        (pixelCount > 500000) ? 20 : 
+        30;
       
-      if (duration > maxDuration) {
+      // For very short clips, don't limit the duration
+      const safeDuration = isVeryShortClip ? duration : Math.min(duration, maxDuration);
+      
+      if (duration > maxDuration && !isVeryShortClip) {
         console.warn(`Duration limited from ${duration}s to ${maxDuration}s to prevent memory issues`);
       }
       
@@ -282,7 +309,9 @@ const VideoToGif: React.FC = () => {
         height: targetHeight,
         frameRate: adjustedFrameRate,
         paletteColors,
-        loop: gifSettings.loop
+        loop: gifSettings.loop,
+        isVeryShortClip,
+        isLargeGif
       });
       
       // Show a warning for large GIFs
@@ -323,13 +352,22 @@ const VideoToGif: React.FC = () => {
           const currentEndTime = gifSettings.endTime === null ? videoDuration : gifSettings.endTime;
           const currentDuration = currentEndTime - gifSettings.startTime;
           
-          // Reduce duration by half, but ensure at least 2 seconds
-          const newDuration = Math.max(2, Math.min(5, currentDuration / 2));
+          // For very short clips that still fail, reduce dimensions drastically
+          const isVeryShortClip = currentDuration <= 1;
+          
+          // Reduce duration by half, but ensure at least 1 second for short clips
+          const newDuration = isVeryShortClip 
+            ? currentDuration  // Keep the duration for very short clips
+            : Math.max(1, Math.min(3, currentDuration / 2));
+          
           const newEndTime = gifSettings.startTime + newDuration;
           
-          // Reduce dimensions and framerate
-          const newWidth = Math.min(320, gifSettings.width || 320);
-          const newFrameRate = Math.min(10, gifSettings.frameRate);
+          // Reduce dimensions more aggressively for short clips that still fail
+          const newWidth = isVeryShortClip 
+            ? Math.min(240, gifSettings.width || 320)  // More aggressive reduction for short clips
+            : Math.min(320, gifSettings.width || 320);
+            
+          const newFrameRate = isVeryShortClip ? 10 : Math.min(10, gifSettings.frameRate);
           
           // Update settings with reduced values
           setGifSettings(prev => ({
@@ -338,13 +376,13 @@ const VideoToGif: React.FC = () => {
             width: newWidth,
             height: null, // Auto calculate height
             frameRate: newFrameRate,
-            quality: 70, // Lower quality
+            quality: isVeryShortClip ? 50 : 70, // Lower quality even more for short clips that fail
           }));
           
           // Add a message about auto-recovery
           setErrorMessage(
             'Out of memory error: Automatically reducing GIF settings to try again. ' +
-            'If this still fails, try manually reducing the duration or dimensions further.'
+            'If this still fails, try manually reducing the dimensions further.'
           );
           
           // Try again with new settings after a short delay
