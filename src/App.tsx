@@ -168,14 +168,14 @@ function App() {
           <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
           <Route path="utility-tools" element={<UtilityToolsPage />} />
           
-          {/* Video tool routes - these have their own layout with header/footer */}
-          <Route path="tools/video-converter" element={<VideoConverterPage />} />
-          <Route path="tools/video-clipper" element={<VideoClipperPage />} />
-          <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
-          <Route path="tools/video-to-gif" element={<VideoToGifPage />} />
-          <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
-          <Route path="tools/video-merger" element={<VideoMergerPage />} />
-          <Route path="tools/audio-extractor" element={<AudioExtractorPage />} />
+          {/* Video tool routes - wrapped in PDFToolLayout to include header/footer */}
+          <Route path="tools/video-converter" element={<PDFToolLayout><VideoConverterPage /></PDFToolLayout>} />
+          <Route path="tools/video-clipper" element={<PDFToolLayout><VideoClipperPage /></PDFToolLayout>} />
+          <Route path="tools/video-compressor" element={<PDFToolLayout><VideoCompressorPage /></PDFToolLayout>} />
+          <Route path="tools/video-to-gif" element={<PDFToolLayout><VideoToGifPage /></PDFToolLayout>} />
+          <Route path="tools/frame-extractor" element={<PDFToolLayout><FrameExtractorPage /></PDFToolLayout>} />
+          <Route path="tools/video-merger" element={<PDFToolLayout><VideoMergerPage /></PDFToolLayout>} />
+          <Route path="tools/audio-extractor" element={<PDFToolLayout><AudioExtractorPage /></PDFToolLayout>} />
           
           {/* PDF tool routes - wrapped in PDFToolLayout to include header/footer but avoid duplicate privacy badges */}
           <Route path="merge-pdf" element={<PDFToolLayout><MergePDFPage /></PDFToolLayout>} />
