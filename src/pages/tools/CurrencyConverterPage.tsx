@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import AdSlot from '../../components/ads/AdSlot';
 import ToolIcon from '../../components/tools/ToolIcon';
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const related = [
   { title: 'Unit Converter', path: '/tools/unit-converter' },
@@ -16,6 +17,8 @@ const sideNavTools = [
 ];
 
 const CurrencyConverterPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   useEffect(() => {
     document.title = 'Currency Converter - ToolsJockey.com';
   }, []);

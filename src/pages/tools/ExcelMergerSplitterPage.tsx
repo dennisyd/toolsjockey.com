@@ -2,8 +2,11 @@ import { useEffect } from 'react';
 import ExcelMergerSplitter from '../../components/tools/ExcelMergerSplitter';
 import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import { TableCellsIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const ExcelMergerSplitterPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   useEffect(() => {
     document.title = 'Excel Merger & Splitter - ToolsJockey.com';
   }, []);

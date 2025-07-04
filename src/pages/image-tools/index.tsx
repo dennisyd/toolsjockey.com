@@ -1,8 +1,10 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
 import AdSlot from '../../components/ads/AdSlot';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const IMAGE_PROCESSING_TOOLS = [
   { title: 'Image Compressor', path: '/tools/image-compressor', desc: 'Reduce image file size while preserving quality.' },
@@ -16,7 +18,9 @@ const IMAGE_UTILITY_TOOLS = [
   { title: 'Watermark Adder', path: '/tools/watermark-adder', desc: 'Add text or image watermarks to your photos.' },
 ];
 
-const ImageToolsPage = () => {
+const ImageToolsPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

@@ -3,6 +3,7 @@ import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
 import AdSlot from '../../components/ads/AdSlot';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const FORMATTER_TOOLS = [
   { title: 'JSON Formatter', path: '/tools/json-formatter', desc: 'Format, validate, and beautify JSON data.' },
@@ -17,6 +18,8 @@ const UTILITY_TOOLS = [
 ];
 
 const DeveloperToolsPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

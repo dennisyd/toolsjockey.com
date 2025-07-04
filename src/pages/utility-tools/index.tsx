@@ -1,7 +1,9 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const TEXT_TOOLS = [
   { title: 'Word Counter', path: '/tools/word-counter', desc: 'Count words, characters, and paragraphs in text.' },
@@ -15,7 +17,9 @@ const OTHER_TOOLS = [
   { title: 'Currency Converter', path: '/tools/currency-converter', desc: 'Convert between different currencies.' },
 ];
 
-const UtilityToolsPage = () => {
+const UtilityToolsPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import AdSlot from '../../components/ads/AdSlot';
 import ToolIcon from '../../components/tools/ToolIcon';
 import SideNavAccordion from '../../components/tools/SideNavAccordion';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const related = [
   { title: 'Image Compressor', path: '/tools/image-compressor' },
@@ -20,6 +21,8 @@ const sideNavTools = [
 ];
 
 const ImageFormatConverterPage = () => {
+  useAnalytics();
+  
   useEffect(() => {
     document.title = 'Image Format Converter - ToolsJockey.com';
   }, []);

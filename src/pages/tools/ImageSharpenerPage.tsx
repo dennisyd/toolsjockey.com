@@ -1,19 +1,22 @@
-import { useEffect } from 'react';
-import ImageSharpenerUpscaler from '../../components/tools/ImageSharpener';
-import { useAppStore } from '../../store/useAppStore';
+import React from 'react';
+import ToolPageLayout from '../../components/layout/ToolPageLayout';
+import ImageSharpener from '../../components/tools/ImageSharpener';
+import { PhotoIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
-const ImageSharpenerPage = () => {
-  const { addRecentlyUsedTool } = useAppStore();
+const ImageSharpenerPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
   
-  useEffect(() => {
-    // Add this tool to recently used tools
-    addRecentlyUsedTool('image-sharpener');
-    
-    // Update page title for SEO
-    document.title = 'Image Sharpener & Upscaler - ToolsJockey.com';
-  }, [addRecentlyUsedTool]);
-  
-  return <ImageSharpenerUpscaler />;
+  return (
+    <ToolPageLayout
+      toolId="image-sharpener"
+      title="Image Sharpener/Upscaler"
+      icon={PhotoIcon}
+      group="image"
+    >
+      <ImageSharpener />
+    </ToolPageLayout>
+  );
 };
 
 export default ImageSharpenerPage; 

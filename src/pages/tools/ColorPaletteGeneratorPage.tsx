@@ -1,19 +1,22 @@
-import { useEffect } from 'react';
+import React from 'react';
+import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import ColorPaletteExtractorV2 from '../../components/tools/ColorPaletteExtractorV2';
-import { useAppStore } from '../../store/useAppStore';
+import { EyeDropperIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
-const ColorPaletteGeneratorPage = () => {
-  const { addRecentlyUsedTool } = useAppStore();
+const ColorPaletteGeneratorPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
   
-  useEffect(() => {
-    // Add this tool to recently used tools
-    addRecentlyUsedTool('color-palette-generator');
-    
-    // Update page title for SEO
-    document.title = 'Color Palette Generator - ToolsJockey.com';
-  }, [addRecentlyUsedTool]);
-  
-  return <ColorPaletteExtractorV2 />;
+  return (
+    <ToolPageLayout
+      toolId="color-palette-generator"
+      title="Color Palette Generator"
+      icon={EyeDropperIcon}
+      group="color"
+    >
+      <ColorPaletteExtractorV2 />
+    </ToolPageLayout>
+  );
 };
 
 export default ColorPaletteGeneratorPage; 

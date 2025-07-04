@@ -2,7 +2,11 @@ import React, { useRef, useState } from 'react';
 // @ts-ignore
 import * as Tesseract from 'tesseract.js';
 
+import { useAnalytics } from '../../hooks/useAnalytics';
+
 const TextFromImagePage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+
   const [image, setImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);

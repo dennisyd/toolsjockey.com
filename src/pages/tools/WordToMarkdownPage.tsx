@@ -2,8 +2,11 @@ import { useEffect } from 'react';
 import WordToMarkdownConverter from '../../components/tools/WordToMarkdownConverter';
 import { Link } from 'react-router-dom';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const WordToMarkdownPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+
   useEffect(() => {
     document.title = 'Word to Markdown Converter - ToolsJockey.com';
   }, []);

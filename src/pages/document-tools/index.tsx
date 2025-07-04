@@ -1,14 +1,18 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const DOCUMENT_TOOLS = [
   { title: 'Word to Markdown', path: '/tools/word-to-markdown', desc: 'Convert Word documents to Markdown format.' },
   { title: 'Mail Merge Tool', path: '/tools/mail-merge-tool', desc: 'Generate personalized documents from templates and data.' },
 ];
 
-const DocumentToolsPage = () => {
+const DocumentToolsPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

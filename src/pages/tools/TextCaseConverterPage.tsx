@@ -2,8 +2,11 @@ import { useEffect } from 'react';
 import TextCaseConverter from '../../components/tools/TextCaseConverter';
 import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import { BoltIcon } from '@heroicons/react/24/outline';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const TextCaseConverterPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   useEffect(() => {
     document.title = 'Text Case Converter - ToolsJockey.com';
   }, []);

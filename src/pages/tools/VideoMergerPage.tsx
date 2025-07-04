@@ -2,8 +2,11 @@ import React from 'react';
 import VideoToolLayout from '../../components/shared/VideoToolLayout';
 import VideoMerger from '../../components/video-merger/VideoMerger';
 import { Helmet } from 'react-helmet';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const VideoMergerPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   return (
     <>
       <Helmet>

@@ -2,8 +2,11 @@ import React from 'react';
 import VideoToolLayout from '../../components/shared/VideoToolLayout';
 import VideoCompressor from '../../components/video-compressor/VideoCompressor';
 import { Helmet } from 'react-helmet';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const VideoCompressorPage: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   return (
     <>
       <Helmet>

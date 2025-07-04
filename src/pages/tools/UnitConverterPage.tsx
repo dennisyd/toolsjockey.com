@@ -5,6 +5,8 @@ import AdSlot from '../../components/ads/AdSlot';
 import ToolIcon from '../../components/tools/ToolIcon';
 import SideNavAccordion from '../../components/tools/SideNavAccordion';
 
+import { useAnalytics } from '../../hooks/useAnalytics';
+
 const related = [
   { title: 'Currency Converter', path: '/tools/currency-converter' },
   { title: 'Image Format Converter', path: '/tools/image-format-converter' },
@@ -16,6 +18,8 @@ const sideNavTools = [
 ];
 
 const UnitConverterPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   useEffect(() => {
     document.title = 'Unit Converter - ToolsJockey.com';
   }, []);

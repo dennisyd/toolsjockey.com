@@ -3,6 +3,7 @@ import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
 import AdSlot from '../../components/ads/AdSlot';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 const EXCEL_TOOLS = [
   { title: 'Excel Merger & Splitter', path: '/tools/excel-merger-splitter', desc: 'Combine or split Excel files with ease.' },
@@ -17,6 +18,8 @@ const CSV_TOOLS = [
 ];
 
 const ExcelCsvToolsPage = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />

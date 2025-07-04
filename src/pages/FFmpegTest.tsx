@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { useFFmpegTest } from '../hooks/useFFmpeg-test';
 import { fetchFile } from '@ffmpeg/ffmpeg';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const FFmpegTest: React.FC = () => {
+  useAnalytics(); // Automatically tracks page views and navigation
+  
   const { isFFmpegLoaded, isFFmpegLoading, error, getFFmpeg } = useFFmpegTest();
   const [testResult, setTestResult] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
