@@ -337,33 +337,12 @@ const FrameExtractor: React.FC = () => {
   // Download all frames as zip
   const downloadAllFrames = () => {
     // This would typically use JSZip to create a zip file
-    // For simplicity, we'll just download each frame individually
+    // For simplicity, we'll just download each frame individually using the robust downloadFrame function
     frames.forEach((frame, index) => {
       setTimeout(() => {
-        try {
-          const a = document.createElement('a');
-          a.href = frame.url;
-          a.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
-          a.style.display = 'none';
-          
-          // Add error handling for the download
-          a.addEventListener('error', (e) => {
-            console.error('Download error for frame:', frame.id, e);
-          });
-          
-          document.body.appendChild(a);
-          a.click();
-          
-          // Clean up after a short delay
-          setTimeout(() => {
-            if (document.body.contains(a)) {
-              document.body.removeChild(a);
-            }
-          }, 100);
-        } catch (error) {
-          console.error('Error downloading frame:', frame.id, error);
-        }
-      }, index * 200); // Increased delay to 200ms for better reliability
+        console.log(`Downloading frame ${index + 1}/${frames.length}:`, frame.id);
+        downloadFrame(frame.id);
+      }, index * 300); // Increased delay to 300ms for better reliability
     });
   };
   
