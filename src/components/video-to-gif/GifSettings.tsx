@@ -30,6 +30,23 @@ const GifSettingsComponent: React.FC<GifSettingsProps> = ({
   videoHeight,
   disabled = false,
 }) => {
+  // Calculate if this is a large video that might cause memory issues
+  const isLargeVideo = videoWidth * videoHeight > 1000000 || videoDuration > 300;
+  
+  // Calculate estimated memory usage (very rough estimate)
+  const estimatedMemoryMB = Math.round(
+    (videoWidth * videoHeight * settings.frameRate * 
+    (settings.endTime ? settings.endTime - settings.startTime : videoDuration - settings.startTime) * 4) / 
+    (1024 * 1024)
+  );
+  
+  // Calculate estimated GIF size (rough estimate)
+  const estimatedSizeMB = Math.round(
+    (videoWidth * videoHeight * settings.frameRate * 
+    (settings.endTime ? settings.endTime - settings.startTime : videoDuration - settings.startTime)) / 
+    (1024 * 1024 * 8)
+  );
+
   // Handle time range changes
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newStartTime = parseFloat(e.target.value);
@@ -126,6 +143,19 @@ const GifSettingsComponent: React.FC<GifSettingsProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Memory usage warning for large videos */}
+      {isLargeVideo && (
+        <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 text-sm">
+          <p className="text-yellow-700 dark:text-yellow-200">
+            <strong>Large Video Warning:</strong> This video is quite large. Creating a GIF may use significant memory 
+            (est. {estimatedMemoryMB}MB) and result in a large file (est. {estimatedSizeMB}MB).
+          </p>
+          <p className="text-yellow-700 dark:text-yellow-200 mt-1">
+            Consider reducing duration, dimensions, or frame rate to avoid memory issues.
+          </p>
+        </div>
+      )}
+
       {/* Time range */}
       <div>
         <div className="flex items-center justify-between mb-2">

@@ -59,6 +59,7 @@ const VideoToGif: React.FC = () => {
   const [gifUrl, setGifUrl] = useState<string | null>(null);
   const [gifSize, setGifSize] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [autoRecoveryAttempted, setAutoRecoveryAttempted] = useState<boolean>(false);
   
   // FFmpeg state
   const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError } = useFFmpeg();
@@ -223,13 +224,19 @@ const VideoToGif: React.FC = () => {
       // Reset any previous error
       setErrorMessage(null);
       
+      // Reset auto-recovery flag if user manually generates again
+      setAutoRecoveryAttempted(false);
+      
       // Ensure we have valid dimensions
       if (!videoWidth || !videoHeight) {
         throw new Error("Video dimensions could not be detected");
       }
       
       // Calculate dimensions while maintaining aspect ratio
-      const targetWidth = gifSettings.width || (videoWidth > 800 ? 800 : videoWidth); // Default to max 800px width if none specified
+      // Limit maximum dimensions to prevent memory issues
+      const maxAllowedWidth = 640; // Limit width to 640px max
+      const originalWidth = videoWidth > 800 ? 800 : videoWidth;
+      const targetWidth = gifSettings.width || (originalWidth > maxAllowedWidth ? maxAllowedWidth : originalWidth);
       const targetHeight = gifSettings.height || Math.round((targetWidth / videoWidth) * videoHeight);
       
       // Calculate height if null (maintain aspect ratio)
@@ -241,32 +248,52 @@ const VideoToGif: React.FC = () => {
       }
       
       // Build the filter complex command
-      const paletteColors = Math.min(256, Math.max(16, Math.floor(gifSettings.quality * 2.56))); // At least 16 colors
-      const filterComplex = `fps=${gifSettings.frameRate},${scaleFilter}:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=${paletteColors}:reserve_transparent=0:stats_mode=diff[p];[s1][p]paletteuse=dither=sierra2_4a`;
-      
-      // Calculate the duration - handle null endTime
+      // Reduce palette colors for large GIFs to save memory
       const endTime = gifSettings.endTime === null ? videoDuration : gifSettings.endTime;
       const duration = Math.max(0.1, endTime - gifSettings.startTime);
       
+      // Adjust quality based on dimensions and duration to prevent OOM
+      const isLargeGif = targetWidth * targetHeight * duration > 10000000;
+      const paletteColors = isLargeGif 
+        ? Math.min(128, Math.max(16, Math.floor(gifSettings.quality * 1.28))) 
+        : Math.min(230, Math.max(16, Math.floor(gifSettings.quality * 2.30)));
+        
+      // Adjust frame rate for large GIFs
+      const adjustedFrameRate = isLargeGif && gifSettings.frameRate > 15 ? 15 : gifSettings.frameRate;
+      
+      // Use simpler dithering for large GIFs
+      const ditherMethod = isLargeGif ? 'floyd_steinberg' : 'sierra2_4a';
+      
+      const filterComplex = `fps=${adjustedFrameRate},${scaleFilter}:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=${paletteColors}:reserve_transparent=0:stats_mode=diff[p];[s1][p]paletteuse=dither=${ditherMethod}`;
+      
+      // Limit duration for very large videos to prevent OOM
+      const maxDuration = isLargeGif ? 10 : 30;
+      const safeDuration = Math.min(duration, maxDuration);
+      
+      if (duration > maxDuration) {
+        console.warn(`Duration limited from ${duration}s to ${maxDuration}s to prevent memory issues`);
+      }
+      
       console.log("GIF conversion settings:", {
         startTime: gifSettings.startTime,
-        duration,
+        duration: safeDuration,
         filterComplex,
         width: targetWidth,
         height: targetHeight,
-        frameRate: gifSettings.frameRate,
+        frameRate: adjustedFrameRate,
+        paletteColors,
         loop: gifSettings.loop
       });
       
       // Show a warning for large GIFs
-      if (targetWidth * targetHeight * gifSettings.frameRate * duration > 50000000) { // Rough estimate for large GIFs
+      if (targetWidth * targetHeight * adjustedFrameRate * safeDuration > 50000000) {
         console.warn("This will be a large GIF and may take a while to generate");
       }
       
       const result = await processVideo(sourceVideo, {
         command: [
           '-ss', gifSettings.startTime.toString(),
-          '-t', duration.toString(),
+          '-t', safeDuration.toString(),
           '-vf', filterComplex,
           '-loop', gifSettings.loop.toString(),
         ],
@@ -279,7 +306,55 @@ const VideoToGif: React.FC = () => {
       
     } catch (err) {
       console.error('Error generating GIF:', err);
-      setErrorMessage(`Conversion error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      const errorString = String(err);
+      
+      // Provide more helpful error messages for common issues
+      if (errorString.includes('OOM') || errorString.includes('memory')) {
+        setErrorMessage(
+          'Out of memory error: The GIF is too large to process in your browser. ' +
+          'Try reducing the duration, dimensions, or frame rate.'
+        );
+        
+        // Auto-recovery: If we haven't tried to auto-recover yet, try with reduced settings
+        if (!autoRecoveryAttempted) {
+          setAutoRecoveryAttempted(true);
+          
+          // Calculate a shorter duration and lower quality settings
+          const currentEndTime = gifSettings.endTime === null ? videoDuration : gifSettings.endTime;
+          const currentDuration = currentEndTime - gifSettings.startTime;
+          
+          // Reduce duration by half, but ensure at least 2 seconds
+          const newDuration = Math.max(2, Math.min(5, currentDuration / 2));
+          const newEndTime = gifSettings.startTime + newDuration;
+          
+          // Reduce dimensions and framerate
+          const newWidth = Math.min(320, gifSettings.width || 320);
+          const newFrameRate = Math.min(10, gifSettings.frameRate);
+          
+          // Update settings with reduced values
+          setGifSettings(prev => ({
+            ...prev,
+            endTime: newEndTime,
+            width: newWidth,
+            height: null, // Auto calculate height
+            frameRate: newFrameRate,
+            quality: 70, // Lower quality
+          }));
+          
+          // Add a message about auto-recovery
+          setErrorMessage(
+            'Out of memory error: Automatically reducing GIF settings to try again. ' +
+            'If this still fails, try manually reducing the duration or dimensions further.'
+          );
+          
+          // Try again with new settings after a short delay
+          setTimeout(() => {
+            generateGif();
+          }, 1500);
+        }
+      } else {
+        setErrorMessage(`Conversion error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     }
   };
   
