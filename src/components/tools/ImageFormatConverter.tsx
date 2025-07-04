@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import JSZip from 'jszip';
 
@@ -20,6 +20,35 @@ const ImageFormatConverter = () => {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Get file extensions for the current files
+  const currentFormats = useMemo(() => {
+    return files.map(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase() || '';
+      // Normalize jpg/jpeg to be consistent
+      return ext === 'jpg' ? 'jpeg' : ext;
+    });
+  }, [files]);
+
+  // Filter out formats that match the current files
+  const availableFormats = useMemo(() => {
+    if (files.length === 0) return OUTPUT_FORMATS;
+    
+    // If all files have the same format, filter out that format
+    if (currentFormats.length > 0 && currentFormats.every(format => format === currentFormats[0])) {
+      return OUTPUT_FORMATS.filter(format => format.value !== currentFormats[0]);
+    }
+    
+    // If files have mixed formats, show all options
+    return OUTPUT_FORMATS;
+  }, [currentFormats, files.length]);
+
+  // Update output format when available formats change
+  useMemo(() => {
+    if (availableFormats.length > 0 && !availableFormats.some(f => f.value === outputFormat)) {
+      setOutputFormat(availableFormats[0].value);
+    }
+  }, [availableFormats, outputFormat]);
+
   // File upload logic (batch)
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -34,6 +63,21 @@ const ImageFormatConverter = () => {
       setPreviews(acceptedFiles.map(f => URL.createObjectURL(f)));
       setConverted([]);
       setSelected(new Set());
+      
+      // Determine initial output format based on the uploaded files
+      const formats = acceptedFiles.map(file => {
+        const ext = file.name.split('.').pop()?.toLowerCase() || '';
+        return ext === 'jpg' ? 'jpeg' : ext;
+      });
+      
+      // If all files have the same format, select a different format
+      if (formats.length > 0 && formats.every(format => format === formats[0])) {
+        const currentFormat = formats[0];
+        const nextFormat = OUTPUT_FORMATS.find(f => f.value !== currentFormat);
+        if (nextFormat) {
+          setOutputFormat(nextFormat.value);
+        }
+      }
     }
   });
 
@@ -153,7 +197,7 @@ const ImageFormatConverter = () => {
         <div className="flex gap-4 items-center">
           <label className="font-semibold">Convert to:</label>
           <select value={outputFormat} onChange={e => setOutputFormat(e.target.value)} className="p-2 border rounded">
-            {OUTPUT_FORMATS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            {availableFormats.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
           </select>
           <button className="btn btn-primary" onClick={handleConvert} disabled={isProcessing}>
             {isProcessing ? 'Converting...' : 'Convert'}
