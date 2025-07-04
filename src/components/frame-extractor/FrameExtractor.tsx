@@ -327,53 +327,86 @@ const FrameExtractor: React.FC = () => {
     }
   };
   
-  // Download all frames as zip
+  // Download all frames as a ZIP file
   const downloadAllFrames = async () => {
     if (frames.length === 0) return;
     
+    analytics.trackToolFeatureUse('download_all_frames', {
+      count: frames.length,
+      format: frames[0].format,
+    });
+    
+    setIsProcessing(true);
+    setCurrentTask('Creating ZIP archive...');
+    setProgress(0);
+    setErrorMessage(null);
+    
     try {
-      setErrorMessage(null);
-      
-      // Show processing state
-      setCurrentTask('Creating ZIP archive...');
-      setIsProcessing(true);
-      
-      // Track analytics
-      analytics.trackToolFeatureUse('download_all_frames_zip', {
-        frame_count: frames.length,
-        format: settings.format
-      });
-      
       // Create a new JSZip instance
       const zip = new JSZip();
       
       // Add each frame to the zip file
       let processedCount = 0;
-      for (const frame of frames) {
-        try {
-          // Fetch the blob directly from the URL
-          const response = await fetch(frame.url);
-          const blob = await response.blob();
-          
-          // Format timestamp for filename
-          const timeFormatted = formatDuration(frame.time).replace(/:/g, '-');
-          const filename = `frame_${timeFormatted}.${frame.format}`;
-          
-          // Add the blob to the zip
-          zip.file(filename, blob);
-          
-          // Update progress
-          processedCount++;
-          setProgress((processedCount / frames.length) * 50); // First 50% for adding files
-        } catch (err) {
-          console.error('Error adding frame to zip:', err);
+      let failedFrames = 0;
+      
+      // Process frames in batches to avoid memory issues with very large frame sets
+      const BATCH_SIZE = 10;
+      const batches = Math.ceil(frames.length / BATCH_SIZE);
+      
+      for (let batchIndex = 0; batchIndex < batches; batchIndex++) {
+        const start = batchIndex * BATCH_SIZE;
+        const end = Math.min(start + BATCH_SIZE, frames.length);
+        const batchFrames = frames.slice(start, end);
+        
+        setCurrentTask(`Processing batch ${batchIndex + 1}/${batches}...`);
+        
+        // Process frames in current batch
+        const batchPromises = batchFrames.map(async (frame) => {
+          try {
+            // Fetch the blob directly from the URL
+            const response = await fetch(frame.url);
+            
+            if (!response.ok) {
+              throw new Error(`Failed to fetch frame: ${response.status} ${response.statusText}`);
+            }
+            
+            const blob = await response.blob();
+            
+            // Format timestamp for filename
+            const timeFormatted = formatDuration(frame.time).replace(/:/g, '-');
+            const filename = `frame_${timeFormatted}.${frame.format}`;
+            
+            // Add the blob to the zip
+            zip.file(filename, blob);
+            
+            // Update progress
+            processedCount++;
+            setProgress((processedCount / frames.length) * 50); // First 50% for adding files
+            
+            return { success: true };
+          } catch (err) {
+            console.error('Error adding frame to zip:', err);
+            return { success: false, error: err };
+          }
+        });
+        
+        // Wait for all frames in the batch to be processed
+        const results = await Promise.all(batchPromises);
+        
+        // Count failures
+        const batchFailures = results.filter(r => !r.success).length;
+        failedFrames += batchFailures;
+        
+        // If too many frames fail, abort the process
+        if (failedFrames > Math.min(5, frames.length / 4)) {
+          throw new Error('Too many frames failed to process. Please try again.');
         }
       }
       
       // Update task
       setCurrentTask('Generating ZIP file...');
       
-      // Generate the zip file
+      // Generate the zip file with progress tracking
       const zipBlob = await zip.generateAsync({ 
         type: 'blob',
         compression: 'DEFLATE',
@@ -384,7 +417,8 @@ const FrameExtractor: React.FC = () => {
       
       // Create a direct download using the blob
       const blobUrl = URL.createObjectURL(zipBlob);
-      const filename = `frames_${new Date().getTime()}.zip`;
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `frames_${timestamp}.zip`;
       
       // Create and trigger the download
       const a = document.createElement('a');
@@ -401,10 +435,13 @@ const FrameExtractor: React.FC = () => {
         setIsProcessing(false);
         setCurrentTask('');
         setProgress(0);
-      }, 200);
+      }, 500); // Increased timeout to ensure download starts properly
+      
+      // Track successful download
+      analytics.trackDownload('zip', { frame_count: frames.length });
     } catch (error) {
       console.error('Error creating zip file:', error);
-      setErrorMessage('Failed to create ZIP file. Please try again.');
+      setErrorMessage(`Failed to create ZIP file: ${error instanceof Error ? error.message : 'Unknown error'}`);
       analytics.trackToolError(`ZIP download error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsProcessing(false);
       setCurrentTask('');
