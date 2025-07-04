@@ -8,6 +8,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 const countColumns = (row: string[] | undefined) => (row ? row.length : 0);
 
 const CSVToolMerger = () => {
+  
   // State
   const [files, setFiles] = useState<File[]>([]);
   const [fileNames, setFileNames] = useState<string[]>([]);

@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import QRCode from 'qrcode';
 import { useDropzone } from 'react-dropzone';
 import AdSlot from '../ads/AdSlot';
+import { useToolAnalytics } from '../../hooks/useAnalytics';
 
 const QR_TYPES = [
   { value: 'text', label: 'Text/URL' },
@@ -28,6 +29,8 @@ function getVCardString(name: string, phone: string, email: string) {
 }
 
 const QRCodeGeneratorV2 = () => {
+  const { trackDownload, trackToolFeatureUse } = useToolAnalytics('QR Code Generator');
+  
   const [qrType, setQrType] = useState('text');
   const [text, setText] = useState('');
   const [wifi, setWifi] = useState({ ssid: '', password: '', encryption: 'WPA' });
@@ -49,6 +52,7 @@ const QRCodeGeneratorV2 = () => {
     onDrop: (files) => {
       const file = files[0];
       setLogo(URL.createObjectURL(file));
+      trackToolFeatureUse('logo_upload');
     },
   });
 
@@ -115,6 +119,7 @@ const QRCodeGeneratorV2 = () => {
       link.href = logo ? getLogoPreview() : qrPng;
       link.download = 'qrcode.png';
       link.click();
+      trackDownload('png');
     } else if (type === 'svg' && qrSvg) {
       const blob = new Blob([qrSvg], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
@@ -123,6 +128,7 @@ const QRCodeGeneratorV2 = () => {
       link.download = 'qrcode.svg';
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      trackDownload('svg');
     }
   };
 

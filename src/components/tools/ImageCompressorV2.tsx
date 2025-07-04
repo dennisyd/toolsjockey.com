@@ -13,6 +13,7 @@ const FORMATS = [
 const DEFAULT_QUALITY = 0.8;
 
 const ImageCompressorV2 = () => {
+  
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [compressed, setCompressed] = useState<{ url: string; size: number; name: string }[]>([]);

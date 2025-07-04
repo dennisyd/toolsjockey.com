@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoConverter } from '../../hooks/useVideoConverter';
 import { useFileHandler } from '../../hooks/useFileHandler';
+
 import { AlertCircle, X } from 'lucide-react';
 import FileUploader from '../shared/FileUploader';
 import VideoPreview from '../shared/VideoPreview';
@@ -31,6 +32,7 @@ const detectBrowser = () => {
 };
 
 const VideoConverter: React.FC = () => {
+  
   // State variables
   const [videoFiles, setVideoFiles] = useState<VideoFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('mp4');

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { blogPosts } from '../data/blogPosts';
-import AdSlot from '../components/ads/AdSlot'; 
+import AdSlot from '../components/ads/AdSlot';
+import { useAnalytics } from '../hooks/useAnalytics'; 
 
 const BlogArticle: React.FC = () => {
+  const { trackButtonClick } = useAnalytics();
   const { id } = useParams<{ id: string }>();
   const article = blogPosts.find(post => post.id === id);
 
@@ -12,7 +14,13 @@ const BlogArticle: React.FC = () => {
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900">
         <h1 className="text-3xl font-bold mb-4 text-accent">404 - Article Not Found</h1>
         <p className="mb-6 text-slate-600 dark:text-slate-300">Sorry, we couldn't find that article.</p>
-        <Link to="/blog" className="px-4 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors">Back to Blog</Link>
+        <Link 
+          to="/blog" 
+          className="px-4 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors"
+          onClick={() => trackButtonClick('blog_back_404', 'BlogArticle')}
+        >
+          Back to Blog
+        </Link>
       </div>
     );
   }
@@ -43,7 +51,13 @@ const BlogArticle: React.FC = () => {
       {/* SaaS Message Banner at the bottom */}
       <AdSlot slot="footer" className="mb-8" />
       
-      <Link to="/blog" className="inline-block px-4 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors">← Back to Blog</Link>
+      <Link 
+        to="/blog" 
+        className="inline-block px-4 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent hover:text-white transition-colors"
+        onClick={() => trackButtonClick('blog_back_article', 'BlogArticle')}
+      >
+        ← Back to Blog
+      </Link>
     </div>
   );
 };

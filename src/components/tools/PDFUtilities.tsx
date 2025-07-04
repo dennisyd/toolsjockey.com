@@ -3,8 +3,11 @@ import { useDropzone } from 'react-dropzone';
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
 import AdSlot from '../ads/AdSlot';
+import { useToolAnalytics } from '../../hooks/useAnalytics';
 
 const PDFUtilities = () => {
+  const { trackFileUpload, trackToolFeatureUse, trackToolComplete } = useToolAnalytics('PDF Utilities');
+  
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -20,23 +23,31 @@ const PDFUtilities = () => {
       setPreviews(acceptedFiles.map(f => f.name));
       setResultUrl(null);
       setSplitUrls([]);
+      acceptedFiles.forEach((file) => {
+        trackFileUpload(file.type, file.size);
+      });
     },
   });
 
   // Merge PDFs
   const handleMerge = async () => {
     setIsProcessing(true);
-    const mergedPdf = await PDFDocument.create();
-    for (const file of files) {
-      const bytes = await file.arrayBuffer();
-      const pdf = await PDFDocument.load(bytes);
-      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-      copiedPages.forEach(page => mergedPdf.addPage(page));
+    trackToolFeatureUse('merge_pdfs');
+    try {
+      const mergedPdf = await PDFDocument.create();
+      for (const file of files) {
+        const bytes = await file.arrayBuffer();
+        const pdf = await PDFDocument.load(bytes);
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach(page => mergedPdf.addPage(page));
+      }
+      const mergedBytes = await mergedPdf.save();
+      const url = URL.createObjectURL(new Blob([mergedBytes], { type: 'application/pdf' }));
+      setResultUrl(url);
+      trackToolComplete(`${files.length}_pdfs_merged`);
+    } finally {
+      setIsProcessing(false);
     }
-    const mergedBytes = await mergedPdf.save();
-    const url = URL.createObjectURL(new Blob([mergedBytes], { type: 'application/pdf' }));
-    setResultUrl(url);
-    setIsProcessing(false);
   };
 
   // Split PDF by page range (e.g., 1-2,4)

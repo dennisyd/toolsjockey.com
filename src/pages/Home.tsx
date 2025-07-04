@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, StarIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { toolsConfig, toolGroups } from '../utils/toolsConfig';
 import type { ToolMeta, ToolBadge } from '../utils/toolsConfig';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const getPopularTools = (recentlyUsedTools: string[]): ToolMeta[] => {
   // Simulate popularity: use recently used, fallback to POPULAR badge
@@ -42,6 +43,7 @@ const getBadgeColor = (badge: ToolBadge) => {
 };
 
 const Home = () => {
+  const { trackButtonClick, trackEngagement } = useAnalytics();
   const { recentlyUsedTools } = useAppStore();
   const [search, setSearch] = useState('');
   const [openGroups, setOpenGroups] = useState<string[]>(() => {
@@ -116,7 +118,12 @@ const Home = () => {
             type="text"
             placeholder="Search tools... (Press / to focus)"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => {
+              setSearch(e.target.value);
+              if (e.target.value) {
+                trackEngagement('search', e.target.value.length, { query: e.target.value, page: 'Home' });
+              }
+            }}
             className="w-full p-3 pl-10 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white shadow focus:outline-none focus:ring-2 focus:ring-accent"
             aria-label="Search tools"
           />
@@ -132,7 +139,13 @@ const Home = () => {
           <div className="flex-1">
             <div className="font-bold text-lg">Excel to Everything Converter</div>
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Convert Excel files to CSV, JSON, HTML, PDF, Google Sheets, and more. Batch, privacy-first, and pro-grade.</div>
-            <a href="/tools/excel-to-formats" className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition">Try Now</a>
+            <a 
+              href="/tools/excel-to-formats" 
+              className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
+              onClick={() => trackButtonClick('excel_converter_featured', 'Home')}
+            >
+              Try Now
+            </a>
           </div>
         </div>
 
@@ -142,7 +155,13 @@ const Home = () => {
           <div className="flex-1">
             <div className="font-bold text-lg">New: Video Tools Suite</div>
             <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Process videos right in your browser! Clip, compress, convert to GIF, extract frames, merge videos, and extract audio.</div>
-            <a href="/tools/video-clipper" className="inline-block bg-purple-600 text-white px-4 py-2 rounded font-semibold hover:bg-purple-700 transition">Try Now</a>
+            <a 
+              href="/tools/video-clipper" 
+              className="inline-block bg-purple-600 text-white px-4 py-2 rounded font-semibold hover:bg-purple-700 transition"
+              onClick={() => trackButtonClick('video_tools_featured', 'Home')}
+            >
+              Try Now
+            </a>
           </div>
         </div>
       </div>
@@ -159,6 +178,7 @@ const Home = () => {
                 to={tool.path}
                 className="flex items-center gap-2 px-3 py-1 bg-accent text-white rounded-md hover:bg-accent-hover transition-colors font-semibold text-sm"
                 title={tool.description}
+                onClick={() => trackButtonClick(`popular_${tool.id}`, 'Home')}
               >
                 <tool.icon className="w-4 h-4" />
                 {tool.title}

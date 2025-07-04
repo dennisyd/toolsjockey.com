@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface ToolCardProps {
   title: string;
@@ -17,10 +18,13 @@ const ToolCard: React.FC<ToolCardProps> = ({
   icon: Icon,
   isNew = false,
 }) => {
+  const { trackButtonClick } = useAnalytics();
+  
   return (
     <Link
       to={path}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 flex flex-col hover:shadow-md transition-shadow"
+      onClick={() => trackButtonClick(`tool_card_${title.toLowerCase().replace(/\s+/g, '_')}`, 'ToolCard')}
     >
       <div className="flex items-center mb-4">
         <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">

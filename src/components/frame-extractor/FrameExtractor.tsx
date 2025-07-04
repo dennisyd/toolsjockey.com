@@ -9,6 +9,7 @@ import { useFFmpeg } from '../../hooks/useFFmpeg';
 import { useVideoProcessor } from '../../hooks/useVideoProcessor';
 import { formatDuration } from '../../utils/fileUtils';
 import { imageFormats } from '../../utils/videoFormats';
+import { useToolAnalytics } from '../../hooks/useAnalytics';
 
 interface ExtractedFrame {
   id: string;
@@ -44,6 +45,9 @@ const PrivacyBadge: React.FC = () => (
 );
 
 const FrameExtractor: React.FC = () => {
+  // Analytics tracking
+  const analytics = useToolAnalytics('Frame Extractor');
+  
   // Source video state
   const [sourceVideo, setSourceVideo] = useState<File | null>(null);
   const [sourceVideoUrl, setSourceVideoUrl] = useState<string>('');
@@ -94,6 +98,10 @@ const FrameExtractor: React.FC = () => {
     if (files.length === 0) return;
     
     const file = files[0];
+    
+    // Track file upload
+    analytics.trackFileUpload(file.type, file.size);
+    analytics.trackToolStart({ file_type: file.type, file_size: file.size });
     
     // Revoke previous URLs
     if (sourceVideoUrl) {
@@ -179,9 +187,18 @@ const FrameExtractor: React.FC = () => {
       setFrames(prev => [newFrame, ...prev]);
       setSelectedFrameId(newFrame.id);
       
+      // Track successful frame extraction
+      analytics.trackToolFeatureUse('single_frame_extract', {
+        format,
+        quality,
+        time: time,
+      });
+      
     } catch (err) {
       console.error('Error extracting frame:', err);
-      setErrorMessage(`Frame extraction error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      const errorMessage = `Frame extraction error: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      setErrorMessage(errorMessage);
+      analytics.trackToolError(errorMessage);
     }
   };
   
@@ -271,6 +288,10 @@ const FrameExtractor: React.FC = () => {
   const downloadFrame = async (frameId: string) => {
     const frame = frames.find(f => f.id === frameId);
     if (!frame) return;
+    
+    // Track download attempt
+    analytics.trackDownload(frame.format, { frame_time: frame.time });
+    analytics.trackCurrentPageButtonClick('download_frame', { format: frame.format });
     
     try {
       // Try to download using blob URL first

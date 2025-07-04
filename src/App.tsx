@@ -24,6 +24,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import DonationBanner from './components/layout/DonationBanner';
 import TickerTape from './components/TickerTape';
+import { useAnalytics } from './hooks/useAnalytics';
 
 // PDF Tool Layout wrapper component
 const PDFToolLayout = ({ children }: { children: React.ReactNode }) => (
@@ -124,6 +125,12 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Analytics wrapper component
+const AnalyticsWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  useAnalytics(); // This will handle route tracking automatically
+  return <>{children}</>;
+};
+
 function App() {
   useEffect(() => {
     // Pre-load FFmpeg when the app starts - but only in a background way
@@ -149,8 +156,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Suspense fallback={<LoadingFallback />}>
-        <Routes>
+      <AnalyticsWrapper>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           <Route path="pdf-tools" element={<PDFSuiteDashboard />} />
           <Route path="video-tools" element={<VideoToolsPage />} />
           <Route path="image-tools" element={<ImageToolsPage />} />
@@ -232,6 +240,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      </AnalyticsWrapper>
     </BrowserRouter>
   );
 }

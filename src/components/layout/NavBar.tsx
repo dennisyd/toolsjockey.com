@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toolsConfig } from '../../utils/toolsConfig';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 // Color scheme
 const accent = 'text-[#ffe066]'; // Yellow for hover
@@ -40,6 +41,7 @@ const infoLinks = [
 ];
 
 const NavBar: React.FC = () => {
+  const { trackButtonClick } = useAnalytics();
   const [open, setOpen] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -89,6 +91,7 @@ const NavBar: React.FC = () => {
                         key={tool.id}
                         to={tool.path}
                         className={`flex items-center gap-3 px-3 py-2 rounded hover:bg-[#ffe066] hover:text-black focus:bg-[#ffe066] focus:text-black text-base transition-colors whitespace-normal`}
+                        onClick={() => trackButtonClick(`nav_${tool.id}`, 'NavBar')}
                       >
                         {tool.icon && <tool.icon className={`w-6 h-6 ${accent}`} />}
                         <span className="font-medium whitespace-normal">{tool.title}</span>
@@ -128,6 +131,7 @@ const NavBar: React.FC = () => {
                       key={link.to}
                       to={link.to}
                       className="px-2 py-2 rounded hover:bg-[#ffe066] hover:text-black focus:bg-[#ffe066] focus:text-black text-base transition-colors"
+                      onClick={() => trackButtonClick(`nav_more_${link.label.toLowerCase()}`, 'NavBar')}
                     >
                       {link.label}
                     </Link>
