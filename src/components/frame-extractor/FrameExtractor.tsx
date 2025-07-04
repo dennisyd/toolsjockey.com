@@ -72,7 +72,12 @@ const FrameExtractor: React.FC = () => {
   
   // FFmpeg state
   const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError } = useFFmpeg();
-  const { processVideo, isProcessing, progress, currentTask, error } = useVideoProcessor();
+  const { processVideo, isProcessing: ffmpegProcessing, progress: ffmpegProgress, currentTask: ffmpegTask, error } = useVideoProcessor();
+  
+  // Local processing state (for ZIP creation)
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [currentTask, setCurrentTask] = useState<string>('');
   
   // Load FFmpeg when component mounts
   useEffect(() => {
@@ -295,61 +300,27 @@ const FrameExtractor: React.FC = () => {
     analytics.trackCurrentPageButtonClick('download_frame', { format: frame.format });
     
     try {
-      // Try to download using blob URL first
+      // Fetch the blob directly from the URL
+      const response = await fetch(frame.url);
+      const blob = await response.blob();
+      
+      // Create a direct download using the blob
+      const blobUrl = URL.createObjectURL(blob);
+      const filename = `frame_${formatDuration(frame.time).replace(/:/g, '-')}.${frame.format}`;
+      
+      // Create and trigger the download
       const a = document.createElement('a');
-      a.href = frame.url;
-      a.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
+      a.href = blobUrl;
+      a.download = filename;
       a.style.display = 'none';
-      
-      // Add error handling for the download
-      let downloadFailed = false;
-      a.addEventListener('error', async (e) => {
-        console.error('Blob URL download failed, trying fallback method:', e);
-        downloadFailed = true;
-        
-        // Fallback: Convert blob to data URL
-        try {
-          const response = await fetch(frame.url);
-          const blob = await response.blob();
-          const reader = new FileReader();
-          
-          reader.onload = () => {
-            const dataUrl = reader.result as string;
-            const fallbackA = document.createElement('a');
-            fallbackA.href = dataUrl;
-            fallbackA.download = `frame_${formatDuration(frame.time).replace(':', '-')}.${frame.format}`;
-            fallbackA.style.display = 'none';
-            
-            document.body.appendChild(fallbackA);
-            fallbackA.click();
-            
-            setTimeout(() => {
-              if (document.body.contains(fallbackA)) {
-                document.body.removeChild(fallbackA);
-              }
-            }, 100);
-          };
-          
-          reader.onerror = () => {
-            setErrorMessage('Failed to download frame. Please try again.');
-          };
-          
-          reader.readAsDataURL(blob);
-        } catch (fallbackError) {
-          console.error('Fallback download failed:', fallbackError);
-          setErrorMessage('Failed to download frame. Please try again.');
-        }
-      });
-      
       document.body.appendChild(a);
       a.click();
       
-      // Clean up after a short delay (only if download didn't fail)
+      // Clean up
       setTimeout(() => {
-        if (!downloadFailed && document.body.contains(a)) {
-          document.body.removeChild(a);
-        }
-      }, 100);
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl); // Important: revoke the blob URL to free memory
+      }, 200);
     } catch (error) {
       console.error('Error downloading frame:', error);
       setErrorMessage('Failed to download frame. Please try again.');
@@ -358,8 +329,14 @@ const FrameExtractor: React.FC = () => {
   
   // Download all frames as zip
   const downloadAllFrames = async () => {
+    if (frames.length === 0) return;
+    
     try {
       setErrorMessage(null);
+      
+      // Show processing state
+      setCurrentTask('Creating ZIP archive...');
+      setIsProcessing(true);
       
       // Track analytics
       analytics.trackToolFeatureUse('download_all_frames_zip', {
@@ -370,79 +347,68 @@ const FrameExtractor: React.FC = () => {
       // Create a new JSZip instance
       const zip = new JSZip();
       
-      // Set up a counter for progress tracking
+      // Add each frame to the zip file
       let processedCount = 0;
-      
-      // Use the existing processVideo function to show progress
-      const processingOptions = {
-        command: [],  // Empty command since we're not using FFmpeg here
-        outputExtension: 'zip',
-        outputMimeType: 'application/zip',
-        onProgress: (_: number) => {
-          // This won't be called, but we need to provide it
-        },
-        customTask: async (onProgress: (progress: number) => void) => {
-          // Add each frame to the zip file
-          for (const frame of frames) {
-            try {
-              // Fetch the blob from the URL
-              const response = await fetch(frame.url);
-              const blob = await response.blob();
-              
-              // Format timestamp for filename
-              const timeFormatted = formatDuration(frame.time).replace(/:/g, '-');
-              const filename = `frame_${timeFormatted}.${frame.format}`;
-              
-              // Add the blob to the zip
-              zip.file(filename, blob);
-              
-              // Update progress
-              processedCount++;
-              onProgress((processedCount / frames.length) * 50); // First 50% for adding files
-            } catch (err) {
-              console.error('Error adding frame to zip:', err);
-            }
-          }
+      for (const frame of frames) {
+        try {
+          // Fetch the blob directly from the URL
+          const response = await fetch(frame.url);
+          const blob = await response.blob();
           
-          // Generate the zip file
-          const zipBlob = await zip.generateAsync({ 
-            type: 'blob',
-            compression: 'DEFLATE',
-            compressionOptions: { level: 6 }
-          }, (metadata) => {
-            onProgress(50 + (metadata.percent / 2)); // Last 50% for generating zip
-          });
+          // Format timestamp for filename
+          const timeFormatted = formatDuration(frame.time).replace(/:/g, '-');
+          const filename = `frame_${timeFormatted}.${frame.format}`;
           
-          // Return the result
-          return {
-            url: URL.createObjectURL(zipBlob),
-            size: zipBlob.size
-          };
+          // Add the blob to the zip
+          zip.file(filename, blob);
+          
+          // Update progress
+          processedCount++;
+          setProgress((processedCount / frames.length) * 50); // First 50% for adding files
+        } catch (err) {
+          console.error('Error adding frame to zip:', err);
         }
-      };
+      }
       
-      // Process with our custom zip task
-      const result = await processVideo(null, processingOptions);
+      // Update task
+      setCurrentTask('Generating ZIP file...');
       
-      // Create a download link
-      const link = document.createElement('a');
-      link.href = result.url;
-      link.download = `frames_${new Date().getTime()}.zip`;
+      // Generate the zip file
+      const zipBlob = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 }
+      }, (metadata) => {
+        setProgress(50 + (metadata.percent / 2)); // Last 50% for generating zip
+      });
       
-      // Trigger the download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Create a direct download using the blob
+      const blobUrl = URL.createObjectURL(zipBlob);
+      const filename = `frames_${new Date().getTime()}.zip`;
+      
+      // Create and trigger the download
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
       
       // Clean up
       setTimeout(() => {
-        URL.revokeObjectURL(result.url);
-      }, 100);
-      
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl); // Important: revoke the blob URL to free memory
+        setIsProcessing(false);
+        setCurrentTask('');
+        setProgress(0);
+      }, 200);
     } catch (error) {
       console.error('Error creating zip file:', error);
       setErrorMessage('Failed to create ZIP file. Please try again.');
       analytics.trackToolError(`ZIP download error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setIsProcessing(false);
+      setCurrentTask('');
+      setProgress(0);
     }
   };
   
@@ -554,16 +520,16 @@ const FrameExtractor: React.FC = () => {
                 <div className="mt-6">
                   <button
                     onClick={extractFrames}
-                    disabled={!sourceVideo || !isFFmpegLoaded || isProcessing}
+                    disabled={!sourceVideo || !isFFmpegLoaded || ffmpegProcessing || isProcessing}
                     className={`w-full px-5 py-3 rounded-lg font-medium text-white flex items-center justify-center
-                      ${!sourceVideo || !isFFmpegLoaded || isProcessing
+                      ${!sourceVideo || !isFFmpegLoaded || ffmpegProcessing || isProcessing
                         ? 'bg-blue-400 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700'
                       } transition-colors`}
                   >
                     {isFFmpegLoading ? (
                       'Loading Video Engine...'
-                    ) : isProcessing ? (
+                    ) : ffmpegProcessing || isProcessing ? (
                       'Extracting...'
                     ) : (
                       <>
@@ -586,15 +552,15 @@ const FrameExtractor: React.FC = () => {
                   <button
                     onClick={downloadAllFrames}
                     className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-                    disabled={frames.length === 0}
+                    disabled={frames.length === 0 || ffmpegProcessing || isProcessing}
                   >
                     <Download className="w-4 h-4 mr-1" />
-                    Download All
+                    {isProcessing ? 'Creating ZIP...' : 'Download All'}
                   </button>
                   <button
                     onClick={deleteAllFrames}
                     className="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700"
-                    disabled={frames.length === 0}
+                    disabled={frames.length === 0 || ffmpegProcessing || isProcessing}
                   >
                     Clear All
                   </button>
@@ -612,11 +578,11 @@ const FrameExtractor: React.FC = () => {
           )}
           
           {/* Processing status */}
-          {isProcessing && (
+          {(ffmpegProcessing || isProcessing) && (
             <div className="p-6 border-t border-gray-200 dark:border-gray-700">
               <ProgressBar
-                progress={progress}
-                currentTask={currentTask}
+                progress={ffmpegProcessing ? ffmpegProgress : progress}
+                currentTask={ffmpegProcessing ? ffmpegTask : currentTask}
               />
             </div>
           )}
