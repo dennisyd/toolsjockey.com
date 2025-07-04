@@ -16,7 +16,7 @@ type QualityPreset = 'low' | 'medium' | 'high' | 'custom';
 interface CompressionResult {
   url: string;
   size: number;
-  filename: string;
+  filename?: string;
 }
 
 // Check if SharedArrayBuffer is supported
@@ -262,7 +262,7 @@ const VideoCompressor: React.FC = () => {
     
     const a = document.createElement('a');
     a.href = compressionResult.url;
-    a.download = compressionResult.filename;
+    a.download = compressionResult.filename || 'compressed_video.mp4';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

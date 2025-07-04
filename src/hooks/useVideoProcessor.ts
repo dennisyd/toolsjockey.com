@@ -3,18 +3,19 @@ import { getFFmpeg } from './useFFmpeg';
 import { fetchFile } from '@ffmpeg/ffmpeg';
 import { v4 as uuidv4 } from 'uuid';
 
+interface ProcessingResult {
+  url: string;
+  blob?: Blob;
+  filename?: string;
+  size: number;
+}
+
 interface ProcessingOptions {
   command: string[];
   outputExtension: string;
   outputMimeType: string;
   onProgress?: (progress: number) => void;
-}
-
-interface ProcessingResult {
-  url: string;
-  blob: Blob;
-  filename: string;
-  size: number;
+  customTask?: (onProgress: (progress: number) => void) => Promise<ProcessingResult>;
 }
 
 export const useVideoProcessor = () => {
@@ -24,7 +25,7 @@ export const useVideoProcessor = () => {
   const [error, setError] = useState<string | null>(null);
 
   const processVideo = async (
-    file: File,
+    file: File | null,
     options: ProcessingOptions
   ): Promise<ProcessingResult> => {
     setIsProcessing(true);
@@ -32,14 +33,32 @@ export const useVideoProcessor = () => {
     setCurrentTask('Initializing...');
     setError(null);
 
-    // Generate unique IDs for input and output files
-    const uniqueId = uuidv4();
-    const inputFileName = `input-${uniqueId}${getFileExtension(file.name)}`;
-    const outputFileName = `output-${uniqueId}.${options.outputExtension}`;
-
-    console.log(`Processing video: Input=${inputFileName}, Output=${outputFileName}`);
-
     try {
+      // If we have a custom task, use that instead of FFmpeg
+      if (options.customTask) {
+        setCurrentTask('Processing...');
+        const result = await options.customTask((progress) => {
+          setProgress(progress);
+          options.onProgress?.(progress);
+        });
+        
+        setProgress(100);
+        setCurrentTask('Processing complete');
+        return result;
+      }
+      
+      // Regular FFmpeg processing
+      if (!file) {
+        throw new Error('No file provided for processing');
+      }
+
+      // Generate unique IDs for input and output files
+      const uniqueId = uuidv4();
+      const inputFileName = `input-${uniqueId}${getFileExtension(file.name)}`;
+      const outputFileName = `output-${uniqueId}.${options.outputExtension}`;
+
+      console.log(`Processing video: Input=${inputFileName}, Output=${outputFileName}`);
+
       const ffmpeg = getFFmpeg();
 
       // Check if this is a concat operation (for video merging)
@@ -186,18 +205,25 @@ export const useVideoProcessor = () => {
       
       // Try to clean up any files that might have been created
       try {
-        const ffmpeg = getFFmpeg();
-        const fileList = ffmpeg.FS('readdir', '/');
-        console.log('Files in FFmpeg filesystem during error cleanup:', fileList);
-        
-        if (fileList.includes(inputFileName)) {
-          console.log(`Cleaning up input file: ${inputFileName}`);
-          ffmpeg.FS('unlink', inputFileName);
-        }
-        
-        if (fileList.includes(outputFileName)) {
-          console.log(`Cleaning up output file: ${outputFileName}`);
-          ffmpeg.FS('unlink', outputFileName);
+        // Only attempt cleanup if we're not using a custom task and have a file
+        if (file) {
+          const ffmpeg = getFFmpeg();
+          const fileList = ffmpeg.FS('readdir', '/');
+          console.log('Files in FFmpeg filesystem during error cleanup:', fileList);
+          
+          // We don't need to generate specific filenames, just clean up any temporary files
+          
+          // Clean up any files with similar patterns
+          fileList.forEach(filename => {
+            if (filename.startsWith('input-') || filename.startsWith('output-')) {
+              try {
+                console.log(`Cleaning up file: ${filename}`);
+                ffmpeg.FS('unlink', filename);
+              } catch (e) {
+                console.warn(`Failed to clean up file ${filename}:`, e);
+              }
+            }
+          });
         }
       } catch (cleanupErr) {
         console.warn('Error during error cleanup:', cleanupErr);

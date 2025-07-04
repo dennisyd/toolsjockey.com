@@ -10,6 +10,7 @@ import { useVideoProcessor } from '../../hooks/useVideoProcessor';
 import { formatDuration } from '../../utils/fileUtils';
 import { imageFormats } from '../../utils/videoFormats';
 import { useToolAnalytics } from '../../hooks/useAnalytics';
+import JSZip from 'jszip';
 
 interface ExtractedFrame {
   id: string;
@@ -356,15 +357,93 @@ const FrameExtractor: React.FC = () => {
   };
   
   // Download all frames as zip
-  const downloadAllFrames = () => {
-    // This would typically use JSZip to create a zip file
-    // For simplicity, we'll just download each frame individually using the robust downloadFrame function
-    frames.forEach((frame, index) => {
+  const downloadAllFrames = async () => {
+    try {
+      setErrorMessage(null);
+      
+      // Track analytics
+      analytics.trackToolFeatureUse('download_all_frames_zip', {
+        frame_count: frames.length,
+        format: settings.format
+      });
+      
+      // Create a new JSZip instance
+      const zip = new JSZip();
+      
+      // Set up a counter for progress tracking
+      let processedCount = 0;
+      
+      // Use the existing processVideo function to show progress
+      const processingOptions = {
+        command: [],  // Empty command since we're not using FFmpeg here
+        outputExtension: 'zip',
+        outputMimeType: 'application/zip',
+        onProgress: (_: number) => {
+          // This won't be called, but we need to provide it
+        },
+        customTask: async (onProgress: (progress: number) => void) => {
+          // Add each frame to the zip file
+          for (const frame of frames) {
+            try {
+              // Fetch the blob from the URL
+              const response = await fetch(frame.url);
+              const blob = await response.blob();
+              
+              // Format timestamp for filename
+              const timeFormatted = formatDuration(frame.time).replace(/:/g, '-');
+              const filename = `frame_${timeFormatted}.${frame.format}`;
+              
+              // Add the blob to the zip
+              zip.file(filename, blob);
+              
+              // Update progress
+              processedCount++;
+              onProgress((processedCount / frames.length) * 50); // First 50% for adding files
+            } catch (err) {
+              console.error('Error adding frame to zip:', err);
+            }
+          }
+          
+          // Generate the zip file
+          const zipBlob = await zip.generateAsync({ 
+            type: 'blob',
+            compression: 'DEFLATE',
+            compressionOptions: { level: 6 }
+          }, (metadata) => {
+            onProgress(50 + (metadata.percent / 2)); // Last 50% for generating zip
+          });
+          
+          // Return the result
+          return {
+            url: URL.createObjectURL(zipBlob),
+            size: zipBlob.size
+          };
+        }
+      };
+      
+      // Process with our custom zip task
+      const result = await processVideo(null, processingOptions);
+      
+      // Create a download link
+      const link = document.createElement('a');
+      link.href = result.url;
+      link.download = `frames_${new Date().getTime()}.zip`;
+      
+      // Trigger the download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
       setTimeout(() => {
-        console.log(`Downloading frame ${index + 1}/${frames.length}:`, frame.id);
-        downloadFrame(frame.id);
-      }, index * 300); // Increased delay to 300ms for better reliability
-    });
+        URL.revokeObjectURL(result.url);
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error creating zip file:', error);
+      setErrorMessage('Failed to create ZIP file. Please try again.');
+      analytics.trackToolError(`ZIP download error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
   
   // Delete frame
