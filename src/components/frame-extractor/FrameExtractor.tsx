@@ -100,6 +100,47 @@ const FrameExtractor: React.FC = () => {
     };
   }, [sourceVideoUrl, frames]);
   
+  // Add this useEffect to monitor and reset stuck progress
+  useEffect(() => {
+    let progressTimeout: NodeJS.Timeout | null = null;
+    let lastProgress = 0;
+    let stuckTime = 0;
+
+    if (isProcessing && progress === 100) {
+      // If progress is at 100%, start a timer to reset if it's stuck
+      progressTimeout = setTimeout(() => {
+        setIsProcessing(false);
+        setCurrentTask('');
+        setProgress(0);
+        setErrorMessage('Processing timed out. Please try again.');
+      }, 10000); // 10 seconds timeout
+    } else if (isProcessing) {
+      // Monitor for stuck progress at any percentage
+      if (progress === lastProgress) {
+        stuckTime += 1000;
+        if (stuckTime > 30000) { // 30 seconds stuck
+          setIsProcessing(false);
+          setCurrentTask('');
+          setProgress(0);
+          setErrorMessage('Processing appears to be stuck. Please try again.');
+        }
+      } else {
+        lastProgress = progress;
+        stuckTime = 0;
+      }
+      
+      progressTimeout = setTimeout(() => {
+        // This will re-run the effect and check again
+      }, 1000);
+    }
+
+    return () => {
+      if (progressTimeout) {
+        clearTimeout(progressTimeout);
+      }
+    };
+  }, [isProcessing, progress]);
+  
   // Handle file upload
   const handleFileUpload = (files: File[]) => {
     if (files.length === 0) return;
@@ -301,7 +342,7 @@ const FrameExtractor: React.FC = () => {
     }
   };
   
-  // Download frame
+  // Download frame - with improved blob handling
   const downloadFrame = async (frameId: string) => {
     const frame = frames.find(f => f.id === frameId);
     if (!frame) return;
@@ -315,9 +356,18 @@ const FrameExtractor: React.FC = () => {
       let blob = frame.blob;
       
       if (!blob) {
-        // Fallback to fetching from URL if blob is not available
-        const response = await fetch(frame.url);
-        blob = await response.blob();
+        try {
+          // Fallback to fetching from URL if blob is not available
+          const response = await fetch(frame.url);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch frame: ${response.status} ${response.statusText}`);
+          }
+          blob = await response.blob();
+        } catch (fetchError) {
+          console.error('Error fetching frame blob:', fetchError);
+          setErrorMessage('Failed to access frame data. The frame may have expired.');
+          return;
+        }
       }
       
       // Create a direct download using the blob
@@ -343,7 +393,7 @@ const FrameExtractor: React.FC = () => {
     }
   };
   
-  // Download all frames as a ZIP file
+  // Download all frames as a ZIP file - with improved error handling
   const downloadAllFrames = async () => {
     if (frames.length === 0) return;
     
@@ -366,7 +416,7 @@ const FrameExtractor: React.FC = () => {
       let failedFrames = 0;
       
       // Process frames in batches to avoid memory issues with very large frame sets
-      const BATCH_SIZE = 10;
+      const BATCH_SIZE = 5; // Reduced batch size for better reliability
       const batches = Math.ceil(frames.length / BATCH_SIZE);
       
       for (let batchIndex = 0; batchIndex < batches; batchIndex++) {
@@ -383,12 +433,20 @@ const FrameExtractor: React.FC = () => {
             let blob = frame.blob;
             
             if (!blob) {
-              // Fallback to fetching from URL if blob is not available
-              const response = await fetch(frame.url);
-              if (!response.ok) {
-                throw new Error(`Failed to fetch frame: ${response.status} ${response.statusText}`);
+              try {
+                // Fallback to fetching from URL if blob is not available
+                const response = await fetch(frame.url);
+                if (!response.ok) {
+                  throw new Error(`Failed to fetch frame: ${response.status} ${response.statusText}`);
+                }
+                blob = await response.blob();
+                
+                // Store the blob for future use to avoid repeated fetching
+                frame.blob = blob;
+              } catch (fetchError) {
+                console.error('Error fetching frame blob:', fetchError);
+                throw new Error('Failed to access frame data. The frame may have expired.');
               }
-              blob = await response.blob();
             }
             
             // Format timestamp for filename
@@ -417,9 +475,12 @@ const FrameExtractor: React.FC = () => {
         failedFrames += batchFailures;
         
         // If too many frames fail, abort the process
-        if (failedFrames > Math.min(5, frames.length / 4)) {
+        if (failedFrames > Math.min(3, frames.length / 4)) {
           throw new Error('Too many frames failed to process. Please try again.');
         }
+        
+        // Add a small delay between batches to prevent browser from becoming unresponsive
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
       
       // Update task
