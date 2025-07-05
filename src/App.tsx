@@ -169,7 +169,7 @@ function App() {
           
           {/* Video tool routes - wrapped in PDFToolLayout to include header/footer */}
           <Route path="tools/video-converter" element={<PDFToolLayout><VideoConverterPage /></PDFToolLayout>} />
-          <Route path="tools/video-clipper" element={<PDFToolLayout><VideoClipperPage /></PDFToolLayout>} />
+          <Route path="tools/video-clipper" element={<VideoClipperPage />} />
           <Route path="tools/video-compressor" element={<PDFToolLayout><VideoCompressorPage /></PDFToolLayout>} />
           <Route path="tools/frame-extractor" element={<PDFToolLayout><FrameExtractorPage /></PDFToolLayout>} />
           <Route path="tools/video-merger" element={<PDFToolLayout><VideoMergerPage /></PDFToolLayout>} />
