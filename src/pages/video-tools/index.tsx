@@ -18,7 +18,6 @@ const VIDEO_TOOLS = [
   { title: 'Video Compressor', path: '/tools/video-compressor', desc: 'Reduce video file size while maintaining quality.', icon: ArchiveBoxIcon },
   { title: 'Video Merger', path: '/tools/video-merger', desc: 'Combine multiple videos into a single file.', icon: ArrowsUpDownIcon },
   { title: 'Video Clipper', path: '/tools/video-clipper', desc: 'Trim and cut videos with frame-accurate precision.', icon: ScissorsIcon },
-  { title: 'Video to GIF', path: '/tools/video-to-gif', desc: 'Convert video clips to animated GIFs.', icon: FilmIcon },
 ];
 
 const AUDIO_TOOLS = [

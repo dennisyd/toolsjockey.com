@@ -52,6 +52,8 @@ const VideoClipper: React.FC = () => {
   
   // Format options
   const [clipFormat, setClipFormat] = useState<'copy' | 'mp4' | 'webm'>('copy');
+  // Quality options for re-encoded formats
+  const [clipQuality, setClipQuality] = useState<'low' | 'medium' | 'high'>('medium');
   
   // FFmpeg state
   const { isFFmpegLoaded, isFFmpegLoading, loadFFmpeg, ffmpegLoadingProgress, error: ffmpegError } = useFFmpeg();
@@ -213,23 +215,53 @@ const VideoClipper: React.FC = () => {
         // Use mp4 with h.264 encoding (slower but more accurate)
         outputExtension = 'mp4';
         outputMimeType = 'video/mp4';
+        
+        // Quality settings for MP4
+        let crf = '23'; // Default medium quality
+        let preset = 'medium';
+        
+        if (clipQuality === 'low') {
+          crf = '28';
+          preset = 'faster';
+        } else if (clipQuality === 'high') {
+          crf = '18';
+          preset = 'slow';
+        }
+        
         command = [
           '-ss', clip.startTime.toString(),
           '-t', clip.duration.toString(),
-          '-c:v', 'libx264', 
-          '-preset', 'fast',
-          '-c:a', 'aac'
+          '-c:v', 'libx264',
+          '-crf', crf,
+          '-preset', preset,
+          '-c:a', 'aac',
+          '-b:a', '128k'
         ];
       } else if (clipFormat === 'webm') {
         // Use webm with VP9 encoding
         outputExtension = 'webm';
         outputMimeType = 'video/webm';
+        
+        // Quality settings for WebM
+        let crf = '31'; // Default medium quality
+        let bitrate = '1M';
+        
+        if (clipQuality === 'low') {
+          crf = '35';
+          bitrate = '0.8M';
+        } else if (clipQuality === 'high') {
+          crf = '24';
+          bitrate = '2M';
+        }
+        
         command = [
           '-ss', clip.startTime.toString(),
           '-t', clip.duration.toString(),
           '-c:v', 'vp9',
-          '-b:v', '1M',
-          '-c:a', 'libopus'
+          '-crf', crf,
+          '-b:v', bitrate,
+          '-c:a', 'libopus',
+          '-b:a', '128k'
         ];
       }
       
@@ -452,6 +484,59 @@ const VideoClipper: React.FC = () => {
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Original is fastest but may have issues at cut points. MP4 and WebM are more accurate but slower.
               </p>
+              
+              {/* Quality settings (only show when not using copy mode) */}
+              {clipFormat !== 'copy' && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Quality:
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="clipQuality"
+                        value="low"
+                        checked={clipQuality === 'low'}
+                        onChange={() => setClipQuality('low')}
+                        disabled={isProcessing}
+                        className="h-4 w-4 text-blue-600"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        Low (Smaller files)
+                      </span>
+                    </label>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="clipQuality"
+                        value="medium"
+                        checked={clipQuality === 'medium'}
+                        onChange={() => setClipQuality('medium')}
+                        disabled={isProcessing}
+                        className="h-4 w-4 text-blue-600"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        Medium (Balanced)
+                      </span>
+                    </label>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="clipQuality"
+                        value="high"
+                        checked={clipQuality === 'high'}
+                        onChange={() => setClipQuality('high')}
+                        disabled={isProcessing}
+                        className="h-4 w-4 text-blue-600"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        High (Better quality)
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           

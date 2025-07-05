@@ -14,7 +14,6 @@ import ExcelToFormatsConverterPage from './pages/tools/ExcelToFormatsConverterPa
 import VideoConverterPage from './pages/tools/VideoConverterPage';
 import VideoClipperPage from './pages/tools/VideoClipperPage';
 import VideoCompressorPage from './pages/tools/VideoCompressorPage';
-import VideoToGifPage from './pages/tools/VideoToGifPage';
 import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import AudioExtractorPage from './pages/tools/AudioExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
@@ -172,7 +171,6 @@ function App() {
           <Route path="tools/video-converter" element={<PDFToolLayout><VideoConverterPage /></PDFToolLayout>} />
           <Route path="tools/video-clipper" element={<PDFToolLayout><VideoClipperPage /></PDFToolLayout>} />
           <Route path="tools/video-compressor" element={<PDFToolLayout><VideoCompressorPage /></PDFToolLayout>} />
-          <Route path="tools/video-to-gif" element={<PDFToolLayout><VideoToGifPage /></PDFToolLayout>} />
           <Route path="tools/frame-extractor" element={<PDFToolLayout><FrameExtractorPage /></PDFToolLayout>} />
           <Route path="tools/video-merger" element={<PDFToolLayout><VideoMergerPage /></PDFToolLayout>} />
           <Route path="tools/audio-extractor" element={<PDFToolLayout><AudioExtractorPage /></PDFToolLayout>} />

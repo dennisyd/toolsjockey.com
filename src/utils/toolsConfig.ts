@@ -107,15 +107,6 @@ export const toolsConfig: ToolMeta[] = [
     group: 'video',
   },
   {
-    id: 'video-to-gif',
-    title: 'Video to GIF',
-    path: '/tools/video-to-gif',
-    description: 'Convert video clips to animated GIFs with customizable settings.',
-    icon: FilmIcon,
-    badges: ['NEW'],
-    group: 'video',
-  },
-  {
     id: 'frame-extractor',
     title: 'Frame Extractor',
     path: '/tools/frame-extractor',

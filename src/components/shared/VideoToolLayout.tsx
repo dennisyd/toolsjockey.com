@@ -67,14 +67,6 @@ const VideoToolLayout: React.FC<VideoToolLayoutProps> = ({
                   Video Clipper
                 </Link>
                 <Link 
-                  to="/tools/video-to-gif" 
-                  className={`block px-3 py-2 rounded-md ${toolPath === 'video-to-gif' ? 
-                    'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 
-                    'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
-                >
-                  Video to GIF
-                </Link>
-                <Link 
                   to="/tools/frame-extractor" 
                   className={`block px-3 py-2 rounded-md ${toolPath === 'frame-extractor' ? 
                     'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' : 

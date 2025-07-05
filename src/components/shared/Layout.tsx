@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   Scissors, 
   Archive, 
-  Image, 
   Camera, 
   Merge, 
   Volume2,
@@ -20,7 +19,6 @@ interface LayoutProps {
 const videoTools = [
   { name: 'Video Clipper', path: '/tools/video-clipper', icon: Scissors, description: 'Trim and cut videos' },
   { name: 'Video Compressor', path: '/tools/video-compressor', icon: Archive, description: 'Reduce file sizes' },
-  { name: 'Video to GIF', path: '/tools/video-to-gif', icon: Image, description: 'Create animated GIFs' },
   { name: 'Frame Extractor', path: '/tools/frame-extractor', icon: Camera, description: 'Extract still images' },
   { name: 'Video Merger', path: '/tools/video-merger', icon: Merge, description: 'Combine multiple videos' },
   { name: 'Audio Extractor', path: '/tools/audio-extractor', icon: Volume2, description: 'Extract audio tracks' }
@@ -194,4 +192,4 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
 
-export default Layout; 
+export default Layout;
