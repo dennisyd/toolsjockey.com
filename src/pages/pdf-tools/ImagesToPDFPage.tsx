@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
-import PDFSuiteLayout from '../../components/layout/PDFSuiteLayout';
 
 const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -164,103 +163,107 @@ const ImagesToPDFPage: React.FC = () => {
   };
 
   return (
-    <PDFSuiteLayout title="Convert Images to PDF">
-      <div className="mb-6">
-        <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded text-yellow-900 dark:text-yellow-100 text-sm">
-          <strong>Note:</strong> Images are not uploaded to any server. Drag to reorder. Large images may increase PDF size.
-        </div>
-      </div>
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        ref={fileInputRef}
-        className="hidden"
-        multiple
-        onChange={e => handleFiles(e.target.files)}
-      />
-      <div
-        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
-        onClick={() => fileInputRef.current?.click()}
-        onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
-      >
-        <span className="text-gray-500">Drag & drop images here, or click to select (JPG, PNG, WebP)</span>
-      </div>
-      {images.length > 0 && (
+    <div className="container-app mx-auto px-2 md:px-0 py-6">
+      <div className="bg-white dark:bg-primary-light rounded-lg shadow p-5 flex flex-col gap-4">
+        <h1 className="text-2xl font-bold mb-2">Convert Images to PDF</h1>
+        
         <div className="mb-6">
-          <div className="mb-4 text-sm text-gray-700 dark:text-gray-300">{images.length} image{images.length !== 1 ? 's' : ''} selected. Drag to reorder.</div>
-          <div className="flex flex-wrap gap-4 mb-6">
-            {images.map((img, idx) => (
-              <div
-                key={img.url}
-                className="flex flex-col items-center cursor-move border rounded shadow bg-white dark:bg-slate-800 p-2"
-                draggable
-                onDragStart={() => handleDragStart(idx)}
-                onDragEnter={() => handleDragEnter(idx)}
-                onDragEnd={handleDragEnd}
-                onDragOver={e => e.preventDefault()}
-                style={{ opacity: isProcessing ? 0.5 : 1 }}
-                title={`Image ${idx + 1}`}
-              >
-                <img
-                  src={img.url}
-                  alt={`Image ${idx + 1}`}
-                  className="w-24 h-32 object-contain border mb-1 bg-slate-100 dark:bg-slate-700"
-                  draggable={false}
-                />
-                <span className="text-xs text-gray-600 dark:text-gray-300 mb-1">Image {idx + 1}</span>
-                <button
-                  className="btn btn-xs btn-danger"
-                  onClick={() => removeImage(idx)}
-                  disabled={isProcessing}
+          <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 rounded text-yellow-900 dark:text-yellow-100 text-sm">
+            <strong>Note:</strong> Images are not uploaded to any server. Drag to reorder. Large images may increase PDF size.
+          </div>
+        </div>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          ref={fileInputRef}
+          className="hidden"
+          multiple
+          onChange={e => handleFiles(e.target.files)}
+        />
+        <div
+          className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition-colors mb-4"
+          onClick={() => fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+        >
+          <span className="text-gray-500">Drag & drop images here, or click to select (JPG, PNG, WebP)</span>
+        </div>
+        {images.length > 0 && (
+          <div className="mb-6">
+            <div className="mb-4 text-sm text-gray-700 dark:text-gray-300">{images.length} image{images.length !== 1 ? 's' : ''} selected. Drag to reorder.</div>
+            <div className="flex flex-wrap gap-4 mb-6">
+              {images.map((img, idx) => (
+                <div
+                  key={img.url}
+                  className="flex flex-col items-center cursor-move border rounded shadow bg-white dark:bg-slate-800 p-2"
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragEnter={() => handleDragEnter(idx)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={e => e.preventDefault()}
+                  style={{ opacity: isProcessing ? 0.5 : 1 }}
+                  title={`Image ${idx + 1}`}
                 >
-                  Remove
-                </button>
+                  <img
+                    src={img.url}
+                    alt={`Image ${idx + 1}`}
+                    className="w-24 h-32 object-contain border mb-1 bg-slate-100 dark:bg-slate-700"
+                    draggable={false}
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-300 mb-1">Image {idx + 1}</span>
+                  <button
+                    className="btn btn-xs btn-danger"
+                    onClick={() => removeImage(idx)}
+                    disabled={isProcessing}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-3 mb-4">
+              <button
+                className="btn btn-primary text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-accent"
+                onClick={handleConvert}
+                disabled={isProcessing || images.length === 0}
+              >
+                {isProcessing ? 'Processing...' : 'Create PDF'}
+              </button>
+              <button
+                className={`btn btn-success text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 ${!pdfUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handleDownload}
+                disabled={!pdfUrl}
+              >
+                Download PDF
+              </button>
+            </div>
+            {isProcessing && (
+              <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
+                <div
+                  className="bg-accent h-3 rounded-full transition-all"
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
-            ))}
+            )}
           </div>
-          <div className="flex flex-wrap gap-3 mb-4">
-            <button
-              className="btn btn-primary text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-accent-dark focus:outline-none focus:ring-2 focus:ring-accent"
-              onClick={handleConvert}
-              disabled={isProcessing || images.length === 0}
-            >
-              {isProcessing ? 'Processing...' : 'Create PDF'}
-            </button>
-            <button
-              className={`btn btn-success text-lg px-6 py-2 rounded shadow font-semibold flex items-center gap-2 transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 ${!pdfUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={handleDownload}
-              disabled={!pdfUrl}
-            >
-              Download PDF
-            </button>
-          </div>
-          {isProcessing && (
-            <div className="w-full bg-gray-200 rounded-full h-3 mt-3">
-              <div
-                className="bg-accent h-3 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          )}
-        </div>
-      )}
-      {pdfUrl && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">Preview</h2>
-          <div className="w-full h-96 border rounded bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-6xl mb-4">📄</div>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">PDF generated successfully!</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Click "Download PDF" to save the file to your computer.
-              </p>
+        )}
+        {pdfUrl && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-2">Preview</h2>
+            <div className="w-full h-96 border rounded bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl mb-4">📄</div>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">PDF generated successfully!</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Click "Download PDF" to save the file to your computer.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-    </PDFSuiteLayout>
+        )}
+        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+      </div>
+    </div>
   );
 };
 
