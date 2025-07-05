@@ -128,6 +128,14 @@ const VideoConverter: React.FC = () => {
       return;
     }
 
+    // Check if the output format is the same as the input format
+    const currentFormat = videoFiles[0].type.toLowerCase();
+    if (currentFormat.includes(outputFormat) || 
+        (outputFormat === 'mp4' && currentFormat.includes('mp4'))) {
+      setErrorMessage('Please select a different output format than the input format.');
+      return;
+    }
+
     try {
       // Clear any previous errors
       setErrorMessage(null);
@@ -242,6 +250,7 @@ const VideoConverter: React.FC = () => {
             selectedFormat={outputFormat} 
             onChange={setOutputFormat}
             disabled={isConverting || isFFmpegLoading}
+            currentFormat={videoFiles.length > 0 ? videoFiles[0].type : undefined}
           />
           <QualitySettings 
             quality={quality}
