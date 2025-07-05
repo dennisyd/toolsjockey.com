@@ -12,6 +12,15 @@ const DeletePagesPage: React.FC = () => {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (resultUrl) {
+        URL.revokeObjectURL(resultUrl);
+      }
+    };
+  }, [resultUrl]);
+
   useEffect(() => {
     document.title = 'Delete PDF Pages – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
@@ -25,6 +34,10 @@ const DeletePagesPage: React.FC = () => {
     if (f.type !== 'application/pdf') {
       setError('Please select a PDF file.');
       return;
+    }
+    // Clean up existing blob URL
+    if (resultUrl) {
+      URL.revokeObjectURL(resultUrl);
     }
     setFile(f);
     setResultUrl(null);
@@ -88,6 +101,12 @@ const DeletePagesPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(resultUrl);
+      setResultUrl(null);
+    }, 100);
   };
 
   return (

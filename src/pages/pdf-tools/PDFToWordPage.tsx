@@ -14,6 +14,15 @@ const PDFToWordPage: React.FC = () => {
   const [docxUrl, setDocxUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (docxUrl) {
+        URL.revokeObjectURL(docxUrl);
+      }
+    };
+  }, [docxUrl]);
+
   useEffect(() => {
     document.title = 'Convert PDF to Word – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
@@ -27,6 +36,10 @@ const PDFToWordPage: React.FC = () => {
     if (f.type !== 'application/pdf') {
       setError('Please select a PDF file.');
       return;
+    }
+    // Clean up existing blob URL
+    if (docxUrl) {
+      URL.revokeObjectURL(docxUrl);
     }
     setFile(f);
     setTextByPage([]);
@@ -109,6 +122,12 @@ const PDFToWordPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(docxUrl);
+      setDocxUrl(null);
+    }, 100);
   };
 
   return (

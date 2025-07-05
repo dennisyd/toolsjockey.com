@@ -445,6 +445,10 @@ const ExcelMergerSplitter: React.FC = () => {
     link.href = url;
     link.download = 'merged-data.xlsx';
     link.click();
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 100);
     setExportSuccess(true);
   };
 
@@ -457,6 +461,10 @@ const ExcelMergerSplitter: React.FC = () => {
     link.href = url;
     link.download = 'merged-data.csv';
     link.click();
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 100);
     setExportSuccess(true);
   };
 

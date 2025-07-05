@@ -23,6 +23,15 @@ const ReorderPDFPage: React.FC = () => {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (resultUrl) {
+        URL.revokeObjectURL(resultUrl);
+      }
+    };
+  }, [resultUrl]);
+
   useEffect(() => {
     document.title = 'Reorder PDF Pages – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
@@ -36,6 +45,10 @@ const ReorderPDFPage: React.FC = () => {
     if (f.type !== 'application/pdf') {
       setError('Please select a PDF file.');
       return;
+    }
+    // Clean up existing blob URL
+    if (resultUrl) {
+      URL.revokeObjectURL(resultUrl);
     }
     setFile(f);
     setResultUrl(null);
@@ -131,6 +144,12 @@ const ReorderPDFPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(resultUrl);
+      setResultUrl(null);
+    }, 100);
   };
 
   // Drag-and-drop file

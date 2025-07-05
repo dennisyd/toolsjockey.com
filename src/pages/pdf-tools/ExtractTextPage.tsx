@@ -76,6 +76,11 @@ const ExtractTextPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 
   return (

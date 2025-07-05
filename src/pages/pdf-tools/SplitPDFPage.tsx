@@ -13,6 +13,15 @@ const SplitPDFPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      splitUrls.forEach(split => {
+        URL.revokeObjectURL(split.url);
+      });
+    };
+  }, [splitUrls]);
+
   useEffect(() => {
     document.title = 'Split PDF – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
@@ -27,8 +36,12 @@ const SplitPDFPage: React.FC = () => {
       setError('Please select a PDF file.');
       return;
     }
-    setFile(f);
+    // Clean up existing blob URLs
+    splitUrls.forEach(split => {
+      URL.revokeObjectURL(split.url);
+    });
     setSplitUrls([]);
+    setFile(f);
     setError(null);
     setProgress(0);
     setPageCount(null);
@@ -49,6 +62,10 @@ const SplitPDFPage: React.FC = () => {
     if (!file) return;
     setIsProcessing(true);
     setError(null);
+    // Clean up existing blob URLs
+    splitUrls.forEach(split => {
+      URL.revokeObjectURL(split.url);
+    });
     setSplitUrls([]);
     setProgress(0);
     try {
@@ -94,9 +111,14 @@ const SplitPDFPage: React.FC = () => {
     }
     const content = await zip.generateAsync({ type: 'blob' });
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(content);
+    const zipUrl = URL.createObjectURL(content);
+    link.href = zipUrl;
     link.download = 'split-pdfs.zip';
     link.click();
+    // Clean up the ZIP blob URL
+    setTimeout(() => {
+      URL.revokeObjectURL(zipUrl);
+    }, 100);
   };
 
   return (

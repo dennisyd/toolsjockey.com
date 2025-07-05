@@ -16,6 +16,15 @@ const RotatePDFPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const downloadLinkRef = useRef<HTMLAnchorElement>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (resultUrl) {
+        URL.revokeObjectURL(resultUrl);
+      }
+    };
+  }, [resultUrl]);
+
   // Auto-trigger download when resultUrl changes
   useEffect(() => {
     if (resultUrl && downloadLinkRef.current) {
@@ -30,6 +39,10 @@ const RotatePDFPage: React.FC = () => {
     if (f.type !== 'application/pdf') {
       setError('Please select a PDF file.');
       return;
+    }
+    // Clean up existing blob URL
+    if (resultUrl) {
+      URL.revokeObjectURL(resultUrl);
     }
     setFile(f);
     setResultUrl(null);
