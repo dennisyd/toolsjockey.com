@@ -1,0 +1,95 @@
+TOOLSJOCKEY - COMPLETE TOOLS LIST
+=====================================
+
+TOTAL TOOLS: 51
+
+VIDEO TOOLS (6)
+---------------
+1. Video Converter - Convert videos between different formats
+2. Video Clipper - Cut and trim video clips
+3. Video Compressor - Reduce video file sizes
+4. Frame Extractor - Extract individual frames from videos
+5. Video Merger - Combine multiple videos into one
+6. Audio Extractor - Extract audio from video files
+
+PDF TOOLS (12)
+--------------
+7. Merge PDF - Combine multiple PDF files
+8. Split PDF - Split PDF into separate files
+9. Reorder PDF - Rearrange PDF pages
+10. Rotate PDF - Rotate PDF pages
+11. Watermark PDF - Add watermarks to PDFs
+12. PDF to Images - Convert PDF pages to images
+13. Images to PDF - Convert images to PDF
+14. Extract Text from PDF - Extract text content from PDFs
+15. PDF to Word - Convert PDF to Word document
+16. Delete Pages - Remove specific pages from PDF
+17. Edit Metadata - Edit PDF document information
+18. Compress PDF - Reduce PDF file size
+
+IMAGE TOOLS (4)
+---------------
+19. Image Sharpener - Enhance image sharpness
+20. Image Compressor - Reduce image file sizes
+21. Image Format Converter - Convert between image formats
+22. EXIF Remover - Remove metadata from images
+
+COLOR & DESIGN TOOLS (5)
+------------------------
+23. Color Palette Generator - Generate color palettes from images
+24. Color Picker - Pick and convert colors
+25. Contrast Checker - Check color contrast ratios
+26. Gradient Generator - Create color gradients
+27. Color Format Converter - Convert between color formats
+
+EXCEL & CSV TOOLS (4)
+---------------------
+28. Excel Merger Splitter - Merge or split Excel files
+29. CSV to JSON Converter - Convert CSV to JSON format
+30. CSV Merger - Combine multiple CSV files
+31. Excel to Formats Converter - Convert Excel to various formats
+
+DOCUMENT & TEXT TOOLS (8)
+-------------------------
+32. Word to Markdown Converter - Convert Word docs to Markdown
+33. Word Counter - Count words, characters, and paragraphs
+34. Text from Image - Extract text from images (OCR)
+35. Text Case Converter - Convert text case (uppercase, lowercase, etc.)
+36. Text Diff Viewer - Compare text differences
+37. Markdown Table Generator - Create tables in Markdown format
+38. Mail Merge Tool - Create personalized documents
+39. Batch PDF Form Filler - Fill PDF forms in bulk
+
+DEVELOPER TOOLS (6)
+-------------------
+40. Hash Generator - Generate various hash types
+41. CSS Minifier - Compress CSS code
+42. Base64 Encoder - Encode/decode Base64
+43. Password Generator - Generate secure passwords
+44. Regex Tester - Test regular expressions
+45. JSON Formatter - Format and validate JSON
+
+UTILITY TOOLS (6)
+-----------------
+46. Unit Converter - Convert between different units
+47. Currency Converter - Convert between currencies
+48. Column Filter Tool - Filter data columns
+49. Duplicate Remover - Remove duplicate entries
+50. QR Code Generator - Generate QR codes
+51. Watermark Adder - Add watermarks to images
+
+FEATURES:
+- All tools work client-side (no server uploads)
+- Privacy-focused (files never leave your computer)
+- No registration required
+- Free to use
+- Built by MIT-trained engineer
+
+TECHNOLOGIES USED:
+- React/TypeScript
+- FFmpeg (for video processing)
+- PDF.js and pdf-lib (for PDF manipulation)
+- Canvas API (for image processing)
+- Web Workers (for performance)
+
+Last updated: 2024 

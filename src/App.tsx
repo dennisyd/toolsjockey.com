@@ -24,6 +24,8 @@ import Footer from './components/layout/Footer';
 import DonationBanner from './components/layout/DonationBanner';
 import TickerTape from './components/TickerTape';
 import { useAnalytics } from './hooks/useAnalytics';
+import CalculationToolsPage from './pages/calculation-tools/index';
+import ArchiveToolsPage from './pages/archive-tools/index';
 
 // PDF Tool Layout wrapper component
 const PDFToolLayout = ({ children }: { children: React.ReactNode }) => (
@@ -114,7 +116,24 @@ const FAQ = lazy(() => retryLazy(() => import('./pages/FAQ')));
 const Blog = lazy(() => retryLazy(() => import('./pages/Blog')));
 const BlogArticle = lazy(() => retryLazy(() => import('./pages/BlogArticle')));
 const MailMergeToolPage = lazy(() => retryLazy(() => import('./pages/tools/MailMergeToolPage')));
-const FFmpegTest = lazy(() => retryLazy(() => import('./pages/FFmpegTest')));
+// Archive tool pages
+const ZipCreatorPage = lazy(() => retryLazy(() => import('./pages/tools/ZipCreatorPage')));
+const ZipExtractorPage = lazy(() => retryLazy(() => import('./pages/tools/ZipExtractorPage')));
+const SevenZipSupportPage = lazy(() => retryLazy(() => import('./pages/tools/SevenZipSupportPage')));
+const FileArchiverPage = lazy(() => retryLazy(() => import('./pages/tools/FileArchiverPage')));
+const ArchiveInspectorPage = lazy(() => retryLazy(() => import('./pages/tools/ArchiveInspectorPage')));
+const BatchCompressorPage = lazy(() => retryLazy(() => import('./pages/tools/BatchCompressorPage')));
+const ArchiveConverterPage = lazy(() => retryLazy(() => import('./pages/tools/ArchiveConverterPage')));
+
+// Calculation tool pages
+const ScientificCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/ScientificCalculatorPage')));
+const DateCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/DateCalculatorPage')));
+const LoanCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/LoanCalculatorPage')));
+const TaxCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/TaxCalculatorPage')));
+const PercentageCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/PercentageCalculatorPage')));
+const StatisticsCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/StatisticsCalculatorPage')));
+const InvestmentCalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/InvestmentCalculatorPage')));
+const BMICalculatorPage = lazy(() => retryLazy(() => import('./pages/tools/BMICalculatorPage')));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -232,7 +251,26 @@ function App() {
             <Route path="contact" element={<Contact />} />
             <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
             <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
-            <Route path="tools/ffmpeg-test" element={<FFmpegTest />} />
+            {/* Archive tool routes */}
+            <Route path="tools/zip-creator" element={<ZipCreatorPage />} />
+            <Route path="tools/zip-extractor" element={<ZipExtractorPage />} />
+            <Route path="tools/seven-zip-support" element={<SevenZipSupportPage />} />
+            <Route path="tools/file-archiver" element={<FileArchiverPage />} />
+            <Route path="tools/archive-inspector" element={<ArchiveInspectorPage />} />
+            <Route path="tools/batch-compressor" element={<BatchCompressorPage />} />
+            <Route path="tools/archive-converter" element={<ArchiveConverterPage />} />
+            
+            {/* Calculation tool routes */}
+            <Route path="tools/scientific-calculator" element={<ScientificCalculatorPage />} />
+            <Route path="tools/date-calculator" element={<DateCalculatorPage />} />
+            <Route path="tools/loan-calculator" element={<LoanCalculatorPage />} />
+            <Route path="tools/tax-calculator" element={<TaxCalculatorPage />} />
+            <Route path="tools/percentage-calculator" element={<PercentageCalculatorPage />} />
+            <Route path="tools/statistics-calculator" element={<StatisticsCalculatorPage />} />
+            <Route path="tools/investment-calculator" element={<InvestmentCalculatorPage />} />
+            <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
+            <Route path="calculation-tools" element={<CalculationToolsPage />} />
+            <Route path="archive-tools" element={<ArchiveToolsPage />} />
           </Route>
           <Route path="/tools" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
