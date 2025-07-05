@@ -19,6 +19,18 @@ const ImagesToPDFPage: React.FC = () => {
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
 
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+      images.forEach(img => {
+        URL.revokeObjectURL(img.url);
+      });
+    };
+  }, [pdfUrl, images]);
+
   useEffect(() => {
     document.title = 'Convert Images to PDF – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
@@ -48,7 +60,12 @@ const ImagesToPDFPage: React.FC = () => {
 
   // Remove image
   const removeImage = (idx: number) => {
-    setImages(prev => prev.filter((_, i) => i !== idx));
+    setImages(prev => {
+      const newImages = prev.filter((_, i) => i !== idx);
+      // Clean up the blob URL for the removed image
+      URL.revokeObjectURL(prev[idx].url);
+      return newImages;
+    });
   };
 
   // Drag-and-drop reorder
@@ -138,6 +155,12 @@ const ImagesToPDFPage: React.FC = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // Clean up the blob URL after download
+    setTimeout(() => {
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }, 100);
   };
 
   return (
@@ -225,11 +248,15 @@ const ImagesToPDFPage: React.FC = () => {
       {pdfUrl && (
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-2">Preview</h2>
-          <iframe
-            src={pdfUrl}
-            className="w-full h-96 border rounded"
-            title="PDF Preview"
-          />
+          <div className="w-full h-96 border rounded bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-6xl mb-4">📄</div>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">PDF generated successfully!</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Click "Download PDF" to save the file to your computer.
+              </p>
+            </div>
+          </div>
         </div>
       )}
       {error && <div className="text-red-600 text-sm mt-2">{error}</div>}

@@ -182,7 +182,7 @@ function App() {
           <Route path="rotate-pdf" element={<PDFToolLayout><RotatePDFPage /></PDFToolLayout>} />
           <Route path="watermark-pdf" element={<PDFToolLayout><WatermarkPDFPage /></PDFToolLayout>} />
           <Route path="pdf-to-images" element={<PDFToolLayout><PDFToImagesPage /></PDFToolLayout>} />
-          <Route path="images-to-pdf" element={<PDFToolLayout><ImagesToPDFPage /></PDFToolLayout>} />
+          <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
           <Route path="extract-text" element={<PDFToolLayout><ExtractTextPage /></PDFToolLayout>} />
           <Route path="pdf-to-word" element={<PDFToolLayout><PDFToWordPage /></PDFToolLayout>} />
           <Route path="delete-pages" element={<PDFToolLayout><DeletePagesPage /></PDFToolLayout>} />
