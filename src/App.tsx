@@ -198,6 +198,7 @@ function App() {
             <Route path="developer-tools" element={<DeveloperToolsPage />} />
             <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
             <Route path="document-tools" element={<DocumentToolsPage />} />
+            <Route path="word-docs" element={<DocumentToolsPage />} />
 
             {/* Main layout for most pages */}
             <Route path="/" element={<Layout />}>
