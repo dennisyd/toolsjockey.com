@@ -37,12 +37,10 @@ import VideoCompressorPage from './pages/tools/VideoCompressorPage';
 import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
 
-// Word/Docs and Excel/CSV tool imports
+// Excel/CSV tool imports (removed Word/Docs tools)
 import ExcelCsvToolsPage from './pages/excelcsv-tools';
 import ExcelMergerSplitterPage from './pages/tools/ExcelMergerSplitterPage';
-import WordToMarkdownPage from './pages/tools/WordToMarkdownPage';
 import CSVToJSONPage from './pages/tools/CSVToJSONPage';
-import WordCounterPage from './pages/tools/WordCounterPage';
 import CSVToolMergerPage from './pages/tools/CSVToolMergerPage';
 import ExcelToFormatsConverterPage from './pages/tools/ExcelToFormatsConverterPage';
 
@@ -77,11 +75,9 @@ function App() {
               {/* PDF tool routes - most use direct paths, BatchPDFFormFiller uses /tools/ prefix */}
               <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
               
-              {/* Word/Docs and Excel/CSV tool routes */}
+              {/* Excel/CSV tool routes (removed Word/Docs tools) */}
               <Route path="tools/excel-merger-splitter" element={<ExcelMergerSplitterPage />} />
-              <Route path="tools/word-to-markdown" element={<WordToMarkdownPage />} />
               <Route path="tools/csv-to-json" element={<CSVToJSONPage />} />
-              <Route path="tools/word-counter" element={<WordCounterPage />} />
               <Route path="tools/csv-merger" element={<CSVToolMergerPage />} />
               <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
             </Route>
