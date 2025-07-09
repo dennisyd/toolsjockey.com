@@ -62,41 +62,6 @@ const themes: Theme[] = [
   { value: 'tomorrow', label: 'Tomorrow' }
 ];
 
-const loadTheme = async (theme: string) => {
-  try {
-    switch (theme) {
-      case 'default':
-        await import('prismjs/themes/prism.css');
-        break;
-      case 'dark':
-        await import('prismjs/themes/prism-dark.css');
-        break;
-      case 'okaidia':
-        await import('prismjs/themes/prism-okaidia.css');
-        break;
-      case 'twilight':
-        await import('prismjs/themes/prism-twilight.css');
-        break;
-      case 'coy':
-        await import('prismjs/themes/prism-coy.css');
-        break;
-      case 'solarizedlight':
-        await import('prismjs/themes/prism-solarizedlight.css');
-        break;
-      case 'tomorrow':
-        await import('prismjs/themes/prism-tomorrow.css');
-        break;
-      default:
-        await import('prismjs/themes/prism.css');
-        break;
-    }
-  } catch (error) {
-    console.warn(`Failed to load theme: ${theme}`, error);
-    // Fallback to default theme
-    await import('prismjs/themes/prism.css');
-  }
-};
-
 const SyntaxHighlighterTool: React.FC = () => {
   const [inputCode, setInputCode] = useState<string>('');
   const [language, setLanguage] = useState<string>('javascript');
@@ -104,10 +69,6 @@ const SyntaxHighlighterTool: React.FC = () => {
   const [showLineNumbers, setShowLineNumbers] = useState<boolean>(true);
   const [highlightedCode, setHighlightedCode] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
-
-  useEffect(() => {
-    loadTheme(theme);
-  }, [theme]);
 
   useEffect(() => {
     if (inputCode) {
@@ -256,33 +217,25 @@ const SyntaxHighlighterTool: React.FC = () => {
                 id="highlighted-code"
                 className={`language-${language} ${showLineNumbers ? 'line-numbers' : ''}`}
                 style={{ margin: 0, padding: '1rem', height: '100%' }}
-              >
-                <code
-                  className={`language-${language}`}
-                  dangerouslySetInnerHTML={{ __html: addLineNumbers(highlightedCode) }}
-                />
-              </pre>
+                dangerouslySetInnerHTML={{ __html: addLineNumbers(highlightedCode) }}
+              />
             ) : (
-              <div className="p-4 text-gray-500 dark:text-gray-400 h-full flex items-center justify-center">
-                Highlighted code will appear here...
+              <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                <p>Highlighted code will appear here...</p>
               </div>
             )}
           </div>
         </div>
       </div>
       
-      <style>{`
-        .line-numbers .line-number {
-          display: inline-block;
-          width: 2em;
-          user-select: none;
-          opacity: 0.5;
-          text-align: right;
-          margin-right: 1em;
-          padding-right: 0.5em;
-          border-right: 1px solid #ddd;
-        }
-      `}</style>
+      <div className="text-sm text-gray-600 dark:text-gray-400">
+        <p>
+          <strong>Supported Languages:</strong> HTML, CSS, JavaScript, TypeScript, JSX, TSX, JSON, Python, Java, C#, PHP, Ruby, Go, Rust, SQL, Bash, YAML, Markdown
+        </p>
+        <p>
+          <strong>Features:</strong> Syntax highlighting, multiple themes, line numbers, copy code and HTML output
+        </p>
+      </div>
     </div>
   );
 };
