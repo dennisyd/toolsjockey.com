@@ -37,6 +37,17 @@ import VideoCompressorPage from './pages/tools/VideoCompressorPage';
 import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
 
+// Calculation tool imports
+import CalculationToolsPage from './pages/calculation-tools';
+import ScientificCalculatorPage from './pages/tools/ScientificCalculatorPage';
+import DateCalculatorPage from './pages/tools/DateCalculatorPage';
+import LoanCalculatorPage from './pages/tools/LoanCalculatorPage';
+import TaxCalculatorPage from './pages/tools/TaxCalculatorPage';
+import PercentageCalculatorPage from './pages/tools/PercentageCalculatorPage';
+import StatisticsCalculatorPage from './pages/tools/StatisticsCalculatorPage';
+import InvestmentCalculatorPage from './pages/tools/InvestmentCalculatorPage';
+import BMICalculatorPage from './pages/tools/BMICalculatorPage';
+
 // Optional: if you want to keep your existing loading spinner
 const LoadingFallback = () => (
   <div className="flex flex-col items-center justify-center h-screen">
@@ -60,12 +71,23 @@ function App() {
             {/* Standalone pages with custom header */}
             <Route path="pdf-tools" element={<PDFToolsPage />} />
             <Route path="media-tools" element={<MediaToolsPage />} />
+            <Route path="calculation-tools" element={<CalculationToolsPage />} />
             
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               
               {/* PDF tool routes - most use direct paths, BatchPDFFormFiller uses /tools/ prefix */}
               <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
+              
+              {/* Calculation tool routes */}
+              <Route path="tools/scientific-calculator" element={<ScientificCalculatorPage />} />
+              <Route path="tools/date-calculator" element={<DateCalculatorPage />} />
+              <Route path="tools/loan-calculator" element={<LoanCalculatorPage />} />
+              <Route path="tools/tax-calculator" element={<TaxCalculatorPage />} />
+              <Route path="tools/percentage-calculator" element={<PercentageCalculatorPage />} />
+              <Route path="tools/statistics-calculator" element={<StatisticsCalculatorPage />} />
+              <Route path="tools/investment-calculator" element={<InvestmentCalculatorPage />} />
+              <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
             </Route>
             
             {/* PDF tool routes - direct paths (outside Layout) */}
