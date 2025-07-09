@@ -4,12 +4,9 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import JSZip from 'jszip';
 
-console.log('BatchPDFFormFiller component loading - Version 2.0.0');
-
 // Helper to get field type name and possible values
 function getFieldTypeAndOptions(field: any) {
   const ctor = field?.constructor?.name;
-  console.log('Field constructor:', ctor);
   
   let type = 'Unknown';
   let options: string[] = [];

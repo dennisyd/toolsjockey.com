@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import mammoth from 'mammoth';
+import mammoth from 'mammoth/mammoth.browser';
 import AdSlot from '../ads/AdSlot';
 
 const WordToMarkdownConverter: React.FC = () => {
