@@ -25,6 +25,7 @@ import MediaToolsPage from './pages/media-tools/index';
 import ImageToolsPage from './pages/image-tools/index';
 import DeveloperToolsPage from './pages/developer-tools/index';
 import ColorDesignToolsPage from './pages/color-design-tools/index';
+import DocumentToolsPage from './pages/document-tools/index';
 import MergePDFPage from './pages/pdf-tools/MergePDFPage';
 import SplitPDFPage from './pages/pdf-tools/SplitPDFPage';
 import ReorderPDFPage from './pages/pdf-tools/ReorderPDFPage';
@@ -196,6 +197,7 @@ function App() {
             <Route path="image-tools" element={<ImageToolsPage />} />
             <Route path="developer-tools" element={<DeveloperToolsPage />} />
             <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
+            <Route path="document-tools" element={<DocumentToolsPage />} />
 
             {/* Main layout for most pages */}
             <Route path="/" element={<Layout />}>
