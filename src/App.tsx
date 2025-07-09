@@ -57,6 +57,7 @@ const ColorPaletteGeneratorPage = lazy(() => import('./pages/tools/ColorPaletteG
 
 // Word/Docs tools - separate chunk
 const WordToMarkdownPage = lazy(() => import('./pages/tools/WordToMarkdownPage'));
+const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
 
 // Utility tools - separate chunk
 const WatermarkAdderPage = lazy(() => import('./pages/tools/WatermarkAdderPage'));
@@ -206,6 +207,7 @@ function App() {
               <Route path="tools/image-compressor" element={<ImageCompressorPage />} />
               <Route path="tools/color-palette-generator" element={<ColorPaletteGeneratorPage />} />
               <Route path="tools/word-to-markdown" element={<WordToMarkdownPage />} />
+              <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
               <Route path="tools/watermark-adder" element={<WatermarkAdderPage />} />
               <Route path="tools/exif-remover" element={<EXIFRemoverPage />} />
               <Route path="tools/image-format-converter" element={<ImageFormatConverterPage />} />
