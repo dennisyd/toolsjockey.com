@@ -8,13 +8,21 @@ import { useAnalytics } from '../../hooks/useAnalytics';
 const FORMATTER_TOOLS = [
   { title: 'JSON Formatter', path: '/tools/json-formatter', desc: 'Format, validate, and beautify JSON data.' },
   { title: 'CSS Minifier', path: '/tools/css-minifier', desc: 'Minify CSS to reduce file size.' },
+  { title: 'HTML Minifier', path: '/tools/html-minifier', desc: 'Compress HTML code to reduce file size.' },
+  { title: 'JavaScript Minifier', path: '/tools/js-minifier', desc: 'Minify JavaScript code to reduce file size.' },
+  { title: 'Code Formatter', path: '/tools/code-formatter', desc: 'Format and beautify code in multiple languages.' },
   { title: 'Text Diff Viewer', path: '/tools/text-diff', desc: 'Compare text and find differences between files.' },
+  { title: 'Code Diff Viewer', path: '/tools/code-diff-viewer', desc: 'Compare code differences side-by-side.' },
 ];
 
 const UTILITY_TOOLS = [
   { title: 'Hash Generator', path: '/tools/hash-generator', desc: 'Generate MD5, SHA-1, SHA-256, and other hashes.' },
   { title: 'Regex Tester', path: '/tools/regex-tester', desc: 'Test and debug regular expressions.' },
   { title: 'Base64 Encoder', path: '/tools/base64-encoder', desc: 'Encode and decode Base64 data.' },
+  { title: 'URL Encoder/Decoder', path: '/tools/url-encoder-decoder', desc: 'Encode and decode URLs easily.' },
+  { title: 'HTML Entity Converter', path: '/tools/html-entity-converter', desc: 'Convert text to and from HTML entities.' },
+  { title: 'Syntax Highlighter', path: '/tools/syntax-highlighter', desc: 'Highlight code with themes and line numbers.' },
+  { title: 'Lorem Ipsum Generator', path: '/tools/lorem-ipsum-generator', desc: 'Generate placeholder Lorem Ipsum text.' },
 ];
 
 const DeveloperToolsPage = () => {
@@ -25,10 +33,10 @@ const DeveloperToolsPage = () => {
       <Header />
       <Helmet>
         <title>Developer Tools - Free Online Coding Utilities | ToolsJockey</title>
-        <meta name="description" content="Free online developer tools for JSON formatting, regex testing, hash generation, and more. No installation or signup required - all processing happens in your browser." />
+        <meta name="description" content="Free online developer tools for code formatting, minification, syntax highlighting, regex testing, hash generation, and more. No installation or signup required - all processing happens in your browser." />
       </Helmet>
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">Developer Tools – Format JSON, Test Regex, Encode Data</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Developer Tools – Format, Minify, Compare, and Test Code</h1>
         
         <div className="max-w-4xl mx-auto">
           {/* Ad slot at the top */}
@@ -37,7 +45,7 @@ const DeveloperToolsPage = () => {
           </div>
           
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Formatter Tools</h2>
+            <h2 className="text-xl font-semibold mb-4">Formatter & Minifier Tools</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {FORMATTER_TOOLS.map((tool) => (
                 <Link

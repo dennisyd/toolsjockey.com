@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // If there's more than one, remove all but the first one
     if (privacyBadges.length > 1) {
-      console.log('Found and removing duplicate privacy badges:', privacyBadges.length - 1);
       for (let i = 1; i < privacyBadges.length; i++) {
         const badge = privacyBadges[i];
         if (badge.parentElement) {

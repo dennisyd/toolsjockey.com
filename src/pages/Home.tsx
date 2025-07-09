@@ -132,7 +132,7 @@ const Home = () => {
       </div>
 
       {/* Featured Tools Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
         {/* Excel to Everything Converter featured card */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center gap-4">
           <span className="text-4xl">📤</span>
@@ -149,16 +149,32 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Video Tools Suite featured card */}
+        {/* Media Tools Suite featured card */}
         <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 flex items-center gap-4">
           <span className="text-4xl">🎬</span>
           <div className="flex-1">
-            <div className="font-bold text-lg">New: Video Tools Suite</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Process videos right in your browser! Clip, compress, convert to GIF, extract frames, merge videos, and extract audio.</div>
+            <div className="font-bold text-lg">New: Media Tools Suite</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Process audio and video right in your browser! Convert, compress, clip, merge, extract audio, and more - all client-side.</div>
             <a 
-              href="/tools/video-clipper" 
+              href="/media-tools" 
               className="inline-block bg-purple-600 text-white px-4 py-2 rounded font-semibold hover:bg-purple-700 transition"
-              onClick={() => trackButtonClick('video_tools_featured', 'Home')}
+              onClick={() => trackButtonClick('media_tools_featured', 'Home')}
+            >
+              Try Now
+            </a>
+          </div>
+        </div>
+
+        {/* Privacy Tools Suite featured card */}
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-4">
+          <span className="text-4xl">🔒</span>
+          <div className="flex-1">
+            <div className="font-bold text-lg">Privacy-First Tools</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Encrypt files, generate secure notes, verify file integrity, and more - all with client-side processing.</div>
+            <a 
+              href="/privacy-tools" 
+              className="inline-block bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 transition"
+              onClick={() => trackButtonClick('privacy_tools_featured', 'Home')}
             >
               Try Now
             </a>

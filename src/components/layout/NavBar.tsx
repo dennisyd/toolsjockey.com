@@ -35,10 +35,15 @@ const groupLabels: Record<string, { label: string; description: string; icon?: s
     description: 'Compression and archive management',
     icon: '📦'
   },
-  video: { 
-    label: 'Video Tools', 
-    description: 'Video editing and processing',
-    icon: '🎥'
+  media: { 
+    label: 'Media Tools', 
+    description: 'Audio and video processing tools',
+    icon: '🎬'
+  },
+  presentation: { 
+    label: 'Presentation Tools', 
+    description: 'Tools for creating and managing presentations',
+    icon: '📊'
   },
   calculation: { 
     label: 'Calculation Tools', 
@@ -64,6 +69,11 @@ const groupLabels: Record<string, { label: string; description: string; icon?: s
     label: 'Converters', 
     description: 'File and format conversion tools',
     icon: '🔄'
+  },
+  privacy: { 
+    label: 'Privacy Tools', 
+    description: 'Client-side encryption and security tools',
+    icon: '🔒'
   },
 };
 
@@ -110,7 +120,7 @@ const NavBar: React.FC = () => {
         <div className="hidden md:flex items-center gap-2 ml-8 flex-1 justify-end">
           {/* Main visible categories */}
           {grouped
-            .filter(([group]) => ['pdf', 'excelcsv', 'image', 'developer', 'archive', 'video', 'calculation'].includes(group))
+            .filter(([group]) => ['pdf', 'excelcsv', 'image', 'developer', 'archive', 'media', 'calculation', 'privacy', 'word'].includes(group))
             .map(([group, tools]) => (
             <div key={group} className="relative">
               <button
@@ -172,7 +182,7 @@ const NavBar: React.FC = () => {
                       {/* Footer */}
                       <div className="mt-3 pt-3 border-t border-gray-600">
                         <Link
-                          to={`/${group}-tools`}
+                          to={group === 'color' ? '/color-design-tools' : `/${group}-tools`}
                           className="text-sm text-[#ffe066] hover:text-white transition-colors flex items-center gap-1"
                           onClick={() => trackButtonClick(`nav_view_all_${group}`, 'NavBar')}
                         >
@@ -223,7 +233,7 @@ const NavBar: React.FC = () => {
                   <div className="p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {grouped
-                        .filter(([group]) => ['color', 'word', 'quick', 'converter'].includes(group))
+                        .filter(([group]) => ['color', 'quick', 'converter', 'presentation'].includes(group))
                         .map(([group, tools]) => (
                         <div key={group} className="p-3 rounded-lg hover:bg-gray-700 transition-colors">
                           <div className="flex items-center gap-2 mb-2">
@@ -247,7 +257,7 @@ const NavBar: React.FC = () => {
                             ))}
                             {tools.length > 3 && (
                               <Link
-                                to={`/${group}-tools`}
+                                to={group === 'color' ? '/color-design-tools' : `/${group}-tools`}
                                 className="text-xs text-[#ffe066] hover:text-white transition-colors block px-2 py-1"
                                 onClick={() => trackButtonClick(`nav_more_view_all_${group}`, 'NavBar')}
                               >
@@ -261,7 +271,7 @@ const NavBar: React.FC = () => {
                     {/* Footer */}
                     <div className="mt-3 pt-3 border-t border-gray-600">
                       <Link
-                        to="/all-tools"
+                        to="/"
                         className="text-sm text-[#ffe066] hover:text-white transition-colors flex items-center gap-1"
                         onClick={() => trackButtonClick(`nav_more_view_all`, 'NavBar')}
                       >

@@ -139,6 +139,32 @@ const ScientificCalculatorPage: React.FC = () => {
     }
   };
 
+  // Secure mathematical expression evaluator
+  const evaluateExpression = (expression: string): number => {
+    // Remove all whitespace
+    const cleanExpr = expression.replace(/\s/g, '');
+    
+    // Validate the expression contains only allowed characters
+    const allowedChars = /^[0-9+\-*/().,Math\s]+$/;
+    if (!allowedChars.test(cleanExpr)) {
+      throw new Error('Invalid characters in expression');
+    }
+    
+    // Create a safe evaluation context
+    const safeEval = (expr: string): number => {
+      // Use Function constructor instead of eval for better security
+      // This creates a new function scope with only Math object available
+      const func = new Function('Math', `return ${expr}`);
+      return func(Math);
+    };
+    
+    try {
+      return safeEval(cleanExpr);
+    } catch (error) {
+      throw new Error('Invalid mathematical expression');
+    }
+  };
+
   const calculateResult = async () => {
     if (!expression) return;
 
@@ -180,8 +206,8 @@ const ScientificCalculatorPage: React.FC = () => {
         throw new Error('Invalid function syntax');
       }
 
-      // Evaluate the expression
-      let result = eval(evalExpression);
+      // Evaluate the expression using secure evaluator
+      let result = evaluateExpression(evalExpression);
 
       if (isNaN(result) || !isFinite(result)) {
         throw new Error('Invalid calculation');

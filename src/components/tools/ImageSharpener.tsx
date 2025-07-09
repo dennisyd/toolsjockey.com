@@ -14,17 +14,32 @@ function upscaleImage(img: HTMLImageElement, scale: number): string {
   return canvas.toDataURL('image/png');
 }
 
+const presetSizes = [
+  { label: '2400 × 1800', width: 2400, height: 1800 },
+  { label: '1920 × 1080', width: 1920, height: 1080 },
+  { label: '1024 × 1024', width: 1024, height: 1024 },
+  { label: '800 × 800', width: 800, height: 800 },
+];
+
 const ImageSharpenerUpscaler = () => {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [sharpnessLevel, setSharpnessLevel] = useState<number>(50);
-  const [scale, setScale] = useState<number>(2);
   const [sharpened, setSharpened] = useState<string | null>(null);
   const [upscaled, setUpscaled] = useState<string | null>(null);
+  const [upscaledDims, setUpscaledDims] = useState<{ width: number; height: number } | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [mode, setMode] = useState<'sharpen' | 'upscale'>('sharpen');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const resultCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [useCustomSize, setUseCustomSize] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<{ width: number; height: number }>(presetSizes[0]);
+  const [customWidth, setCustomWidth] = useState(2400);
+  const [customHeight, setCustomHeight] = useState(1800);
+  const [upscaleMode, setUpscaleMode] = useState<'dimensions' | 'filesize'>('dimensions');
+  const [targetFileSizeMB, setTargetFileSizeMB] = useState<number>(15);
+  const [fileSizeUpscaleError, setFileSizeUpscaleError] = useState<string | null>(null);
+  const [optimizedSize, setOptimizedSize] = useState<number | null>(null);
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -101,14 +116,115 @@ const ImageSharpenerUpscaler = () => {
     }, 100);
   };
 
+  // Utility: Upscale image so both dimensions are at least the requested size, no cropping
+  function upscaleToMinSize(img: HTMLImageElement, minWidth: number, minHeight: number): { url: string, width: number, height: number } {
+    const scale = Math.max(minWidth / img.width, minHeight / img.height);
+    const outWidth = Math.round(img.width * scale);
+    const outHeight = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = outWidth;
+    canvas.height = outHeight;
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, outWidth, outHeight);
+    return { url: canvas.toDataURL('image/png'), width: outWidth, height: outHeight };
+  }
+
+  // Utility: Upscale to target file size (MB), no cropping, preserve aspect ratio
+  async function upscaleToTargetFileSize(img: HTMLImageElement, minWidth: number, minHeight: number, targetMB: number, format: string = 'image/jpeg', quality: number = 0.92): Promise<{ url: string, width: number, height: number, size: number } | null> {
+    let scale = Math.max(minWidth / img.width, minHeight / img.height);
+    let width = Math.round(img.width * scale);
+    let height = Math.round(img.height * scale);
+    let lastGood: { url: string, width: number, height: number, size: number } | null = null;
+    const maxDim = 10000;
+    for (let i = 0; i < 20; i++) {
+      if (width > maxDim || height > maxDim) break;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, width, height);
+      const blob: Blob = await new Promise((resolve, reject) => {
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), format, quality);
+      });
+      const sizeMB = blob.size / (1024 * 1024);
+      const url = URL.createObjectURL(blob);
+      if (sizeMB > targetMB) {
+        break;
+      }
+      lastGood = { url, width, height, size: blob.size };
+      // Increase scale for next iteration
+      scale *= 1.15;
+      width = Math.round(img.width * scale);
+      height = Math.round(img.height * scale);
+    }
+    return lastGood;
+  }
+
   // Upscaling logic
-  const applyUpscaling = () => {
+  const applyUpscaling = async () => {
     if (!preview) return;
     setIsProcessing(true);
+    setFileSizeUpscaleError(null);
+    setOptimizedSize(null);
     const img = new window.Image();
-    img.onload = () => {
-      const upscaledUrl = upscaleImage(img, scale);
+    img.onload = async () => {
+      let upscaledUrl: string;
+      let width: number;
+      let height: number;
+      let size: number | undefined;
+      if (upscaleMode === 'filesize') {
+        // Use JPEG for best compression, quality 0.92
+        const minW = useCustomSize ? customWidth : selectedSize.width;
+        const minH = useCustomSize ? customHeight : selectedSize.height;
+        const result = await upscaleToTargetFileSize(img, minW, minH, targetFileSizeMB, 'image/jpeg', 0.92);
+        if (!result) {
+          setFileSizeUpscaleError('Could not reach target file size within max dimensions.');
+          setIsProcessing(false);
+          return;
+        }
+        upscaledUrl = result.url;
+        width = result.width;
+        height = result.height;
+        size = result.size;
+      } else if (useCustomSize || selectedSize) {
+        const w = useCustomSize ? customWidth : selectedSize.width;
+        const h = useCustomSize ? customHeight : selectedSize.height;
+        const result = upscaleToMinSize(img, w, h);
+        upscaledUrl = result.url;
+        width = result.width;
+        height = result.height;
+        // Calculate file size for this mode as well
+        const blob: Blob = await new Promise((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/jpeg', 0.92);
+        });
+        size = blob.size;
+      } else {
+        upscaledUrl = upscaleImage(img, 2); // Default upscale factor
+        width = img.width * 2;
+        height = img.height * 2;
+        // Calculate file size for this mode as well
+        const blob: Blob = await new Promise((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/jpeg', 0.92);
+        });
+        size = blob.size;
+      }
       setUpscaled(upscaledUrl);
+      setUpscaledDims({ width, height });
+      if (size) setOptimizedSize(size);
       setIsProcessing(false);
     };
     img.src = preview;
@@ -206,27 +322,99 @@ const ImageSharpenerUpscaler = () => {
               )}
               {mode === 'upscale' && (
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Upscale Factor: {scale}x
-                  </label>
-                  <input
-                    type="range"
-                    min="2"
-                    max="4"
-                    step="1"
-                    value={scale}
-                    onChange={e => setScale(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <div className="mt-4">
+                  <div className="flex gap-2 mb-2">
                     <button
-                      onClick={applyUpscaling}
-                      disabled={isProcessing}
-                      className="btn btn-primary w-full"
+                      className={`px-3 py-1 rounded border ${upscaleMode === 'dimensions' ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
+                      onClick={() => setUpscaleMode('dimensions')}
                     >
-                      {isProcessing ? 'Processing...' : `Upscale ${scale}x`}
+                      Upscale by Dimensions
+                    </button>
+                    <button
+                      className={`px-3 py-1 rounded border ${upscaleMode === 'filesize' ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
+                      onClick={() => setUpscaleMode('filesize')}
+                    >
+                      Upscale by File Size
                     </button>
                   </div>
+                  {upscaleMode === 'dimensions' && (
+                    <>
+                      <label className="block text-sm font-medium mb-2">Upscale To:</label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {presetSizes.map(size => (
+                          <button
+                            key={size.label}
+                            type="button"
+                            className={`px-3 py-1 rounded border ${!useCustomSize && selectedSize.width === size.width && selectedSize.height === size.height ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
+                            onClick={() => { setUseCustomSize(false); setSelectedSize(size); }}
+                          >
+                            {size.label}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          className={`px-3 py-1 rounded border ${useCustomSize ? 'bg-accent text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
+                          onClick={() => setUseCustomSize(true)}
+                        >
+                          Custom
+                        </button>
+                      </div>
+                      {useCustomSize && (
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="number"
+                            min={1}
+                            value={customWidth}
+                            onChange={e => setCustomWidth(Number(e.target.value))}
+                            className="w-24 px-2 py-1 border rounded"
+                            placeholder="Width"
+                          />
+                          <span className="self-center">×</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={customHeight}
+                            onChange={e => setCustomHeight(Number(e.target.value))}
+                            className="w-24 px-2 py-1 border rounded"
+                            placeholder="Height"
+                          />
+                        </div>
+                      )}
+                      <div className="mt-2">
+                        <button
+                          onClick={applyUpscaling}
+                          disabled={isProcessing}
+                          className="btn btn-primary w-full"
+                        >
+                          {isProcessing ? 'Processing...' : `Upscale to ${useCustomSize ? `${customWidth}×${customHeight}` : `${selectedSize.width}×${selectedSize.height}`}`}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  {upscaleMode === 'filesize' && (
+                    <div className="mb-2">
+                      <label className="block text-sm font-medium mb-1">Target File Size (MB)</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={targetFileSizeMB}
+                        onChange={e => setTargetFileSizeMB(Number(e.target.value))}
+                        className="w-32 px-2 py-1 border rounded"
+                      />
+                      <div className="mt-2">
+                        <button
+                          onClick={applyUpscaling}
+                          disabled={isProcessing}
+                          className="btn btn-primary w-full"
+                        >
+                          {isProcessing ? 'Processing...' : `Upscale to ~${targetFileSizeMB} MB`}
+                        </button>
+                      </div>
+                      {fileSizeUpscaleError && (
+                        <div className="text-red-600 mt-2">{fileSizeUpscaleError}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -263,8 +451,18 @@ const ImageSharpenerUpscaler = () => {
                   <img src={preview!} alt="Original" className="w-full rounded" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium mb-2">Upscaled ({scale}x)</p>
+                  <p className="text-sm font-medium mb-2">
+                    Upscaled ({upscaledDims ? `${upscaledDims.width}×${upscaledDims.height}` : useCustomSize ? `${customWidth}×${customHeight}` : `${selectedSize.width}×${selectedSize.height}`})
+                  </p>
                   <img src={upscaled} alt="Upscaled" className="w-full rounded" />
+                  {upscaledDims && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      Resolution: {upscaledDims.width} × {upscaledDims.height}
+                      {optimizedSize != null && (
+                        <> &nbsp;|&nbsp; File Size: {(optimizedSize / 1024 / 1024).toFixed(2)} MB</>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="mt-4">

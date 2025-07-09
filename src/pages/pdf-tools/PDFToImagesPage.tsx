@@ -144,7 +144,6 @@ const PDFToImagesPage: React.FC = () => {
           zip.file(img.name, blob);
         } catch (fetchError) {
           // Fallback: Try to use the data URL directly
-          console.log(`Using fallback for image ${i+1}`);
           const base64Data = img.url.split(',')[1];
           zip.file(img.name, base64Data, {base64: true});
         }
@@ -181,11 +180,9 @@ const PDFToImagesPage: React.FC = () => {
         setTimeout(() => setProgress(0), 1000);
         return;
       } catch (zipError) {
-        console.error("First ZIP generation attempt failed:", zipError);
         // Continue to fallback method
       }
     } catch (e) {
-      console.error("First ZIP creation method failed:", e);
       // Continue to fallback method
     }
     
@@ -214,7 +211,6 @@ const PDFToImagesPage: React.FC = () => {
       
       setError('ZIP creation failed. Individual images have been downloaded instead.');
     } catch (fallbackError) {
-      console.error("Fallback method also failed:", fallbackError);
       setError('Failed to create ZIP file. Please try downloading images individually by clicking the Download button under each image.');
     }
     

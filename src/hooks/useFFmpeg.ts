@@ -31,7 +31,6 @@ const checkFFmpegFilesExist = async (useCDN = false): Promise<boolean> => {
   const workerUrl = useCDN ? CDN_WORKER_URL : WORKER_URL;
   
   try {
-    console.log(`Checking FFmpeg files existence (CDN: ${useCDN})`);
     
     // Use a more robust check that also validates file size
     const [coreResponse, wasmResponse, workerResponse] = await Promise.all([
@@ -46,17 +45,14 @@ const checkFFmpegFilesExist = async (useCDN = false): Promise<boolean> => {
       // Check if WASM file has reasonable size (should be > 1MB)
       const wasmSize = wasmResponse.headers.get('content-length');
       if (wasmSize && parseInt(wasmSize) < 1000000) {
-        console.warn('WASM file seems too small, might be corrupted');
         return false;
       }
-      console.log(`FFmpeg files check passed (CDN: ${useCDN})`);
     } else {
-      console.log(`FFmpeg files check failed (CDN: ${useCDN})`);
+      return false;
     }
     
     return allFilesExist;
   } catch (error) {
-    console.error(`Error checking FFmpeg files (CDN: ${useCDN}):`, error);
     return false;
   }
 };
@@ -78,14 +74,12 @@ export const getFFmpeg = (forceCDN = false): FFmpeg => {
     
     usingCDN = forceCDN;
     
-    console.log(`Creating FFmpeg instance (CDN: ${forceCDN})`);
     
     ffmpegInstance = createFFmpeg({
       log: true,
       progress: ({ ratio }) => {
         if (ratio >= 0 && ratio <= 1) {
           currentLoadingProgress = Math.round(10 + (ratio * 80)); // Progress from 10% to 90%
-          console.log(`FFmpeg loading progress: ${currentLoadingProgress}%`);
         }
       },
       corePath: coreUrl,
@@ -162,11 +156,9 @@ const loadFFmpegOnce = async (): Promise<void> => {
     try {
       // Double check that the instance is actually working
       if (ffmpegInstance.isLoaded()) {
-        console.log('FFmpeg is already loaded and working properly');
         return;
       }
     } catch (e) {
-      console.warn('FFmpeg instance claimed to be loaded but isLoaded() check failed:', e);
       // Reset the state since the instance isn't working properly
       isLoaded = false;
       ffmpegInstance = null;
@@ -176,56 +168,39 @@ const loadFFmpegOnce = async (): Promise<void> => {
   
   // If currently loading, return the existing promise
   if (isLoading && loadingPromise) {
-    console.log('FFmpeg is already loading, waiting for existing promise');
     return loadingPromise;
   }
   
   // Start loading
   isLoading = true;
   currentLoadingProgress = 0;
-  console.log('Starting FFmpeg loading process');
   
   loadingPromise = new Promise<void>(async (resolve, reject) => {
     // Create a timeout to prevent infinite loading (increased for production)
     const timeout = setTimeout(() => {
-      console.error('FFmpeg loading timed out after 90 seconds');
       reject(new Error('Loading timed out. Please refresh the page and try again.'));
     }, 90000); // Increased from 60s to 90s for production
     
     try {
       loadAttempts++;
-      console.log(`FFmpeg load attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS}`);
-      currentLoadingProgress = 2;
       
       // First, try to check local files
-      console.log('Checking local FFmpeg files...');
       let filesExist = await checkFFmpegFilesExist(false);
       let useCDN = false;
       
       if (!filesExist) {
-        console.log('Local files not found, checking CDN...');
-        currentLoadingProgress = 5;
         filesExist = await checkFFmpegFilesExist(true);
         useCDN = true;
         
         if (!filesExist) {
-          console.error('Neither local nor CDN FFmpeg files are accessible');
           throw new Error('FFmpeg core files not accessible. This could be due to a network issue or deployment problem.');
-        } else {
-          console.log('CDN files are accessible, will use CDN');
         }
-      } else {
-        console.log('Local files are accessible');
       }
-      
-      currentLoadingProgress = 8;
       
       // Create FFmpeg instance with appropriate URLs
       try {
         ffmpegInstance = getFFmpeg(useCDN);
-        console.log(`FFmpeg instance created (using ${useCDN ? 'CDN' : 'local'} files)`);
       } catch (instanceError) {
-        console.error('Error creating FFmpeg instance:', instanceError);
         throw new Error('Failed to create FFmpeg instance');
       }
       
@@ -233,18 +208,13 @@ const loadFFmpegOnce = async (): Promise<void> => {
       let alreadyLoaded = false;
       try {
         alreadyLoaded = ffmpegInstance.isLoaded();
-        console.log('FFmpeg isLoaded check:', alreadyLoaded);
       } catch (e) {
-        console.log('Error checking if FFmpeg is loaded:', e);
         alreadyLoaded = false;
       }
-      
-      currentLoadingProgress = 10;
       
       // Only load if not already loaded
       if (!alreadyLoaded) {
         try {
-          console.log('Starting FFmpeg.load() operation...');
           
           // Add more detailed progress tracking
           const loadPromise = ffmpegInstance.load();
@@ -257,7 +227,6 @@ const loadFFmpegOnce = async (): Promise<void> => {
             const progressCheck = setInterval(() => {
               if (currentLoadingProgress === lastProgress) {
                 progressStuckTime += 2000;
-                console.log(`Progress stuck at ${currentLoadingProgress}% for ${progressStuckTime/1000}s`);
                 
                 if (progressStuckTime >= 30000) { // 30 seconds stuck
                   clearInterval(progressCheck);
@@ -277,20 +246,15 @@ const loadFFmpegOnce = async (): Promise<void> => {
           
           await Promise.race([loadPromise, timeoutPromise]);
           
-          console.log('FFmpeg.load() completed successfully');
-          currentLoadingProgress = 90;
         } catch (loadError) {
-          console.error('Error in FFmpeg.load():', loadError);
           
           // Special handling for "already loaded" error
           if (String(loadError).includes('ffmpeg.wasm was loaded')) {
-            console.log('FFmpeg was already loaded, continuing...');
             alreadyLoaded = true;
             currentLoadingProgress = 90;
           } else {
             // If local files failed and we haven't tried CDN yet, try CDN
             if (!useCDN && loadAttempts === 1) {
-              console.log('Local loading failed, will retry with CDN');
               ffmpegInstance = null;
               isLoading = false;
               loadingPromise = null;
@@ -305,7 +269,6 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       // Test the FFmpeg instance with a simple operation to verify it's working correctly
       try {
-        console.log('Testing FFmpeg instance functionality...');
         const testData = new Uint8Array([72, 101, 108, 108, 111]); // "Hello" in bytes
         ffmpegInstance.FS('writeFile', 'test.txt', testData);
         const readData = ffmpegInstance.FS('readFile', 'test.txt');
@@ -315,10 +278,7 @@ const loadFFmpegOnce = async (): Promise<void> => {
         }
         
         ffmpegInstance.FS('unlink', 'test.txt');
-        console.log('FFmpeg instance test passed');
-        currentLoadingProgress = 100;
       } catch (testErr) {
-        console.error('FFmpeg instance test failed:', testErr);
         throw new Error('FFmpeg failed functionality test. The engine may not be properly initialized.');
       }
       
@@ -327,17 +287,13 @@ const loadFFmpegOnce = async (): Promise<void> => {
       loadingPromise = null; // Clear the loading promise
       loadAttempts = 0; // Reset attempts on success
       clearTimeout(timeout);
-      console.log(`FFmpeg loaded successfully (using ${useCDN ? 'CDN' : 'local'} files)`);
       resolve();
       
     } catch (err) {
-      console.error('Error loading FFmpeg:', err);
-      isLoaded = false;
       
       // Special handling for CDN retry
       if (String(err).includes('RETRY_WITH_CDN')) {
         clearTimeout(timeout);
-        console.log('Retrying with CDN fallback...');
         setTimeout(() => {
           loadFFmpegOnce().then(resolve).catch(reject);
         }, 1000);
@@ -346,7 +302,6 @@ const loadFFmpegOnce = async (): Promise<void> => {
       
       // If we haven't reached max attempts, try again with a delay
       if (loadAttempts < MAX_LOAD_ATTEMPTS) {
-        console.log(`Retrying FFmpeg load (attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS})`);
         clearTimeout(timeout);
         setTimeout(() => {
           isLoading = false;
@@ -397,7 +352,6 @@ export const useFFmpeg = () => {
       setIsFFmpegLoading(false);
       setFFmpegLoadingProgress(100);
     } catch (err) {
-      console.error('Error in useFFmpeg hook:', err);
       
       // Get a more user-friendly error message
       const detailedError = getDetailedErrorMessage(err);
@@ -411,7 +365,6 @@ export const useFFmpeg = () => {
   useEffect(() => {
     // If already loaded globally, just update state
     if (isLoaded && ffmpegInstance) {
-      console.log('FFmpeg already loaded globally, updating component state');
       setIsFFmpegLoaded(true);
       setIsFFmpegLoading(false);
       setFFmpegLoadingProgress(100);
@@ -420,20 +373,17 @@ export const useFFmpeg = () => {
     
     // If currently loading globally, sync the loading state
     if (isLoading) {
-      console.log('FFmpeg loading globally, syncing component state');
       setIsFFmpegLoading(true);
       
       // Poll for completion
       const checkInterval = setInterval(() => {
         if (isLoaded && ffmpegInstance) {
-          console.log('Global FFmpeg loading completed, updating component state');
           setIsFFmpegLoaded(true);
           setIsFFmpegLoading(false);
           setFFmpegLoadingProgress(100);
           clearInterval(checkInterval);
         } else if (!isLoading) {
           // Loading stopped but not loaded - probably an error
-          console.log('Global FFmpeg loading stopped without success');
           setIsFFmpegLoading(false);
           clearInterval(checkInterval);
         }
@@ -505,7 +455,6 @@ export const useFFmpeg = () => {
         }
       } catch (blobError) {
         // Strategy 3: Fallback with Uint8Array conversion
-        console.warn('Blob creation strategy failed, trying fallback:', blobError);
         const uint8Array = new Uint8Array(data);
         blob = new Blob([uint8Array], { type: outputMimeType });
         
@@ -529,7 +478,6 @@ export const useFFmpeg = () => {
         filename: outputFileName,
       };
     } catch (err) {
-      console.error('Error processing file with FFmpeg:', err);
       throw err;
     }
   }, []);

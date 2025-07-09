@@ -211,8 +211,6 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
         setCurrentTask(`Converting file ${i + 1} of ${files.length}...`);
         const args = getFFmpegArgs(inputFilename, outputFilename, options);
         
-        console.log('FFmpeg command args:', args);
-        
         // Create a simplified fallback command if the main one might be problematic
         const fallbackArgs = [
           '-i', inputFilename,
@@ -222,76 +220,57 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
           '-crf', '23', // Reasonable quality
           outputFilename
         ];
-        console.log('Fallback command would be:', fallbackArgs.join(' '));
         
         // Validate command arguments before running
-        console.log('Validating FFmpeg arguments:', args);
         for (let j = 0; j < args.length; j++) {
           const arg = args[j];
           if (arg === '-ac' && j + 1 < args.length) {
             const value = args[j + 1];
             if (value === 'original' || isNaN(Number(value))) {
-              console.error(`Invalid audio channels value: "${value}". Expected a number.`);
               throw new Error(`Invalid audio channels value: "${value}". Expected a number.`);
             }
           }
           if (arg === '-ar' && j + 1 < args.length) {
             const value = args[j + 1];
             if (value === 'original' || isNaN(Number(value))) {
-              console.error(`Invalid audio sample rate value: "${value}". Expected a number.`);
               throw new Error(`Invalid audio sample rate value: "${value}". Expected a number.`);
             }
           }
           if (arg === '-r' && j + 1 < args.length) {
             const value = args[j + 1];
             if (value === 'original' || isNaN(Number(value))) {
-              console.error(`Invalid framerate value: "${value}". Expected a number.`);
               throw new Error(`Invalid framerate value: "${value}". Expected a number.`);
             }
           }
         }
         
         try {
-          console.log('Running FFmpeg with command:', args.join(' '));
-          console.log('Full FFmpeg args array:', args);
-          console.log('Input filename:', inputFilename);
-          console.log('Output filename:', outputFilename);
-          console.log('Options object:', options);
-          console.log('Files before conversion:', ffmpeg.FS('readdir', '/'));
-          
           let commandSucceeded = false;
           
           try {
             await ffmpeg.run(...args);
-            console.log('Main FFmpeg command completed');
             
             // Check immediately if file was created
             const postCommandFiles = ffmpeg.FS('readdir', '/');
             if (postCommandFiles.includes(outputFilename)) {
-              console.log('Main command succeeded - output file created');
               commandSucceeded = true;
             } else {
               throw new Error('Main command did not create output file');
             }
           } catch (ffmpegRunError) {
-            console.warn('Main FFmpeg command failed, trying fallback:', ffmpegRunError);
             
             // Try the simple fallback command
-            console.log('Trying fallback command:', fallbackArgs.join(' '));
             try {
               await ffmpeg.run(...fallbackArgs);
-              console.log('Fallback FFmpeg command completed');
               
               // Check if fallback created the file
               const postFallbackFiles = ffmpeg.FS('readdir', '/');
               if (postFallbackFiles.includes(outputFilename)) {
-                console.log('Fallback command succeeded - output file created');
                 commandSucceeded = true;
               } else {
                 throw new Error('Fallback command also did not create output file');
               }
             } catch (fallbackError) {
-              console.error('Fallback command also failed:', fallbackError);
               throw new Error('Both main and fallback FFmpeg commands failed');
             }
           }
@@ -302,24 +281,11 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
           
           // Check if output file was actually created
           const fileList = ffmpeg.FS('readdir', '/');
-          console.log('Files in FFmpeg filesystem after conversion:', fileList);
-          console.log('Expected output filename:', outputFilename);
           
           if (!fileList.includes(outputFilename)) {
-            console.error('Output file not found. Expected:', outputFilename);
-            console.error('Available files:', fileList);
             throw new Error(`Output file ${outputFilename} was not created. The conversion may have failed silently.`);
           }
         } catch (ffmpegError) {
-          console.error('FFmpeg conversion failed:', ffmpegError);
-          
-          // Check what files are in the filesystem for debugging
-          try {
-            const fileList = ffmpeg.FS('readdir', '/');
-            console.log('Files in filesystem during error:', fileList);
-          } catch (e) {
-            console.log('Could not read filesystem during error');
-          }
           
           // Provide more specific error messages
           const errorMsg = ffmpegError instanceof Error ? ffmpegError.message : String(ffmpegError);
@@ -361,7 +327,6 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
             }
           } catch (blobError) {
             // Strategy 3: Fallback with Uint8Array conversion
-            console.warn('Blob creation strategy failed, trying fallback:', blobError);
             const uint8Array = new Uint8Array(data);
             blob = new Blob([uint8Array], { type: `video/${options.outputFormat}` });
             
@@ -387,7 +352,6 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
           newConvertedFiles.push(convertedFile);
           
         } catch (fileError) {
-          console.error(`Failed to read output file ${outputFilename}:`, fileError);
           throw new Error(`Failed to process converted file: ${fileError instanceof Error ? fileError.message : 'Unknown error'}`);
         } finally {
           // Clean up files from the virtual file system
@@ -408,7 +372,6 @@ export const useVideoConverter = (): VideoConverterHookReturn => {
       setCurrentTask('Conversion complete!');
     } catch (error) {
       if (!signal.aborted) {
-        console.error('Conversion error:', error);
         setCurrentTask(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } else {
         setCurrentTask('Conversion cancelled');

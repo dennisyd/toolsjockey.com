@@ -163,7 +163,6 @@ export const trackError = (errorType: string, errorMessage: string, location: st
 // Initialize enhanced analytics tracking
 export const initializeAnalytics = () => {
   if (!isGtagAvailable()) {
-    console.warn('Google Analytics not available');
     return;
   }
 
@@ -214,13 +213,10 @@ export const initializeAnalytics = () => {
       }
     }
   });
-  
-  console.log('Enhanced Analytics tracking initialized');
 };
 
 // Debug function to test analytics
 export const testAnalytics = () => {
-  console.log('Testing analytics...');
   trackEvent('analytics_test', {
     test_timestamp: new Date().toISOString(),
     user_agent: navigator.userAgent,

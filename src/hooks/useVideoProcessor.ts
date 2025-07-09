@@ -57,8 +57,6 @@ export const useVideoProcessor = () => {
       const inputFileName = `input-${uniqueId}${getFileExtension(file.name)}`;
       const outputFileName = `output-${uniqueId}.${options.outputExtension}`;
 
-      console.log(`Processing video: Input=${inputFileName}, Output=${outputFileName}`);
-
       const ffmpeg = getFFmpeg();
 
       // Check if this is a concat operation (for video merging)
@@ -71,7 +69,6 @@ export const useVideoProcessor = () => {
       if (!isConcat) {
         // Write file to memory
         setCurrentTask('Loading video...');
-        console.log(`Writing input file: ${inputFileName}`);
         ffmpeg.FS('writeFile', inputFileName, await fetchFile(file));
         
         // Verify the file was written
@@ -80,9 +77,7 @@ export const useVideoProcessor = () => {
           if (!fileList.includes(inputFileName)) {
             throw new Error(`Failed to write input file ${inputFileName}`);
           }
-          console.log(`Input file written successfully: ${inputFileName}`);
         } catch (readErr) {
-          console.error('Error verifying input file:', readErr);
           throw new Error(`Failed to verify input file: ${readErr instanceof Error ? readErr.message : 'Unknown error'}`);
         }
       }
@@ -112,15 +107,6 @@ export const useVideoProcessor = () => {
         }
       }
       
-      // Log the final command for debugging
-      console.log('Running FFmpeg command:', isConcat ? 
-        [...finalCommand, outputFileName].join(' ') : 
-        (!finalCommand.includes('-i') ? 
-          ['-i', inputFileName, ...finalCommand, outputFileName].join(' ') : 
-          [...finalCommand, outputFileName].join(' ')
-        )
-      );
-      
       if (isConcat) {
         // For concat operations, we don't need the input file parameter
         await ffmpeg.run(...finalCommand, outputFileName);
@@ -137,15 +123,12 @@ export const useVideoProcessor = () => {
       
       // Check if the output file exists before trying to read it
       const fileList = ffmpeg.FS('readdir', '/');
-      console.log('Files in FFmpeg filesystem after processing:', fileList);
       
       if (!fileList.includes(outputFileName)) {
         throw new Error(`Output file ${outputFileName} was not created. This could be due to an FFmpeg error.`);
       }
       
-      console.log(`Reading output file: ${outputFileName}`);
       const data = ffmpeg.FS('readFile', outputFileName);
-      console.log(`Output file read successfully, size: ${data.length} bytes`);
 
       // Create blob from the processed file - ensure we use the correct buffer
       let blob: Blob;
@@ -163,11 +146,8 @@ export const useVideoProcessor = () => {
         blob = new Blob([uint8Array], { type: options.outputMimeType });
       }
       
-      console.log(`Blob created successfully, size: ${blob.size} bytes`);
-      
       // Verify blob has content
       if (blob.size === 0) {
-        console.error('Created blob has 0 size, this indicates an issue with file processing');
         throw new Error('Processed file is empty. This might indicate an FFmpeg processing error.');
       }
       
@@ -176,16 +156,13 @@ export const useVideoProcessor = () => {
       // Clean up files from memory
       try {
         if (!isConcat && fileList.includes(inputFileName)) {
-          console.log(`Removing input file: ${inputFileName}`);
           ffmpeg.FS('unlink', inputFileName);
         }
         
         if (fileList.includes(outputFileName)) {
-          console.log(`Removing output file: ${outputFileName}`);
           ffmpeg.FS('unlink', outputFileName);
         }
       } catch (cleanupErr) {
-        console.warn('Error cleaning up FFmpeg files:', cleanupErr);
         // Continue despite cleanup errors
       }
 
@@ -200,7 +177,6 @@ export const useVideoProcessor = () => {
       };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-      console.error('Video processing error:', err);
       setError(errorMessage);
       
       // Try to clean up any files that might have been created
@@ -209,7 +185,6 @@ export const useVideoProcessor = () => {
         if (file) {
           const ffmpeg = getFFmpeg();
           const fileList = ffmpeg.FS('readdir', '/');
-          console.log('Files in FFmpeg filesystem during error cleanup:', fileList);
           
           // We don't need to generate specific filenames, just clean up any temporary files
           
@@ -217,16 +192,15 @@ export const useVideoProcessor = () => {
           fileList.forEach(filename => {
             if (filename.startsWith('input-') || filename.startsWith('output-')) {
               try {
-                console.log(`Cleaning up file: ${filename}`);
                 ffmpeg.FS('unlink', filename);
               } catch (e) {
-                console.warn(`Failed to clean up file ${filename}:`, e);
+                // Continue despite cleanup errors
               }
             }
           });
         }
       } catch (cleanupErr) {
-        console.warn('Error during error cleanup:', cleanupErr);
+        // Continue despite error during error cleanup
       }
       
       throw new Error(`Video processing failed: ${errorMessage}`);
