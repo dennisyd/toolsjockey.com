@@ -48,6 +48,16 @@ import StatisticsCalculatorPage from './pages/tools/StatisticsCalculatorPage';
 import InvestmentCalculatorPage from './pages/tools/InvestmentCalculatorPage';
 import BMICalculatorPage from './pages/tools/BMICalculatorPage';
 
+// Privacy tool imports
+import PrivacyToolsPage from './pages/privacy-tools';
+import FileEncryptorPage from './pages/tools/FileEncryptorPage';
+import FileDecryptorPage from './pages/tools/FileDecryptorPage';
+import SecureNotesPage from './pages/tools/SecureNotesPage';
+import RandomDataGeneratorPage from './pages/tools/RandomDataGeneratorPage';
+import EXIFDataViewerPage from './pages/tools/EXIFDataViewerPage';
+import FileHashVerifierPage from './pages/tools/FileHashVerifierPage';
+import SecureFileShredderPage from './pages/tools/SecureFileShredderPage';
+
 // Optional: if you want to keep your existing loading spinner
 const LoadingFallback = () => (
   <div className="flex flex-col items-center justify-center h-screen">
@@ -72,6 +82,7 @@ function App() {
             <Route path="pdf-tools" element={<PDFToolsPage />} />
             <Route path="media-tools" element={<MediaToolsPage />} />
             <Route path="calculation-tools" element={<CalculationToolsPage />} />
+            <Route path="privacy-tools" element={<PrivacyToolsPage />} />
             
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
@@ -88,6 +99,15 @@ function App() {
               <Route path="tools/statistics-calculator" element={<StatisticsCalculatorPage />} />
               <Route path="tools/investment-calculator" element={<InvestmentCalculatorPage />} />
               <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
+              
+              {/* Privacy tool routes */}
+              <Route path="tools/file-encryptor" element={<FileEncryptorPage />} />
+              <Route path="tools/file-decryptor" element={<FileDecryptorPage />} />
+              <Route path="tools/secure-notes" element={<SecureNotesPage />} />
+              <Route path="tools/random-data-generator" element={<RandomDataGeneratorPage />} />
+              <Route path="tools/exif-data-viewer" element={<EXIFDataViewerPage />} />
+              <Route path="tools/file-hash-verifier" element={<FileHashVerifierPage />} />
+              <Route path="tools/secure-file-shredder" element={<SecureFileShredderPage />} />
             </Route>
             
             {/* PDF tool routes - direct paths (outside Layout) */}
