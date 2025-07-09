@@ -2,10 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { toolsConfig } from '../../utils/toolsConfig';
 import { useAnalytics } from '../../hooks/useAnalytics';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
-import DonationBanner from '../../components/layout/DonationBanner';
-import TickerTape from '../../components/TickerTape';
 import { ShieldCheckIcon, LockClosedIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 const privacyTools = toolsConfig.filter(tool => tool.group === 'privacy');
@@ -14,10 +10,8 @@ const PrivacyToolsPage: React.FC = () => {
   useAnalytics();
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header />
-      <TickerTape />
-      <main className="flex-grow container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header with security emphasis */}
           <div className="text-center mb-8">
@@ -158,8 +152,6 @@ const PrivacyToolsPage: React.FC = () => {
           </div>
         </div>
       </main>
-      <DonationBanner />
-      <Footer />
     </div>
   );
 };

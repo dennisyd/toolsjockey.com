@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
-import { Helmet } from 'react-helmet';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 const DOCUMENT_TOOLS = [
@@ -15,11 +13,6 @@ const DocumentToolsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Helmet>
-        <title>Document Tools - Free Online Document Converter & Editor | ToolsJockey</title>
-        <meta name="description" content="Free online document tools to convert Word files to Markdown and generate personalized documents with mail merge. No installation or signup required - all processing happens in your browser." />
-      </Helmet>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">Document Tools – Convert & Generate Documents Online</h1>
         

@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
-import { Helmet } from 'react-helmet';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 const TEXT_TOOLS = [
@@ -22,11 +20,6 @@ const UtilityToolsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Helmet>
-        <title>Utility Tools - Free Online Text & Conversion Utilities | ToolsJockey</title>
-        <meta name="description" content="Free online utility tools for text processing, password generation, and unit conversion. No installation or signup required - all processing happens in your browser." />
-      </Helmet>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">Utility Tools – Text Processing, Passwords & Converters</h1>
         

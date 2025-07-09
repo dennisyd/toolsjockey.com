@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import DonationSection from './DonationSection';
-import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import AdSlot from '../ads/AdSlot';
 
@@ -20,14 +19,13 @@ const VideoToolLayout: React.FC<VideoToolLayoutProps> = ({
 }) => {
   return (
     <>
-      <Header />
+      {/* Removed <Header /> to prevent double navbar */}
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-3 order-2 lg:order-1">
             {/* Ad space */}
             <AdSlot slot="sidebar" className="mb-6" />
-            
             {/* Other tools in this category */}
             <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">

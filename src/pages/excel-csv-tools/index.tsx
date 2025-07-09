@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import Header from '../../components/layout/Header';
 import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
 import AdSlot from '../../components/ads/AdSlot';
@@ -22,7 +21,7 @@ const ExcelCsvToolsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <DonationBanner />
       <Helmet>
         <title>Excel & CSV Tools - Free Online Spreadsheet Editor & Converter | ToolsJockey</title>
         <meta name="description" content="Free online Excel and CSV tools to merge, split, convert, and clean up spreadsheet data. No installation or signup required - all processing happens in your browser." />

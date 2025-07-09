@@ -2,11 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { toolsConfig } from '../../utils/toolsConfig';
 import { useAnalytics } from '../../hooks/useAnalytics';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
-import DonationBanner from '../../components/layout/DonationBanner';
 import ToolCard from '../../components/shared/ToolCard';
-import TickerTape from '../../components/TickerTape';
 
 const MediaToolsPage: React.FC = () => {
   useAnalytics();
@@ -27,8 +23,6 @@ const MediaToolsPage: React.FC = () => {
   
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header />
-      <TickerTape />
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -109,8 +103,6 @@ const MediaToolsPage: React.FC = () => {
           </Link>
         </div>
       </main>
-      <DonationBanner />
-      <Footer />
     </div>
   );
 };

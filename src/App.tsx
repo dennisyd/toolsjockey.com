@@ -1,6 +1,8 @@
 import React, { lazy, Suspense, useEffect } from 'react'; 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import Header from './components/layout/Header';
+import TickerTape from './components/TickerTape';
 import UnitConverterPage from './pages/tools/UnitConverterPage';
 import CurrencyConverterPage from './pages/tools/CurrencyConverterPage';
 import Terms from './pages/Terms';
@@ -48,6 +50,7 @@ const VolumeNormalizerPage = lazy(() => import('./pages/tools/VolumeNormalizerPa
 const AudioMetadataEditorPage = lazy(() => import('./pages/tools/AudioMetadataEditorPage'));
 const AudioSpeedChangerPage = lazy(() => import('./pages/tools/AudioSpeedChangerPage'));
 const SilentAudioGeneratorPage = lazy(() => import('./pages/tools/SilentAudioGeneratorPage'));
+const AudioExtractorPage = lazy(() => import('./pages/tools/AudioExtractorPage'));
 
 // Image tools - separate chunk
 const ImageSharpenerPage = lazy(() => import('./pages/tools/ImageSharpenerPage'));
@@ -185,149 +188,157 @@ function App() {
   return (
     <BrowserRouter>
       <AnalyticsWrapper>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            {/* Standalone pages with custom header */}
-            <Route path="presentation-tools" element={<PresentationToolsPage />} />
-            <Route path="calculation-tools" element={<CalculationToolsPage />} />
-            <Route path="archive-tools" element={<ArchiveToolsPage />} />
-            <Route path="privacy-tools" element={<PrivacyToolsPage />} />
-            <Route path="pdf-tools" element={<PDFToolsPage />} />
-            <Route path="media-tools" element={<MediaToolsPage />} />
-            <Route path="image-tools" element={<ImageToolsPage />} />
-            <Route path="developer-tools" element={<DeveloperToolsPage />} />
-            <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
-
-            {/* Main layout for most pages */}
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path="blog" element={<Blog />} />
-              <Route path="blog/:id" element={<BlogArticle />} />
-              <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
-              <Route path="tools/qr-code-generator" element={<QRCodeGeneratorPage />} />
-              <Route path="tools/image-compressor" element={<ImageCompressorPage />} />
-              <Route path="tools/color-palette-generator" element={<ColorPaletteGeneratorPage />} />
-              <Route path="tools/watermark-adder" element={<WatermarkAdderPage />} />
-              <Route path="tools/exif-remover" element={<EXIFRemoverPage />} />
-              <Route path="tools/image-format-converter" element={<ImageFormatConverterPage />} />
-              <Route path="tools/json-formatter" element={<JSONFormatterPage />} />
-              <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
-              <Route path="tools/text-from-image" element={<TextFromImagePage />} />
-              <Route path="tools/unit-converter" element={<UnitConverterPage />} />
-              <Route path="tools/currency-converter" element={<CurrencyConverterPage />} />
-              <Route path="tools/hash-generator" element={<HashGeneratorPage />} />
-              <Route path="tools/css-minifier" element={<CSSMinifierPage />} />
-              <Route path="tools/base64-encoder" element={<Base64EncoderPage />} />
-              <Route path="tools/password-generator" element={<PasswordGeneratorPage />} />
-              <Route path="tools/text-case-converter" element={<TextCaseConverterPage />} />
-              <Route path="tools/text-diff" element={<TextDiffViewerPage />} />
-              <Route path="tools/column-filter" element={<ColumnFilterToolPage />} />
-              <Route path="tools/remove-duplicates" element={<DuplicateRemoverToolPage />} />
-              <Route path="tools/markdown-table-generator" element={<MarkdownTableGeneratorPage />} />
-              <Route path="tools/regex-tester" element={<RegexTesterPage />} />
-              <Route path="tools/color-picker" element={<ColorPickerTool />} />
-              <Route path="tools/contrast-checker" element={<ContrastChecker />} />
-              <Route path="tools/gradient-generator" element={<GradientGenerator />} />
-              <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
-              <Route path="faq" element={<FAQ />} />
-              <Route path="terms" element={<Terms />} />
-              <Route path="privacy" element={<Privacy />} />
-              <Route path="tutorials" element={<TutorialsIndex />} />
-              <Route path="tutorials/:id" element={<TutorialPage />} />
-              <Route path="about" element={<About />} />
-              <Route path="contact" element={<Contact />} />
-              
-              {/* Archive tool routes */}
-              <Route path="tools/zip-creator" element={<ZipCreatorPage />} />
-              <Route path="tools/zip-extractor" element={<ZipExtractorPage />} />
-              <Route path="tools/seven-zip-support" element={<SevenZipSupportPage />} />
-              <Route path="tools/file-archiver" element={<FileArchiverPage />} />
-              <Route path="tools/archive-inspector" element={<ArchiveInspectorPage />} />
-              <Route path="tools/batch-compressor" element={<BatchCompressorPage />} />
-              <Route path="tools/archive-converter" element={<ArchiveConverterPage />} />
-              
-              {/* Calculation tool routes */}
-              <Route path="tools/scientific-calculator" element={<ScientificCalculatorPage />} />
-              <Route path="tools/date-calculator" element={<DateCalculatorPage />} />
-              <Route path="tools/loan-calculator" element={<LoanCalculatorPage />} />
-              <Route path="tools/tax-calculator" element={<TaxCalculatorPage />} />
-              <Route path="tools/percentage-calculator" element={<PercentageCalculatorPage />} />
-              <Route path="tools/statistics-calculator" element={<StatisticsCalculatorPage />} />
-              <Route path="tools/investment-calculator" element={<InvestmentCalculatorPage />} />
-              <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
-              
-              {/* Presentation tool routes */}
-              <Route path="tools/pptx-to-pdf" element={<PPTXToPDFPage />} />
-              <Route path="tools/pptx-to-images" element={<PPTXToImagesPage />} />
-              <Route path="tools/pptx-merger" element={<PPTXMergerPage />} />
-              <Route path="tools/pptx-splitter" element={<PPTXSplitterPage />} />
-              <Route path="tools/pptx-extract-text" element={<PPTXExtractTextPage />} />
-              <Route path="tools/pptx-metadata-editor" element={<PPTXMetadataEditorPage />} />
-              <Route path="tools/pptx-slide-counter" element={<PPTXSlideCounterPage />} />
-              
-              {/* Audio tool routes */}
-              <Route path="tools/audio-converter" element={<AudioConverterPage />} />
-              <Route path="tools/audio-compressor" element={<AudioCompressorPage />} />
-              <Route path="tools/audio-merger" element={<AudioMergerPage />} />
-              <Route path="tools/audio-clipper" element={<AudioClipperPage />} />
-              <Route path="tools/volume-normalizer" element={<VolumeNormalizerPage />} />
-              <Route path="tools/audio-metadata-editor" element={<AudioMetadataEditorPage />} />
-              <Route path="tools/audio-speed-changer" element={<AudioSpeedChangerPage />} />
-              <Route path="tools/silent-audio-generator" element={<SilentAudioGeneratorPage />} />
-              
-              {/* Video tool routes */}
-              <Route path="tools/video-converter" element={<VideoConverterPage />} />
-              <Route path="tools/video-clipper" element={<VideoClipperPage />} />
-              <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
-              <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
-              <Route path="tools/video-merger" element={<VideoMergerPage />} />
-              
-              {/* New code tool routes */}
-              <Route path="tools/html-minifier" element={<HTMLMinifierPage />} />
-              <Route path="tools/js-minifier" element={<JSMinifierPage />} />
-              <Route path="tools/code-formatter" element={<CodeFormatterPage />} />
-              <Route path="tools/syntax-highlighter" element={<SyntaxHighlighterPage />} />
-              <Route path="tools/code-diff-viewer" element={<CodeDiffViewerPage />} />
-              <Route path="tools/url-encoder-decoder" element={<URLEncoderDecoderPage />} />
-              <Route path="tools/html-entity-converter" element={<HTMLEntityConverterPage />} />
-              <Route path="tools/lorem-ipsum-generator" element={<LoremIpsumGeneratorPage />} />
-              
-              {/* New image tool routes */}
-              <Route path="tools/image-collage-maker" element={<ImageCollageMakerPage />} />
-              <Route path="tools/image-cropper" element={<ImageCropperPage />} />
-              <Route path="tools/image-optimizer" element={<ImageOptimizerPage />} />
-              <Route path="tools/image-downscaler" element={<ImageDownscalerPage />} />
-              
-              {/* Privacy tool routes */}
-              <Route path="tools/file-encryptor" element={<FileEncryptorPage />} />
-              <Route path="tools/file-decryptor" element={<FileDecryptorPage />} />
-              <Route path="tools/secure-notes" element={<SecureNotesPage />} />
-              <Route path="tools/random-data-generator" element={<RandomDataGeneratorPage />} />
-              <Route path="tools/exif-data-viewer" element={<EXIFDataViewerPage />} />
-              <Route path="tools/file-hash-verifier" element={<FileHashVerifierPage />} />
-              <Route path="tools/secure-file-shredder" element={<SecureFileShredderPage />} />
-              
-              {/* PDF tool routes */}
-              <Route path="merge-pdf" element={<MergePDFPage />} />
-              <Route path="split-pdf" element={<SplitPDFPage />} />
-              <Route path="reorder-pdf" element={<ReorderPDFPage />} />
-              <Route path="rotate-pdf" element={<RotatePDFPage />} />
-              <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
-              <Route path="pdf-to-images" element={<PDFToImagesPage />} />
-              <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
-              <Route path="extract-text" element={<ExtractTextPage />} />
-              <Route path="pdf-to-word" element={<PDFToWordPage />} />
-              <Route path="delete-pages" element={<DeletePagesPage />} />
-              <Route path="edit-metadata" element={<EditMetadataPage />} />
-              <Route path="compress-pdf" element={<CompressPDFPage />} />
-              <Route path="unlock-pdf" element={<UnlockPDFPage />} />
-              
-              <Route path="*" element={<Navigate to="/not-found" replace />} />
-            </Route>
-            <Route path="not-found" element={<NotFound />} />
-            <Route path="*" element={<Navigate to="/not-found" replace />} />
-          </Routes>
-        </Suspense>
+        <div className="flex flex-col min-h-screen">
+          {/* Global Header with Navbar - always present */}
+          <Header />
+          <TickerTape />
+          
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              {/* All routes now go through the main layout */}
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="blog" element={<Blog />} />
+                <Route path="blog/:id" element={<BlogArticle />} />
+                
+                {/* Category pages - now inside main layout */}
+                <Route path="presentation-tools" element={<PresentationToolsPage />} />
+                <Route path="calculation-tools" element={<CalculationToolsPage />} />
+                <Route path="archive-tools" element={<ArchiveToolsPage />} />
+                <Route path="privacy-tools" element={<PrivacyToolsPage />} />
+                <Route path="pdf-tools" element={<PDFToolsPage />} />
+                <Route path="media-tools" element={<MediaToolsPage />} />
+                <Route path="image-tools" element={<ImageToolsPage />} />
+                <Route path="developer-tools" element={<DeveloperToolsPage />} />
+                <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
+                
+                {/* Individual tool routes */}
+                <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
+                <Route path="tools/qr-code-generator" element={<QRCodeGeneratorPage />} />
+                <Route path="tools/image-compressor" element={<ImageCompressorPage />} />
+                <Route path="tools/color-palette-generator" element={<ColorPaletteGeneratorPage />} />
+                <Route path="tools/watermark-adder" element={<WatermarkAdderPage />} />
+                <Route path="tools/exif-remover" element={<EXIFRemoverPage />} />
+                <Route path="tools/image-format-converter" element={<ImageFormatConverterPage />} />
+                <Route path="tools/json-formatter" element={<JSONFormatterPage />} />
+                <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
+                <Route path="tools/text-from-image" element={<TextFromImagePage />} />
+                <Route path="tools/unit-converter" element={<UnitConverterPage />} />
+                <Route path="tools/currency-converter" element={<CurrencyConverterPage />} />
+                <Route path="tools/hash-generator" element={<HashGeneratorPage />} />
+                <Route path="tools/css-minifier" element={<CSSMinifierPage />} />
+                <Route path="tools/base64-encoder" element={<Base64EncoderPage />} />
+                <Route path="tools/password-generator" element={<PasswordGeneratorPage />} />
+                <Route path="tools/text-case-converter" element={<TextCaseConverterPage />} />
+                <Route path="tools/text-diff" element={<TextDiffViewerPage />} />
+                <Route path="tools/column-filter" element={<ColumnFilterToolPage />} />
+                <Route path="tools/remove-duplicates" element={<DuplicateRemoverToolPage />} />
+                <Route path="tools/markdown-table-generator" element={<MarkdownTableGeneratorPage />} />
+                <Route path="tools/regex-tester" element={<RegexTesterPage />} />
+                <Route path="tools/color-picker" element={<ColorPickerTool />} />
+                <Route path="tools/contrast-checker" element={<ContrastChecker />} />
+                <Route path="tools/gradient-generator" element={<GradientGenerator />} />
+                <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
+                <Route path="faq" element={<FAQ />} />
+                <Route path="terms" element={<Terms />} />
+                <Route path="privacy" element={<Privacy />} />
+                <Route path="tutorials" element={<TutorialsIndex />} />
+                <Route path="tutorials/:id" element={<TutorialPage />} />
+                <Route path="about" element={<About />} />
+                <Route path="contact" element={<Contact />} />
+                
+                {/* Archive tool routes */}
+                <Route path="tools/zip-creator" element={<ZipCreatorPage />} />
+                <Route path="tools/zip-extractor" element={<ZipExtractorPage />} />
+                <Route path="tools/seven-zip-support" element={<SevenZipSupportPage />} />
+                <Route path="tools/file-archiver" element={<FileArchiverPage />} />
+                <Route path="tools/archive-inspector" element={<ArchiveInspectorPage />} />
+                <Route path="tools/batch-compressor" element={<BatchCompressorPage />} />
+                <Route path="tools/archive-converter" element={<ArchiveConverterPage />} />
+                
+                {/* Calculation tool routes */}
+                <Route path="tools/scientific-calculator" element={<ScientificCalculatorPage />} />
+                <Route path="tools/date-calculator" element={<DateCalculatorPage />} />
+                <Route path="tools/loan-calculator" element={<LoanCalculatorPage />} />
+                <Route path="tools/tax-calculator" element={<TaxCalculatorPage />} />
+                <Route path="tools/percentage-calculator" element={<PercentageCalculatorPage />} />
+                <Route path="tools/statistics-calculator" element={<StatisticsCalculatorPage />} />
+                <Route path="tools/investment-calculator" element={<InvestmentCalculatorPage />} />
+                <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
+                
+                {/* Presentation tool routes */}
+                <Route path="tools/pptx-to-pdf" element={<PPTXToPDFPage />} />
+                <Route path="tools/pptx-to-images" element={<PPTXToImagesPage />} />
+                <Route path="tools/pptx-merger" element={<PPTXMergerPage />} />
+                <Route path="tools/pptx-splitter" element={<PPTXSplitterPage />} />
+                <Route path="tools/pptx-extract-text" element={<PPTXExtractTextPage />} />
+                <Route path="tools/pptx-metadata-editor" element={<PPTXMetadataEditorPage />} />
+                <Route path="tools/pptx-slide-counter" element={<PPTXSlideCounterPage />} />
+                
+                {/* Audio tool routes */}
+                <Route path="tools/audio-converter" element={<AudioConverterPage />} />
+                <Route path="tools/audio-compressor" element={<AudioCompressorPage />} />
+                <Route path="tools/audio-merger" element={<AudioMergerPage />} />
+                <Route path="tools/audio-clipper" element={<AudioClipperPage />} />
+                <Route path="tools/volume-normalizer" element={<VolumeNormalizerPage />} />
+                <Route path="tools/audio-metadata-editor" element={<AudioMetadataEditorPage />} />
+                <Route path="tools/audio-speed-changer" element={<AudioSpeedChangerPage />} />
+                <Route path="tools/silent-audio-generator" element={<SilentAudioGeneratorPage />} />
+                <Route path="tools/audio-extractor" element={<AudioExtractorPage />} />
+                
+                {/* Video tool routes */}
+                <Route path="tools/video-converter" element={<VideoConverterPage />} />
+                <Route path="tools/video-clipper" element={<VideoClipperPage />} />
+                <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
+                <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
+                <Route path="tools/video-merger" element={<VideoMergerPage />} />
+                
+                {/* New code tool routes */}
+                <Route path="tools/html-minifier" element={<HTMLMinifierPage />} />
+                <Route path="tools/js-minifier" element={<JSMinifierPage />} />
+                <Route path="tools/code-formatter" element={<CodeFormatterPage />} />
+                <Route path="tools/syntax-highlighter" element={<SyntaxHighlighterPage />} />
+                <Route path="tools/code-diff-viewer" element={<CodeDiffViewerPage />} />
+                <Route path="tools/url-encoder-decoder" element={<URLEncoderDecoderPage />} />
+                <Route path="tools/html-entity-converter" element={<HTMLEntityConverterPage />} />
+                <Route path="tools/lorem-ipsum-generator" element={<LoremIpsumGeneratorPage />} />
+                
+                {/* New image tool routes */}
+                <Route path="tools/image-collage-maker" element={<ImageCollageMakerPage />} />
+                <Route path="tools/image-cropper" element={<ImageCropperPage />} />
+                <Route path="tools/image-optimizer" element={<ImageOptimizerPage />} />
+                <Route path="tools/image-downscaler" element={<ImageDownscalerPage />} />
+                
+                {/* Privacy tool routes */}
+                <Route path="tools/file-encryptor" element={<FileEncryptorPage />} />
+                <Route path="tools/file-decryptor" element={<FileDecryptorPage />} />
+                <Route path="tools/secure-notes" element={<SecureNotesPage />} />
+                <Route path="tools/random-data-generator" element={<RandomDataGeneratorPage />} />
+                <Route path="tools/exif-data-viewer" element={<EXIFDataViewerPage />} />
+                <Route path="tools/file-hash-verifier" element={<FileHashVerifierPage />} />
+                <Route path="tools/secure-file-shredder" element={<SecureFileShredderPage />} />
+                
+                {/* PDF tool routes */}
+                <Route path="merge-pdf" element={<MergePDFPage />} />
+                <Route path="split-pdf" element={<SplitPDFPage />} />
+                <Route path="reorder-pdf" element={<ReorderPDFPage />} />
+                <Route path="rotate-pdf" element={<RotatePDFPage />} />
+                <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
+                <Route path="pdf-to-images" element={<PDFToImagesPage />} />
+                <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
+                <Route path="extract-text" element={<ExtractTextPage />} />
+                <Route path="pdf-to-word" element={<PDFToWordPage />} />
+                <Route path="delete-pages" element={<DeletePagesPage />} />
+                <Route path="edit-metadata" element={<EditMetadataPage />} />
+                <Route path="compress-pdf" element={<CompressPDFPage />} />
+                <Route path="unlock-pdf" element={<UnlockPDFPage />} />
+                
+                <Route path="not-found" element={<NotFound />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </div>
       </AnalyticsWrapper>
     </BrowserRouter>
   );

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { Helmet } from 'react-helmet';
 import { useAnalytics } from '../hooks/useAnalytics';
@@ -19,7 +18,6 @@ const NotFound: React.FC = () => {
         <meta name="description" content="The page you were looking for could not be found." />
       </Helmet>
       
-      <Header />
       
       <div className="container mx-auto px-4 py-16 min-h-[60vh] flex flex-col items-center justify-center">
         <div className="text-center max-w-2xl">

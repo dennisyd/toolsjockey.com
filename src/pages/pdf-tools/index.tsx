@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Header from '../../components/layout/Header';
-import DonationBanner from '../../components/layout/DonationBanner';
 import { Helmet } from 'react-helmet';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
@@ -28,7 +26,6 @@ const PDFSuiteDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
       <Helmet>
         <title>PDF Tools - Free Online PDF Editor, Merger & Converter | ToolsJockey</title>
         <meta name="description" content="Free online PDF tools to merge, split, compress, convert, and edit PDF files. No installation or signup required - all processing happens in your browser." />
@@ -81,7 +78,6 @@ const PDFSuiteDashboard: React.FC = () => {
           </div>
         </div>
       </main>
-      <DonationBanner />
     </div>
   );
 };
