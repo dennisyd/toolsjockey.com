@@ -18,6 +18,7 @@ import DeletePagesPage from './pages/pdf-tools/DeletePagesPage';
 import EditMetadataPage from './pages/pdf-tools/EditMetadataPage';
 import CompressPDFPage from './pages/pdf-tools/CompressPDFPage';
 import UnlockPDFPage from './pages/pdf-tools/UnlockPDFPage';
+import BatchPDFFormFillerPage from './pages/tools/BatchPDFFormFillerPage';
 
 // Optional: if you want to keep your existing loading spinner
 const LoadingFallback = () => (
@@ -42,21 +43,24 @@ function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               
-              {/* PDF tool routes */}
-              <Route path="merge-pdf" element={<MergePDFPage />} />
-              <Route path="split-pdf" element={<SplitPDFPage />} />
-              <Route path="reorder-pdf" element={<ReorderPDFPage />} />
-              <Route path="rotate-pdf" element={<RotatePDFPage />} />
-              <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
-              <Route path="pdf-to-images" element={<PDFToImagesPage />} />
-              <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
-              <Route path="extract-text" element={<ExtractTextPage />} />
-              <Route path="pdf-to-word" element={<PDFToWordPage />} />
-              <Route path="delete-pages" element={<DeletePagesPage />} />
-              <Route path="edit-metadata" element={<EditMetadataPage />} />
-              <Route path="compress-pdf" element={<CompressPDFPage />} />
-              <Route path="unlock-pdf" element={<UnlockPDFPage />} />
+              {/* PDF tool routes - most use direct paths, BatchPDFFormFiller uses /tools/ prefix */}
+              <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
             </Route>
+            
+            {/* PDF tool routes - direct paths (outside Layout) */}
+            <Route path="merge-pdf" element={<MergePDFPage />} />
+            <Route path="split-pdf" element={<SplitPDFPage />} />
+            <Route path="reorder-pdf" element={<ReorderPDFPage />} />
+            <Route path="rotate-pdf" element={<RotatePDFPage />} />
+            <Route path="watermark-pdf" element={<WatermarkPDFPage />} />
+            <Route path="pdf-to-images" element={<PDFToImagesPage />} />
+            <Route path="images-to-pdf" element={<ImagesToPDFPage />} />
+            <Route path="extract-text" element={<ExtractTextPage />} />
+            <Route path="pdf-to-word" element={<PDFToWordPage />} />
+            <Route path="delete-pages" element={<DeletePagesPage />} />
+            <Route path="edit-metadata" element={<EditMetadataPage />} />
+            <Route path="compress-pdf" element={<CompressPDFPage />} />
+            <Route path="unlock-pdf" element={<UnlockPDFPage />} />
           </Routes>
         </Suspense>
       </AnalyticsWrapper>
