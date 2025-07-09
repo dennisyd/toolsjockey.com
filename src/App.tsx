@@ -29,6 +29,87 @@ import DocumentToolsPage from './pages/document-tools/index';
 const WordToMarkdownPage = lazy(() => import('./pages/tools/WordToMarkdownPage'));
 const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
 
+// Restore all tool lazy imports
+const ImageSharpenerPage = lazy(() => import('./pages/tools/ImageSharpenerPage'));
+const QRCodeGeneratorPage = lazy(() => import('./pages/tools/QRCodeGeneratorPage'));
+const ImageCompressorPage = lazy(() => import('./pages/tools/ImageCompressorPage'));
+const ColorPaletteGeneratorPage = lazy(() => import('./pages/tools/ColorPaletteGeneratorPage'));
+const WatermarkAdderPage = lazy(() => import('./pages/tools/WatermarkAdderPage'));
+const EXIFRemoverPage = lazy(() => import('./pages/tools/EXIFRemoverPage'));
+const ImageFormatConverterPage = lazy(() => import('./pages/tools/ImageFormatConverterPage'));
+const JSONFormatterPage = lazy(() => import('./pages/tools/JSONFormatterPage'));
+const BatchPDFFormFillerPage = lazy(() => import('./pages/tools/BatchPDFFormFillerPage'));
+const TextFromImagePage = lazy(() => import('./pages/tools/TextFromImagePage'));
+const UnitConverterPage = lazy(() => import('./pages/tools/UnitConverterPage'));
+const CurrencyConverterPage = lazy(() => import('./pages/tools/CurrencyConverterPage'));
+const HashGeneratorPage = lazy(() => import('./pages/tools/HashGeneratorPage'));
+const CSSMinifierPage = lazy(() => import('./pages/tools/CSSMinifierPage'));
+const Base64EncoderPage = lazy(() => import('./pages/tools/Base64EncoderPage'));
+const PasswordGeneratorPage = lazy(() => import('./pages/tools/PasswordGeneratorPage'));
+const TextCaseConverterPage = lazy(() => import('./pages/tools/TextCaseConverterPage'));
+const TextDiffViewerPage = lazy(() => import('./pages/tools/TextDiffViewerPage'));
+const DuplicateRemoverToolPage = lazy(() => import('./pages/tools/DuplicateRemoverToolPage'));
+const MarkdownTableGeneratorPage = lazy(() => import('./pages/tools/MarkdownTableGeneratorPage'));
+const RegexTesterPage = lazy(() => import('./pages/tools/RegexTesterPage'));
+const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
+const ContrastChecker = lazy(() => import('./tools/colorDesign/ContrastChecker'));
+const GradientGenerator = lazy(() => import('./tools/colorDesign/GradientGenerator'));
+const ColorFormatConverter = lazy(() => import('./tools/colorDesign/ColorFormatConverter'));
+const ZipCreatorPage = lazy(() => import('./pages/tools/ZipCreatorPage'));
+const ZipExtractorPage = lazy(() => import('./pages/tools/ZipExtractorPage'));
+const SevenZipSupportPage = lazy(() => import('./pages/tools/SevenZipSupportPage'));
+const FileArchiverPage = lazy(() => import('./pages/tools/FileArchiverPage'));
+const ArchiveInspectorPage = lazy(() => import('./pages/tools/ArchiveInspectorPage'));
+const BatchCompressorPage = lazy(() => import('./pages/tools/BatchCompressorPage'));
+const ArchiveConverterPage = lazy(() => import('./pages/tools/ArchiveConverterPage'));
+const ScientificCalculatorPage = lazy(() => import('./pages/tools/ScientificCalculatorPage'));
+const DateCalculatorPage = lazy(() => import('./pages/tools/DateCalculatorPage'));
+const LoanCalculatorPage = lazy(() => import('./pages/tools/LoanCalculatorPage'));
+const TaxCalculatorPage = lazy(() => import('./pages/tools/TaxCalculatorPage'));
+const PercentageCalculatorPage = lazy(() => import('./pages/tools/PercentageCalculatorPage'));
+const StatisticsCalculatorPage = lazy(() => import('./pages/tools/StatisticsCalculatorPage'));
+const InvestmentCalculatorPage = lazy(() => import('./pages/tools/InvestmentCalculatorPage'));
+const BMICalculatorPage = lazy(() => import('./pages/tools/BMICalculatorPage'));
+const PPTXToPDFPage = lazy(() => import('./pages/tools/PPTXToPDFPage'));
+const PPTXToImagesPage = lazy(() => import('./pages/tools/PPTXToImagesPage'));
+const PPTXMergerPage = lazy(() => import('./pages/tools/PPTXMergerPage'));
+const PPTXSplitterPage = lazy(() => import('./pages/tools/PPTXSplitterPage'));
+const PPTXExtractTextPage = lazy(() => import('./pages/tools/PPTXExtractTextPage'));
+const PPTXMetadataEditorPage = lazy(() => import('./pages/tools/PPTXMetadataEditorPage'));
+const PPTXSlideCounterPage = lazy(() => import('./pages/tools/PPTXSlideCounterPage'));
+const AudioConverterPage = lazy(() => import('./pages/tools/AudioConverterPage'));
+const AudioCompressorPage = lazy(() => import('./pages/tools/AudioCompressorPage'));
+const AudioMergerPage = lazy(() => import('./pages/tools/AudioMergerPage'));
+const AudioClipperPage = lazy(() => import('./pages/tools/AudioClipperPage'));
+const VolumeNormalizerPage = lazy(() => import('./pages/tools/VolumeNormalizerPage'));
+const AudioMetadataEditorPage = lazy(() => import('./pages/tools/AudioMetadataEditorPage'));
+const AudioSpeedChangerPage = lazy(() => import('./pages/tools/AudioSpeedChangerPage'));
+const SilentAudioGeneratorPage = lazy(() => import('./pages/tools/SilentAudioGeneratorPage'));
+const VideoConverterPage = lazy(() => import('./pages/tools/VideoConverterPage'));
+const VideoClipperPage = lazy(() => import('./pages/tools/VideoClipperPage'));
+const VideoCompressorPage = lazy(() => import('./pages/tools/VideoCompressorPage'));
+const FrameExtractorPage = lazy(() => import('./pages/tools/FrameExtractorPage'));
+const VideoMergerPage = lazy(() => import('./pages/tools/VideoMergerPage'));
+const HTMLMinifierPage = lazy(() => import('./pages/tools/HTMLMinifierPage'));
+const JSMinifierPage = lazy(() => import('./pages/tools/JSMinifierPage'));
+const CodeFormatterPage = lazy(() => import('./pages/tools/CodeFormatterPage'));
+const SyntaxHighlighterPage = lazy(() => import('./pages/tools/SyntaxHighlighterPage'));
+const CodeDiffViewerPage = lazy(() => import('./pages/tools/CodeDiffViewerPage'));
+const URLEncoderDecoderPage = lazy(() => import('./pages/tools/URLEncoderDecoderPage'));
+const HTMLEntityConverterPage = lazy(() => import('./pages/tools/HTMLEntityConverterPage'));
+const LoremIpsumGeneratorPage = lazy(() => import('./pages/tools/LoremIpsumGeneratorPage'));
+const ImageCollageMakerPage = lazy(() => import('./pages/tools/ImageCollageMakerPage'));
+const ImageCropperPage = lazy(() => import('./pages/tools/ImageCropperPage'));
+const ImageOptimizerPage = lazy(() => import('./pages/tools/ImageOptimizerPage'));
+const ImageDownscalerPage = lazy(() => import('./pages/tools/ImageDownscalerPage'));
+const FileEncryptorPage = lazy(() => import('./pages/tools/FileEncryptorPage'));
+const FileDecryptorPage = lazy(() => import('./pages/tools/FileDecryptorPage'));
+const SecureNotesPage = lazy(() => import('./pages/tools/SecureNotesPage'));
+const RandomDataGeneratorPage = lazy(() => import('./pages/tools/RandomDataGeneratorPage'));
+const EXIFDataViewerPage = lazy(() => import('./pages/tools/EXIFDataViewerPage'));
+const FileHashVerifierPage = lazy(() => import('./pages/tools/FileHashVerifierPage'));
+const SecureFileShredderPage = lazy(() => import('./pages/tools/SecureFileShredderPage'));
+
 function App() {
   useEffect(() => {
     const preloadFFmpeg = async () => {
@@ -72,6 +153,91 @@ function App() {
               <Route path="blog/:id" element={<BlogArticle />} />
               <Route path="tools/word-to-markdown" element={<WordToMarkdownPage />} />
               <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
+              {/* Restore all individual tool routes below */}
+              {/* Media tool routes */}
+              {/* Example: */}
+              {/* <Route path="tools/frame-extractor" element={<FrameExtractorPage />} /> */}
+              {/* <Route path="tools/video-converter" element={<VideoConverterPage />} /> */}
+              {/* ...add all other individual tool routes here as before... */}
+              <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
+              <Route path="tools/qr-code-generator" element={<QRCodeGeneratorPage />} />
+              <Route path="tools/image-compressor" element={<ImageCompressorPage />} />
+              <Route path="tools/color-palette-generator" element={<ColorPaletteGeneratorPage />} />
+              <Route path="tools/watermark-adder" element={<WatermarkAdderPage />} />
+              <Route path="tools/exif-remover" element={<EXIFRemoverPage />} />
+              <Route path="tools/image-format-converter" element={<ImageFormatConverterPage />} />
+              <Route path="tools/json-formatter" element={<JSONFormatterPage />} />
+              <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
+              <Route path="tools/text-from-image" element={<TextFromImagePage />} />
+              <Route path="tools/unit-converter" element={<UnitConverterPage />} />
+              <Route path="tools/currency-converter" element={<CurrencyConverterPage />} />
+              <Route path="tools/hash-generator" element={<HashGeneratorPage />} />
+              <Route path="tools/css-minifier" element={<CSSMinifierPage />} />
+              <Route path="tools/base64-encoder" element={<Base64EncoderPage />} />
+              <Route path="tools/password-generator" element={<PasswordGeneratorPage />} />
+              <Route path="tools/text-case-converter" element={<TextCaseConverterPage />} />
+              <Route path="tools/text-diff" element={<TextDiffViewerPage />} />
+              <Route path="tools/remove-duplicates" element={<DuplicateRemoverToolPage />} />
+              <Route path="tools/markdown-table-generator" element={<MarkdownTableGeneratorPage />} />
+              <Route path="tools/regex-tester" element={<RegexTesterPage />} />
+              <Route path="tools/color-picker" element={<ColorPickerTool />} />
+              <Route path="tools/contrast-checker" element={<ContrastChecker />} />
+              <Route path="tools/gradient-generator" element={<GradientGenerator />} />
+              <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
+              <Route path="tools/zip-creator" element={<ZipCreatorPage />} />
+              <Route path="tools/zip-extractor" element={<ZipExtractorPage />} />
+              <Route path="tools/seven-zip-support" element={<SevenZipSupportPage />} />
+              <Route path="tools/file-archiver" element={<FileArchiverPage />} />
+              <Route path="tools/archive-inspector" element={<ArchiveInspectorPage />} />
+              <Route path="tools/batch-compressor" element={<BatchCompressorPage />} />
+              <Route path="tools/archive-converter" element={<ArchiveConverterPage />} />
+              <Route path="tools/scientific-calculator" element={<ScientificCalculatorPage />} />
+              <Route path="tools/date-calculator" element={<DateCalculatorPage />} />
+              <Route path="tools/loan-calculator" element={<LoanCalculatorPage />} />
+              <Route path="tools/tax-calculator" element={<TaxCalculatorPage />} />
+              <Route path="tools/percentage-calculator" element={<PercentageCalculatorPage />} />
+              <Route path="tools/statistics-calculator" element={<StatisticsCalculatorPage />} />
+              <Route path="tools/investment-calculator" element={<InvestmentCalculatorPage />} />
+              <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
+              <Route path="tools/pptx-to-pdf" element={<PPTXToPDFPage />} />
+              <Route path="tools/pptx-to-images" element={<PPTXToImagesPage />} />
+              <Route path="tools/pptx-merger" element={<PPTXMergerPage />} />
+              <Route path="tools/pptx-splitter" element={<PPTXSplitterPage />} />
+              <Route path="tools/pptx-extract-text" element={<PPTXExtractTextPage />} />
+              <Route path="tools/pptx-metadata-editor" element={<PPTXMetadataEditorPage />} />
+              <Route path="tools/pptx-slide-counter" element={<PPTXSlideCounterPage />} />
+              <Route path="tools/audio-converter" element={<AudioConverterPage />} />
+              <Route path="tools/audio-compressor" element={<AudioCompressorPage />} />
+              <Route path="tools/audio-merger" element={<AudioMergerPage />} />
+              <Route path="tools/audio-clipper" element={<AudioClipperPage />} />
+              <Route path="tools/volume-normalizer" element={<VolumeNormalizerPage />} />
+              <Route path="tools/audio-metadata-editor" element={<AudioMetadataEditorPage />} />
+              <Route path="tools/audio-speed-changer" element={<AudioSpeedChangerPage />} />
+              <Route path="tools/silent-audio-generator" element={<SilentAudioGeneratorPage />} />
+              <Route path="tools/video-converter" element={<VideoConverterPage />} />
+              <Route path="tools/video-clipper" element={<VideoClipperPage />} />
+              <Route path="tools/video-compressor" element={<VideoCompressorPage />} />
+              <Route path="tools/frame-extractor" element={<FrameExtractorPage />} />
+              <Route path="tools/video-merger" element={<VideoMergerPage />} />
+              <Route path="tools/html-minifier" element={<HTMLMinifierPage />} />
+              <Route path="tools/js-minifier" element={<JSMinifierPage />} />
+              <Route path="tools/code-formatter" element={<CodeFormatterPage />} />
+              <Route path="tools/syntax-highlighter" element={<SyntaxHighlighterPage />} />
+              <Route path="tools/code-diff-viewer" element={<CodeDiffViewerPage />} />
+              <Route path="tools/url-encoder-decoder" element={<URLEncoderDecoderPage />} />
+              <Route path="tools/html-entity-converter" element={<HTMLEntityConverterPage />} />
+              <Route path="tools/lorem-ipsum-generator" element={<LoremIpsumGeneratorPage />} />
+              <Route path="tools/image-collage-maker" element={<ImageCollageMakerPage />} />
+              <Route path="tools/image-cropper" element={<ImageCropperPage />} />
+              <Route path="tools/image-optimizer" element={<ImageOptimizerPage />} />
+              <Route path="tools/image-downscaler" element={<ImageDownscalerPage />} />
+              <Route path="tools/file-encryptor" element={<FileEncryptorPage />} />
+              <Route path="tools/file-decryptor" element={<FileDecryptorPage />} />
+              <Route path="tools/secure-notes" element={<SecureNotesPage />} />
+              <Route path="tools/random-data-generator" element={<RandomDataGeneratorPage />} />
+              <Route path="tools/exif-data-viewer" element={<EXIFDataViewerPage />} />
+              <Route path="tools/file-hash-verifier" element={<FileHashVerifierPage />} />
+              <Route path="tools/secure-file-shredder" element={<SecureFileShredderPage />} />
               <Route path="faq" element={<FAQ />} />
               <Route path="terms" element={<Terms />} />
               <Route path="privacy" element={<Privacy />} />
