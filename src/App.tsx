@@ -37,13 +37,6 @@ import VideoCompressorPage from './pages/tools/VideoCompressorPage';
 import FrameExtractorPage from './pages/tools/FrameExtractorPage';
 import VideoMergerPage from './pages/tools/VideoMergerPage';
 
-// Excel/CSV tool imports (removed Word/Docs tools)
-import ExcelCsvToolsPage from './pages/excelcsv-tools';
-import ExcelMergerSplitterPage from './pages/tools/ExcelMergerSplitterPage';
-import CSVToJSONPage from './pages/tools/CSVToJSONPage';
-import CSVToolMergerPage from './pages/tools/CSVToolMergerPage';
-import ExcelToFormatsConverterPage from './pages/tools/ExcelToFormatsConverterPage';
-
 // Optional: if you want to keep your existing loading spinner
 const LoadingFallback = () => (
   <div className="flex flex-col items-center justify-center h-screen">
@@ -67,19 +60,12 @@ function App() {
             {/* Standalone pages with custom header */}
             <Route path="pdf-tools" element={<PDFToolsPage />} />
             <Route path="media-tools" element={<MediaToolsPage />} />
-            <Route path="excelcsv-tools" element={<ExcelCsvToolsPage />} />
             
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               
               {/* PDF tool routes - most use direct paths, BatchPDFFormFiller uses /tools/ prefix */}
               <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
-              
-              {/* Excel/CSV tool routes (removed Word/Docs tools) */}
-              <Route path="tools/excel-merger-splitter" element={<ExcelMergerSplitterPage />} />
-              <Route path="tools/csv-to-json" element={<CSVToJSONPage />} />
-              <Route path="tools/csv-merger" element={<CSVToolMergerPage />} />
-              <Route path="tools/excel-to-formats" element={<ExcelToFormatsConverterPage />} />
             </Route>
             
             {/* PDF tool routes - direct paths (outside Layout) */}
