@@ -42,6 +42,9 @@ import EditMetadataPage from './pages/pdf-tools/EditMetadataPage';
 import CompressPDFPage from './pages/pdf-tools/CompressPDFPage';
 import UnlockPDFPage from './pages/pdf-tools/UnlockPDFPage';
 import ExcelCsvToolsPage from './pages/excelcsv-tools';
+import JSONToExcelPage from './pages/tools/JSONToExcelPage';
+import XMLToExcelPage from './pages/tools/XMLToExcelPage';
+import CSVToExcelPage from './pages/tools/CSVToExcelPage';
 
 // Lazy load pages - Grouped by category for better chunking
 const AudioConverterPage = lazy(() => import('./pages/tools/AudioConverterPage'));
@@ -94,7 +97,7 @@ const MarkdownTableGeneratorPage = lazy(() => import('./pages/tools/MarkdownTabl
 const RegexTesterPage = lazy(() => import('./pages/tools/RegexTesterPage'));
 
 // Color design tools - separate chunk
-const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
+//const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
 
 // Archive tools - separate chunk
 //const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
@@ -256,7 +259,8 @@ function App() {
                 <Route path="tools/excel-to-pdf" element={<ExcelToPDFPage />} />
                 <Route path="tools/excel-to-html" element={<ExcelToHTMLPage />} />
                 <Route path="tools/excel-to-xml" element={<ExcelToXMLPage />} />
-                <Route path="tools/color-picker" element={<ColorPickerTool />} />
+                <Route path="tools/csv-to-excel" element={<CSVToExcelPage />} />
+                
                 <Route path="faq" element={<FAQ />} />
                 <Route path="terms" element={<Terms />} />
                 <Route path="privacy" element={<Privacy />} />
@@ -350,6 +354,8 @@ function App() {
                 <Route path="edit-metadata" element={<EditMetadataPage />} />
                 <Route path="compress-pdf" element={<CompressPDFPage />} />
                 <Route path="unlock-pdf" element={<UnlockPDFPage />} />
+                <Route path="json-to-excel" element={<JSONToExcelPage />} />
+                <Route path="xml-to-excel" element={<XMLToExcelPage />} />
                 
                 <Route path="not-found" element={<NotFound />} />
                 <Route path="*" element={<NotFound />} />
