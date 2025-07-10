@@ -1,278 +1,380 @@
-import React, { useState } from 'react';
-import { ArrowDownTrayIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline';
+import React, { useState, useCallback } from 'react';
 import ToolPageLayout from '../../components/layout/ToolPageLayout';
 import FileUploader from '../../components/shared/FileUploader';
+import { Database } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-function parseXMLToRows(xmlString: string, rowTagGuess?: string) {
-  // Parse XML and try to extract tabular data
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlString, 'application/xml');
-  const parserError = xml.getElementsByTagName('parsererror');
-  if (parserError.length > 0) {
-    throw new Error('Invalid XML file.');
-  }
-
-  // Try to guess the main repeating element (row)
-  let rowTag = rowTagGuess;
-  if (!rowTag) {
-    // Find the first element with multiple siblings of the same tag
-    const allElements = Array.from(xml.getElementsByTagName('*'));
-    const tagCounts: Record<string, number> = {};
-    allElements.forEach(el => {
-      tagCounts[el.tagName] = (tagCounts[el.tagName] || 0) + 1;
-    });
-    rowTag = Object.entries(tagCounts).filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1])[0]?.[0];
-  }
-  if (!rowTag) throw new Error('Could not detect a repeating row element in the XML.');
-
-  const rows = Array.from(xml.getElementsByTagName(rowTag));
-  if (rows.length === 0) throw new Error('No data rows found in the XML.');
-
-  // Extract columns from first row
-  const firstRow = rows[0];
-  const columns = Array.from(firstRow.children).map(child => child.tagName);
-
-  // Build data array
-  const data = rows.map(row => {
-    const obj: Record<string, string> = {};
-    columns.forEach(col => {
-      const el = row.getElementsByTagName(col)[0];
-      obj[col] = el ? el.textContent || '' : '';
-    });
-    return obj;
-  });
-
-  return { columns, data, rowTag };
+interface ParsedData {
+  [key: string]: any;
 }
 
 const XMLToExcelPage: React.FC = () => {
-  const [xmlData, setXmlData] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
-  const [columns, setColumns] = useState<string[]>([]);
-  const [data, setData] = useState<any[]>([]);
-  const [rowTag, setRowTag] = useState<string>('');
-  const [rowTagInput, setRowTagInput] = useState<string>('');
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [isConverting, setIsConverting] = useState(false);
+  const [xmlFile, setXmlFile] = useState<File | null>(null);
+  const [parsedData, setParsedData] = useState<ParsedData[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [xmlContent, setXmlContent] = useState<string>('');
+  const [detectedRowElements, setDetectedRowElements] = useState<string[]>([]);
+  const [selectedRowElement, setSelectedRowElement] = useState<string>('');
+  const [showManualSelection, setShowManualSelection] = useState(false);
 
-  const handleFileUpload = (files: File[]) => {
-    setError(null);
-    if (files.length === 0) return;
-    const file = files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      setXmlData(text);
-      setFileName(file.name.replace('.xml', ''));
-      setUploadedFiles(files);
-      try {
-        const { columns, data, rowTag } = parseXMLToRows(text);
-        setColumns(columns);
-        setData(data);
-        setRowTag(rowTag);
-        setRowTagInput(rowTag);
-      } catch (err: any) {
-        setColumns([]);
-        setData([]);
-        setRowTag('');
-        setRowTagInput('');
-        setError(err.message || 'Failed to parse XML.');
+  // Parse XML and detect repeating elements
+  const parseXMLString = (xmlString: string) => {
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+      
+      // Check for parsing errors
+      const parserError = xmlDoc.querySelector('parsererror');
+      if (parserError) {
+        throw new Error('Invalid XML format');
+      }
+
+      return xmlDoc;
+    } catch (err) {
+      throw new Error('Failed to parse XML: ' + (err as Error).message);
+    }
+  };
+
+  // Find repeating elements that could represent rows
+  const findRepeatingElements = (xmlDoc: Document): string[] => {
+    const elementCounts: { [key: string]: number } = {};
+    
+    // Count all element tag names
+    const walkNode = (node: Node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+        elementCounts[tagName] = (elementCounts[tagName] || 0) + 1;
+        
+        // Recursively walk child nodes
+        for (let i = 0; i < element.childNodes.length; i++) {
+          walkNode(element.childNodes[i]);
+        }
       }
     };
-    reader.readAsText(file);
+
+    walkNode(xmlDoc.documentElement);
+
+    // Find elements that appear multiple times (potential row elements)
+    const repeatingElements = Object.entries(elementCounts)
+      .filter(([, count]) => count > 1)
+      .map(([tagName]) => tagName)
+      .sort();
+
+    return repeatingElements;
   };
 
-  const handleRowTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRowTagInput(e.target.value);
-    if (xmlData && e.target.value) {
-      try {
-        const { columns, data, rowTag } = parseXMLToRows(xmlData, e.target.value);
-        setColumns(columns);
-        setData(data);
-        setRowTag(rowTag);
-        setError(null);
-      } catch (err: any) {
-        setColumns([]);
-        setData([]);
-        setRowTag('');
-        setError(err.message || 'Failed to parse XML.');
-      }
+  // Extract data from selected row elements
+  const extractDataFromElements = (xmlDoc: Document, rowElementName: string): ParsedData[] => {
+    const rowElements = xmlDoc.getElementsByTagName(rowElementName);
+    const data: ParsedData[] = [];
+    const allColumns = new Set<string>();
+
+    // First pass: collect all possible column names
+    for (let i = 0; i < rowElements.length; i++) {
+      const rowElement = rowElements[i];
+      
+      // Extract all child elements as columns
+      const extractColumns = (element: Element, prefix = '') => {
+        for (let j = 0; j < element.children.length; j++) {
+          const child = element.children[j];
+          const columnName = prefix ? `${prefix}.${child.tagName}` : child.tagName;
+          
+          if (child.children.length > 0 && child.textContent !== child.children[0]?.textContent) {
+            // Has child elements, recurse
+            extractColumns(child, columnName);
+          } else {
+            // Leaf node, extract text content
+            allColumns.add(columnName);
+          }
+        }
+      };
+
+      extractColumns(rowElement);
     }
+
+    // Second pass: extract data with consistent columns
+    for (let i = 0; i < rowElements.length; i++) {
+      const rowElement = rowElements[i];
+      const rowData: ParsedData = {};
+      
+      // Initialize all columns
+      allColumns.forEach(col => {
+        rowData[col] = '';
+      });
+
+      // Extract data
+      const extractData = (element: Element, prefix = '') => {
+        for (let j = 0; j < element.children.length; j++) {
+          const child = element.children[j];
+          const columnName = prefix ? `${prefix}.${child.tagName}` : child.tagName;
+          
+          if (child.children.length > 0 && child.textContent !== child.children[0]?.textContent) {
+            // Has child elements, recurse
+            extractData(child, columnName);
+          } else {
+            // Leaf node, extract text content
+            const value = child.textContent?.trim() || '';
+            rowData[columnName] = value;
+          }
+        }
+      };
+
+      extractData(rowElement);
+      data.push(rowData);
+    }
+
+    return data;
   };
 
-  const convertToExcel = async () => {
-    if (!data || data.length === 0) return;
-    setIsConverting(true);
+  const handleFileUpload = useCallback(async (files: File[]) => {
+    const file = files[0];
+    if (!file) return;
+
+    setXmlFile(file);
+    setError('');
+    setIsProcessing(true);
+    setParsedData([]);
+    setDetectedRowElements([]);
+    setSelectedRowElement('');
+    setShowManualSelection(false);
+
     try {
-      const workbook = XLSX.utils.book_new();
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${fileName || 'converted'}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const text = await file.text();
+      setXmlContent(text);
+      
+      const xmlDoc = parseXMLString(text);
+      const repeatingElements = findRepeatingElements(xmlDoc);
+      
+      if (repeatingElements.length === 0) {
+        throw new Error('No repeating elements found in XML. Unable to determine row structure.');
+      }
+
+      setDetectedRowElements(repeatingElements);
+      
+      // Auto-select the first repeating element
+      const defaultElement = repeatingElements[0];
+      setSelectedRowElement(defaultElement);
+      
+      const data = extractDataFromElements(xmlDoc, defaultElement);
+      setParsedData(data);
+      
+      if (repeatingElements.length > 1) {
+        setShowManualSelection(true);
+      }
+
     } catch (err) {
-      setError('Failed to convert to Excel.');
+      setError((err as Error).message);
     } finally {
-      setIsConverting(false);
+      setIsProcessing(false);
+    }
+  }, []);
+
+  const handleRowElementChange = (elementName: string) => {
+    if (!xmlContent) return;
+    
+    setSelectedRowElement(elementName);
+    setError('');
+    
+    try {
+      const xmlDoc = parseXMLString(xmlContent);
+      const data = extractDataFromElements(xmlDoc, elementName);
+      setParsedData(data);
+    } catch (err) {
+      setError((err as Error).message);
     }
   };
 
-  const handleClear = () => {
-    setXmlData(null);
-    setFileName('');
-    setColumns([]);
-    setData([]);
-    setRowTag('');
-    setRowTagInput('');
-    setUploadedFiles([]);
-    setError(null);
+  const convertToExcel = () => {
+    if (parsedData.length === 0) return;
+
+    try {
+      // Create a new workbook
+      const workbook = XLSX.utils.book_new();
+      
+      // Convert data to worksheet
+      const worksheet = XLSX.utils.json_to_sheet(parsedData);
+      
+      // Add the worksheet to the workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'XML Data');
+      
+      // Generate Excel file
+      const fileName = xmlFile?.name?.replace(/\.[^/.]+$/, '') || 'xml-data';
+      XLSX.writeFile(workbook, `${fileName}.xlsx`);
+      
+    } catch (err) {
+      setError('Failed to create Excel file: ' + (err as Error).message);
+    }
+  };
+
+  const reset = () => {
+    setXmlFile(null);
+    setParsedData([]);
+    setError('');
+    setXmlContent('');
+    setDetectedRowElements([]);
+    setSelectedRowElement('');
+    setShowManualSelection(false);
+    setIsProcessing(false);
   };
 
   return (
     <ToolPageLayout
       toolId="xml-to-excel"
       title="XML to Excel Converter"
-      icon={DocumentArrowUpIcon}
+      icon={Database}
       group="excelcsv"
     >
       <div className="max-w-4xl mx-auto space-y-6">
         {/* File Upload Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload XML File</h3>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Upload XML File</h2>
+          
           <FileUploader
+            accept=".xml,text/xml,application/xml"
             onFileUpload={handleFileUpload}
-            accept=".xml"
-            maxSize={10 * 1024 * 1024} // 10MB
-            description="Drag and drop an XML file here, or click to browse"
-            files={uploadedFiles}
+            maxSize={10 * 1024 * 1024} // 10MB limit
+            disabled={isProcessing}
+            description="Upload your XML file to convert to Excel format"
           />
-          {error && <div className="mt-2 text-red-600 text-sm">{error}</div>}
+          
+          {isProcessing && (
+            <div className="mt-4 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600">Processing XML file...</span>
+            </div>
+          )}
         </div>
 
-        {/* Row Tag Selection */}
-        {xmlData && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              XML Row Element (repeating):
-            </label>
-            <input
-              type="text"
-              className="border rounded px-3 py-2 w-full max-w-xs"
-              value={rowTagInput}
-              onChange={handleRowTagChange}
-              placeholder="e.g. row, item, record"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              The tool tries to auto-detect the repeating element. You can override it here if needed.
-            </p>
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <p className="mt-1 text-sm text-red-700">{error}</p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Preview Section */}
-        {data.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Preview</h3>
+        {/* Row Element Selection */}
+        {showManualSelection && detectedRowElements.length > 1 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Multiple Row Elements Detected</h3>
+            <p className="text-sm text-blue-700 mb-3">
+              Select which XML element represents the data rows:
+            </p>
+            <div className="space-y-2">
+              {detectedRowElements.map((element) => (
+                <label key={element} className="flex items-center">
+                  <input
+                    type="radio"
+                    name="rowElement"
+                    value={element}
+                    checked={selectedRowElement === element}
+                    onChange={(e) => handleRowElementChange(e.target.value)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 font-mono">&lt;{element}&gt;</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Data Preview */}
+        {parsedData.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Data Preview ({parsedData.length} rows)
+              </h2>
+              <div className="space-x-2">
+                <button
+                  onClick={convertToExcel}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors"
+                >
+                  Download Excel
+                </button>
+                <button
+                  onClick={reset}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    {columns.map((header, index) => (
+                    {Object.keys(parsedData[0] || {}).map((column) => (
                       <th
-                        key={index}
+                        key={column}
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                       >
-                        {header}
+                        {column}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {data.slice(0, 10).map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {columns.map((col, colIndex) => (
+                  {parsedData.slice(0, 10).map((row, index) => (
+                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      {Object.values(row).map((value, cellIndex) => (
                         <td
-                          key={colIndex}
+                          key={cellIndex}
                           className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                         >
-                          {String(row[col])}
+                          {String(value)}
                         </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            <p className="text-sm text-gray-500 mt-2">
-              Showing first {Math.min(data.length, 10)} of {data.length} rows
-            </p>
-          </div>
-        )}
-
-        {/* Conversion Section */}
-        {data.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Convert to Excel</h3>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">
-                  File: <span className="font-medium">{fileName || 'converted'}.xml</span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Rows: <span className="font-medium">{data.length}</span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Columns: <span className="font-medium">{columns.length}</span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Row element: <span className="font-medium">{rowTag}</span>
-                </p>
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleClear}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={convertToExcel}
-                  disabled={isConverting}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isConverting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Converting...
-                    </>
-                  ) : (
-                    <>
-                      <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                      Convert to Excel
-                    </>
-                  )}
-                </button>
-              </div>
+              
+              {parsedData.length > 10 && (
+                <div className="mt-4 text-center text-sm text-gray-500">
+                  Showing first 10 rows of {parsedData.length} total rows
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">How it works:</h4>
-          <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Upload any XML file (up to 10MB)</li>
-            <li>• The tool auto-detects the repeating row element (e.g. <code>&lt;row&gt;</code>, <code>&lt;item&gt;</code>, etc.)</li>
-            <li>• Preview your data and adjust the row element if needed</li>
-            <li>• Download the converted .xlsx file</li>
+        <div className="bg-gray-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">How to Use</h3>
+          <ul className="space-y-2 text-sm text-gray-600">
+            <li className="flex items-start">
+              <span className="font-semibold text-blue-600 mr-2">1.</span>
+              Upload your XML file using the file uploader above
+            </li>
+            <li className="flex items-start">
+              <span className="font-semibold text-blue-600 mr-2">2.</span>
+              The tool will automatically detect repeating elements that represent data rows
+            </li>
+            <li className="flex items-start">
+              <span className="font-semibold text-blue-600 mr-2">3.</span>
+              If multiple row elements are found, select the appropriate one
+            </li>
+            <li className="flex items-start">
+              <span className="font-semibold text-blue-600 mr-2">4.</span>
+              Preview the converted data in the table below
+            </li>
+            <li className="flex items-start">
+              <span className="font-semibold text-blue-600 mr-2">5.</span>
+              Click "Download Excel" to get your converted file
+            </li>
           </ul>
         </div>
       </div>

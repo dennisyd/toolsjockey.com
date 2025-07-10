@@ -260,6 +260,8 @@ function App() {
                 <Route path="tools/excel-to-html" element={<ExcelToHTMLPage />} />
                 <Route path="tools/excel-to-xml" element={<ExcelToXMLPage />} />
                 <Route path="tools/csv-to-excel" element={<CSVToExcelPage />} />
+                <Route path="tools/xml-to-excel" element={<XMLToExcelPage />} />
+                <Route path="tools/json-to-excel" element={<JSONToExcelPage />} />
                 
                 <Route path="faq" element={<FAQ />} />
                 <Route path="terms" element={<Terms />} />
@@ -354,8 +356,6 @@ function App() {
                 <Route path="edit-metadata" element={<EditMetadataPage />} />
                 <Route path="compress-pdf" element={<CompressPDFPage />} />
                 <Route path="unlock-pdf" element={<UnlockPDFPage />} />
-                <Route path="json-to-excel" element={<JSONToExcelPage />} />
-                <Route path="xml-to-excel" element={<XMLToExcelPage />} />
                 
                 <Route path="not-found" element={<NotFound />} />
                 <Route path="*" element={<NotFound />} />
