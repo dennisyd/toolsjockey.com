@@ -288,10 +288,24 @@ const FrameExtractor: React.FC = () => {
       
       const newFrames: ExtractedFrame[] = [];
       
+      // Set up progress tracking
+      setIsProcessing(true);
+      setProgress(0);
+      setCurrentTask(`Preparing to extract ${frameCount} frames...`);
+      setErrorMessage(null);
+      
       // Extract each frame individually for better progress tracking
       for (let i = 0; i < frameCount; i++) {
         const frameTime = startTime + i * interval;
         if (frameTime > endTime) break;
+        
+        // Update progress for each frame
+        const currentProgress = Math.round(((i + 1) / frameCount) * 100);
+        setProgress(currentProgress);
+        setCurrentTask(`Processing frame ${i + 1} of ${frameCount} (${formatDuration(frameTime)})...`);
+        
+        // Add a small delay to make progress updates more visible
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         const result = await processVideo(sourceVideo, {
           command: [
@@ -322,6 +336,15 @@ const FrameExtractor: React.FC = () => {
         newFrames.push(newFrame);
       }
       
+      // Complete processing
+      setProgress(100);
+      setCurrentTask(`Successfully extracted ${newFrames.length} frames!`);
+      setTimeout(() => {
+        setIsProcessing(false);
+        setCurrentTask('');
+        setProgress(0);
+      }, 2000);
+      
       setFrames(prev => [...newFrames, ...prev]);
       if (newFrames.length > 0) {
         setSelectedFrameId(newFrames[0].id);
@@ -330,6 +353,9 @@ const FrameExtractor: React.FC = () => {
     } catch (err) {
       console.error('Error extracting frames:', err);
       setErrorMessage(`Frame extraction error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setIsProcessing(false);
+      setCurrentTask('');
+      setProgress(0);
     }
   };
   
@@ -698,8 +724,8 @@ const FrameExtractor: React.FC = () => {
           {(ffmpegProcessing || isProcessing) && (
             <div className="p-6 border-t border-gray-200 dark:border-gray-700">
               <ProgressBar
-                progress={ffmpegProcessing ? ffmpegProgress : progress}
-                currentTask={ffmpegProcessing ? ffmpegTask : currentTask}
+                progress={isProcessing ? progress : (ffmpegProcessing ? ffmpegProgress : 0)}
+                currentTask={isProcessing ? currentTask : (ffmpegProcessing ? ffmpegTask : '')}
               />
             </div>
           )}

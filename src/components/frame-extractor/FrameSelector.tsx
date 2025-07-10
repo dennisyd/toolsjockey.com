@@ -166,6 +166,17 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
       {settings.mode === 'interval' && (
         <div>
           <h3 className="text-md font-medium text-gray-900 dark:text-white mb-3">Interval Settings</h3>
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="flex items-start">
+              <svg className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path>
+              </svg>
+              <div className="text-sm text-blue-800 dark:text-blue-300">
+                <p className="font-medium mb-1">Multiple Frame Extraction</p>
+                <p className="text-xs">Video playback is not required. The tool processes the video file directly to extract frames at the specified intervals within your time range.</p>
+              </div>
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Interval between frames: {settings.interval} seconds
@@ -173,7 +184,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
             <input
               type="range"
               min="0.1"
-              max="10"
+              max="60"
               step="0.1"
               value={settings.interval}
               onChange={handleIntervalChange}
@@ -182,7 +193,7 @@ const FrameSelector: React.FC<FrameSelectorProps> = ({
             />
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
               <span>0.1s (more frames)</span>
-              <span>10s (fewer frames)</span>
+              <span>60s (fewer frames)</span>
             </div>
           </div>
           
