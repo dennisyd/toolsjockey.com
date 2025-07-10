@@ -62,6 +62,7 @@ const ColorPaletteGeneratorPage = lazy(() => import('./pages/tools/ColorPaletteG
 // Document tools - separate chunk
 const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
 const WordToMarkdownPage = lazy(() => import('./pages/tools/WordToMarkdownPage'));
+const ExcelMergerSplitterPage = lazy(() => import('./pages/tools/ExcelMergerSplitterPage'));
 
 // Utility tools - separate chunk
 const WatermarkAdderPage = lazy(() => import('./pages/tools/WatermarkAdderPage'));
@@ -238,6 +239,7 @@ function App() {
                 <Route path="tools/regex-tester" element={<RegexTesterPage />} />
                 <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
                 <Route path="tools/word-to-markdown" element={<WordToMarkdownPage />} />
+                <Route path="tools/excel-merger-splitter" element={<ExcelMergerSplitterPage />} />
                 <Route path="tools/color-picker" element={<ColorPickerTool />} />
                 <Route path="faq" element={<FAQ />} />
                 <Route path="terms" element={<Terms />} />
