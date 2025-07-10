@@ -27,6 +27,7 @@ import MediaToolsPage from './pages/media-tools';
 import ImageToolsPage from './pages/image-tools';
 import DeveloperToolsPage from './pages/developer-tools';
 import ColorDesignToolsPage from './pages/color-design-tools';
+import WordToolsPage from './pages/word-tools';
 import MergePDFPage from './pages/pdf-tools/MergePDFPage';
 import SplitPDFPage from './pages/pdf-tools/SplitPDFPage';
 import ReorderPDFPage from './pages/pdf-tools/ReorderPDFPage';
@@ -59,6 +60,8 @@ const ImageCompressorPage = lazy(() => import('./pages/tools/ImageCompressorPage
 const ColorPaletteGeneratorPage = lazy(() => import('./pages/tools/ColorPaletteGeneratorPage'));
 
 // Document tools - separate chunk
+const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
+const WordToMarkdownPage = lazy(() => import('./pages/tools/WordToMarkdownPage'));
 
 // Utility tools - separate chunk
 const WatermarkAdderPage = lazy(() => import('./pages/tools/WatermarkAdderPage'));
@@ -83,9 +86,6 @@ const RegexTesterPage = lazy(() => import('./pages/tools/RegexTesterPage'));
 
 // Color design tools - separate chunk
 const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
-const ContrastChecker = lazy(() => import('./tools/colorDesign/ContrastChecker'));
-const GradientGenerator = lazy(() => import('./tools/colorDesign/GradientGenerator'));
-const ColorFormatConverter = lazy(() => import('./tools/colorDesign/ColorFormatConverter'));
 
 // Archive tools - separate chunk
 //const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
@@ -211,6 +211,7 @@ function App() {
                 <Route path="image-tools" element={<ImageToolsPage />} />
                 <Route path="developer-tools" element={<DeveloperToolsPage />} />
                 <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
+                <Route path="word-tools" element={<WordToolsPage />} />
                 
                 {/* Individual tool routes */}
                 <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
@@ -235,10 +236,9 @@ function App() {
                 <Route path="tools/remove-duplicates" element={<DuplicateRemoverToolPage />} />
                 <Route path="tools/markdown-table-generator" element={<MarkdownTableGeneratorPage />} />
                 <Route path="tools/regex-tester" element={<RegexTesterPage />} />
+                <Route path="tools/mail-merge-tool" element={<MailMergeToolPage />} />
+                <Route path="tools/word-to-markdown" element={<WordToMarkdownPage />} />
                 <Route path="tools/color-picker" element={<ColorPickerTool />} />
-                <Route path="tools/contrast-checker" element={<ContrastChecker />} />
-                <Route path="tools/gradient-generator" element={<GradientGenerator />} />
-                <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
                 <Route path="faq" element={<FAQ />} />
                 <Route path="terms" element={<Terms />} />
                 <Route path="privacy" element={<Privacy />} />
