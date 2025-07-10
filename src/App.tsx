@@ -162,7 +162,6 @@ const SecureNotesPage = lazy(() => import('./pages/tools/SecureNotesPage'));
 const RandomDataGeneratorPage = lazy(() => import('./pages/tools/RandomDataGeneratorPage'));
 const EXIFDataViewerPage = lazy(() => import('./pages/tools/EXIFDataViewerPage'));
 const FileHashVerifierPage = lazy(() => import('./pages/tools/FileHashVerifierPage'));
-const SecureFileShredderPage = lazy(() => import('./pages/tools/SecureFileShredderPage'));
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -350,7 +349,6 @@ function App() {
                 <Route path="tools/random-data-generator" element={<RandomDataGeneratorPage />} />
                 <Route path="tools/exif-data-viewer" element={<EXIFDataViewerPage />} />
                 <Route path="tools/file-hash-verifier" element={<FileHashVerifierPage />} />
-                <Route path="tools/secure-file-shredder" element={<SecureFileShredderPage />} />
                 
                 {/* PDF tool routes */}
                 <Route path="merge-pdf" element={<MergePDFPage />} />

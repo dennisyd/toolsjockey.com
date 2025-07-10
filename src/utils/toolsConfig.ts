@@ -33,7 +33,6 @@ import {
   PauseCircleIcon,
   ShieldCheckIcon,
   LockClosedIcon,
-  TrashIcon,
   DocumentTextIcon as DocumentTextIcon2,
 } from '@heroicons/react/24/outline';
 
@@ -819,15 +818,6 @@ export const toolsConfig: ToolMeta[] = [
     path: '/tools/file-decryptor',
     description: 'Decrypt files encrypted with AES-256. Secure client-side decryption.',
     icon: LockClosedIcon,
-    badges: ['NEW'],
-    group: 'privacy',
-  },
-  {
-    id: 'secure-file-shredder',
-    title: 'Secure File Shredder',
-    path: '/tools/secure-file-shredder',
-    description: 'Securely delete file data with multiple overwrite passes. Privacy-first file destruction.',
-    icon: TrashIcon,
     badges: ['NEW'],
     group: 'privacy',
   },
