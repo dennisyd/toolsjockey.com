@@ -1,13 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import type { LucideIcon } from 'lucide-react';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface ToolCardProps {
   title: string;
   description: string;
   path: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   isNew?: boolean;
 }
 

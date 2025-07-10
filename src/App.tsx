@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect } from 'react';  // Yancy Dennis
+import React, { lazy, Suspense, useEffect } from 'react';  
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Header from './components/layout/Header';
@@ -41,6 +41,7 @@ import DeletePagesPage from './pages/pdf-tools/DeletePagesPage';
 import EditMetadataPage from './pages/pdf-tools/EditMetadataPage';
 import CompressPDFPage from './pages/pdf-tools/CompressPDFPage';
 import UnlockPDFPage from './pages/pdf-tools/UnlockPDFPage';
+import ExcelCsvToolsPage from './pages/excelcsv-tools';
 
 // Lazy load pages - Grouped by category for better chunking
 const AudioConverterPage = lazy(() => import('./pages/tools/AudioConverterPage'));
@@ -65,6 +66,11 @@ const WordToMarkdownPage = lazy(() => import('./pages/tools/WordToMarkdownPage')
 const ExcelMergerSplitterPage = lazy(() => import('./pages/tools/ExcelMergerSplitterPage'));
 const CSVToJSONPage = lazy(() => import('./pages/tools/CSVToJSONPage'));
 const CSVToolMergerPage = lazy(() => import('./pages/tools/CSVToolMergerPage'));
+const ExcelToJSONPage = lazy(() => import('./pages/tools/ExcelToJSONPage'));
+const ExcelToCSVPage = lazy(() => import('./pages/tools/ExcelToCSVPage'));
+const ExcelToPDFPage = lazy(() => import('./pages/tools/ExcelToPDFPage'));
+const ExcelToHTMLPage = lazy(() => import('./pages/tools/ExcelToHTMLPage'));
+const ExcelToXMLPage = lazy(() => import('./pages/tools/ExcelToXMLPage'));
 
 // Utility tools - separate chunk
 const WatermarkAdderPage = lazy(() => import('./pages/tools/WatermarkAdderPage'));
@@ -215,6 +221,7 @@ function App() {
                 <Route path="developer-tools" element={<DeveloperToolsPage />} />
                 <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
                 <Route path="word-tools" element={<WordToolsPage />} />
+                <Route path="excelcsv-tools" element={<ExcelCsvToolsPage />} />
                 
                 {/* Individual tool routes */}
                 <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
@@ -244,6 +251,11 @@ function App() {
                 <Route path="tools/excel-merger-splitter" element={<ExcelMergerSplitterPage />} />
                 <Route path="tools/csv-to-json" element={<CSVToJSONPage />} />
                 <Route path="tools/csv-merger" element={<CSVToolMergerPage />} />
+                <Route path="tools/excel-to-json" element={<ExcelToJSONPage />} />
+                <Route path="tools/excel-to-csv" element={<ExcelToCSVPage />} />
+                <Route path="tools/excel-to-pdf" element={<ExcelToPDFPage />} />
+                <Route path="tools/excel-to-html" element={<ExcelToHTMLPage />} />
+                <Route path="tools/excel-to-xml" element={<ExcelToXMLPage />} />
                 <Route path="tools/color-picker" element={<ColorPickerTool />} />
                 <Route path="faq" element={<FAQ />} />
                 <Route path="terms" element={<Terms />} />
