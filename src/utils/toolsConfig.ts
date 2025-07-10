@@ -195,15 +195,6 @@ export const toolsConfig: ToolMeta[] = [
     icon: TableCellsIcon,
     group: 'excelcsv',
   },
-  {
-    id: 'excel-to-formats',
-    title: 'Excel to Everything Converter',
-    path: '/tools/excel-to-formats',
-    description: 'Convert Excel files to CSV, JSON, HTML, PDF, Google Sheets, and more. Batch, privacy-first, and pro-grade.',
-    icon: TableCellsIcon,
-    badges: ['NEW'],
-    group: 'excelcsv',
-  },
   // Image Tools
   {
     id: 'image-compressor',
