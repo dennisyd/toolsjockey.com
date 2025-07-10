@@ -65,4 +65,146 @@ Regex Tester,□ Tested,"1. Text samples for testing
 2. Valid/invalid status shown correctly
 3. Capture groups displayed properly
 4. Replace preview functions correctly
-5. Real-time updating of results",□ Works with complex patterns and large text 
+5. Real-time updating of results",□ Works with complex patterns and large text,
+Text Case Converter,□ Tested,"1. Mixed case text samples
+2. Text with special characters
+3. Different language content
+4. Large text blocks","1. Convert to UPPERCASE
+2. Convert to lowercase
+3. Convert to Title Case
+4. Convert to camelCase/PascalCase
+5. Test with programming variable names","1. Case conversions applied correctly
+2. Special characters preserved
+3. Word boundaries detected properly
+4. Programming conventions followed
+5. Unicode characters handled correctly",□ Processes large documents efficiently,
+Word Counter,□ Tested,"1. Simple text documents
+2. Text with multiple paragraphs
+3. Documents with special formatting
+4. Code files with comments","1. Count words accurately
+2. Count characters (with/without spaces)
+3. Count paragraphs and lines
+4. Test with different languages
+5. Handle edge cases (numbers, symbols)","1. Word count matches manual verification
+2. Character counts accurate
+3. Paragraph/line counts correct
+4. Different languages counted properly
+5. Reading time estimates reasonable",□ Counts 100,000+ word documents,
+Password Generator,□ Tested,"1. Various complexity requirements
+2. Different character set needs
+3. Bulk generation needs","1. Generate passwords with letters only
+2. Include numbers and symbols
+3. Set specific length requirements
+4. Generate multiple passwords at once
+5. Test password strength indicators","1. Generated passwords meet requirements
+2. Appropriate randomness and uniqueness
+3. Length restrictions followed
+4. Character sets applied correctly
+5. Strength ratings accurate",□ Generates 1000+ passwords efficiently,
+QR Code Generator,□ Tested,"1. Simple text content
+2. URLs and web links
+3. Contact information (vCard)
+4. WiFi credentials
+5. Large text content","1. Generate QR code for text
+2. Create QR for website URL
+3. Generate contact card QR
+4. Create WiFi connection QR
+5. Test different size/quality settings","1. QR codes scan correctly on devices
+2. Generated codes contain correct data
+3. Various data types supported
+4. Size and quality options work
+5. Download formats function properly",□ Handles complex data types efficiently,
+HTML Minifier,□ Tested,"1. Simple HTML documents
+2. HTML with inline CSS/JavaScript
+3. HTML with comments and whitespace
+4. Complex nested structures","1. Minify HTML removing whitespace
+2. Preserve essential formatting
+3. Remove HTML comments
+4. Handle inline CSS/JS appropriately
+5. Test with various HTML5 elements","1. File size significantly reduced
+2. HTML structure preserved
+3. Page functionality maintained
+4. Comments removed when requested
+5. Valid HTML output produced",□ Minifies large HTML files efficiently,
+JavaScript Minifier,□ Tested,"1. Simple JavaScript functions
+2. Complex JS with comments
+3. ES6+ modern JavaScript
+4. JavaScript with regex patterns","1. Minify JS removing whitespace
+2. Remove JavaScript comments
+3. Preserve code functionality
+4. Handle modern ES6+ syntax
+5. Test with various frameworks","1. Significant file size reduction
+2. Code functionality preserved
+3. Syntax errors not introduced
+4. Modern features handled correctly
+5. Execution speed maintained",□ Minifies large JS libraries,
+Code Formatter,□ Tested,"1. Unformatted code samples
+2. Various programming languages
+3. Code with inconsistent indentation
+4. Large code files","1. Format JavaScript/TypeScript
+2. Format HTML documents
+3. Format CSS stylesheets
+4. Format JSON data
+5. Test custom formatting options","1. Code properly indented and formatted
+2. Consistent style applied
+3. Language-specific formatting rules
+4. Custom preferences respected
+5. Large files processed efficiently",□ Formats files with 10,000+ lines,
+Syntax Highlighter,□ Tested,"1. Code in various languages
+2. Code with different themes
+3. Large code blocks
+4. Code with special characters","1. Highlight JavaScript syntax
+2. Highlight HTML/CSS
+3. Test different color themes
+4. Add line numbers
+5. Test copy functionality","1. Syntax colored appropriately
+2. Keywords, strings, comments distinct
+3. Themes applied correctly
+4. Line numbers displayed properly
+5. Copy function preserves formatting",□ Highlights large code files efficiently,
+Code Diff Viewer,□ Tested,"1. Similar code files
+2. Code with function changes
+3. Large code bases
+4. Different programming languages","1. Compare two code files
+2. Highlight added/removed lines
+3. Show modified sections clearly
+4. Test with different languages
+5. Navigate between changes","1. Differences clearly highlighted
+2. Added/removed code distinguished
+3. Line-by-line comparison accurate
+4. Navigation between changes works
+5. Language syntax preserved",□ Compares large codebases efficiently,
+URL Encoder/Decoder,□ Tested,"1. Simple URLs
+2. URLs with special characters
+3. Query parameters
+4. International URLs","1. Encode URL with spaces
+2. Encode special characters
+3. Decode encoded URLs
+4. Test with query parameters
+5. Handle international characters","1. URLs encoded correctly for web use
+2. Special characters handled properly
+3. Decoding restores original URLs
+4. Query parameters preserved
+5. International characters supported",□ Handles complex URL structures,
+HTML Entity Converter,□ Tested,"1. Text with HTML characters
+2. Special symbols and entities
+3. International character sets
+4. Large text blocks","1. Convert < > & to entities
+2. Convert entities back to characters
+3. Handle copyright, trademark symbols
+4. Test with various languages
+5. Process large text documents","1. HTML characters converted to entities
+2. Entities converted back to characters
+3. Special symbols handled correctly
+4. International characters preserved
+5. Large texts processed efficiently",□ Processes large documents with entities,
+Lorem Ipsum Generator,□ Tested,"1. Various length requirements
+2. Different format needs","1. Generate standard Lorem Ipsum
+2. Create specific word counts
+3. Generate paragraph counts
+4. Test different starting phrases
+5. Generate large amounts of text","1. Proper Lorem Ipsum text generated
+2. Word/paragraph counts accurate
+3. Text flows naturally
+4. Different starting options work
+5. Large generations complete successfully",□ Generates 10,000+ words efficiently, 

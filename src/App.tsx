@@ -83,6 +83,7 @@ const ImageFormatConverterPage = lazy(() => import('./pages/tools/ImageFormatCon
 const JSONFormatterPage = lazy(() => import('./pages/tools/JSONFormatterPage'));
 const BatchPDFFormFillerPage = lazy(() => import('./pages/tools/BatchPDFFormFillerPage'));
 const TextFromImagePage = lazy(() => import('./pages/tools/TextFromImagePage'));
+const WordCounterPage = lazy(() => import('./pages/tools/WordCounterPage'));
 
 // Developer tools - separate chunk
 const HashGeneratorPage = lazy(() => import('./pages/tools/HashGeneratorPage'));
@@ -97,7 +98,10 @@ const MarkdownTableGeneratorPage = lazy(() => import('./pages/tools/MarkdownTabl
 const RegexTesterPage = lazy(() => import('./pages/tools/RegexTesterPage'));
 
 // Color design tools - separate chunk
-//const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
+const ColorPickerTool = lazy(() => import('./tools/colorDesign/ColorPickerTool'));
+const ColorFormatConverter = lazy(() => import('./tools/colorDesign/ColorFormatConverter'));
+const ContrastChecker = lazy(() => import('./tools/colorDesign/ContrastChecker'));
+const GradientGenerator = lazy(() => import('./tools/colorDesign/GradientGenerator'));
 
 // Archive tools - separate chunk
 //const MailMergeToolPage = lazy(() => import('./pages/tools/MailMergeToolPage'));
@@ -231,12 +235,17 @@ function App() {
                 <Route path="tools/qr-code-generator" element={<QRCodeGeneratorPage />} />
                 <Route path="tools/image-compressor" element={<ImageCompressorPage />} />
                 <Route path="tools/color-palette-generator" element={<ColorPaletteGeneratorPage />} />
+                <Route path="tools/color-picker" element={<ColorPickerTool />} />
+                <Route path="tools/color-format-converter" element={<ColorFormatConverter />} />
+                <Route path="tools/contrast-checker" element={<ContrastChecker />} />
+                <Route path="tools/gradient-generator" element={<GradientGenerator />} />
                 <Route path="tools/watermark-adder" element={<WatermarkAdderPage />} />
                 <Route path="tools/exif-remover" element={<EXIFRemoverPage />} />
                 <Route path="tools/image-format-converter" element={<ImageFormatConverterPage />} />
                 <Route path="tools/json-formatter" element={<JSONFormatterPage />} />
                 <Route path="tools/batch-pdf-form-filler" element={<BatchPDFFormFillerPage />} />
                 <Route path="tools/text-from-image" element={<TextFromImagePage />} />
+                <Route path="tools/word-counter" element={<WordCounterPage />} />
                 <Route path="tools/unit-converter" element={<UnitConverterPage />} />
                 <Route path="tools/currency-converter" element={<CurrencyConverterPage />} />
                 <Route path="tools/hash-generator" element={<HashGeneratorPage />} />
@@ -245,6 +254,7 @@ function App() {
                 <Route path="tools/password-generator" element={<PasswordGeneratorPage />} />
                 <Route path="tools/text-case-converter" element={<TextCaseConverterPage />} />
                 <Route path="tools/text-diff" element={<TextDiffViewerPage />} />
+                <Route path="tools/text-diff-viewer" element={<TextDiffViewerPage />} />
                 <Route path="tools/column-filter" element={<ColumnFilterToolPage />} />
                 <Route path="tools/remove-duplicates" element={<DuplicateRemoverToolPage />} />
                 <Route path="tools/markdown-table-generator" element={<MarkdownTableGeneratorPage />} />

@@ -32,6 +32,105 @@ CSV to JSON Converter,□ Tested,"1. Simple CSV data
 2. Data structure correctly mapped
 3. Special characters encoded properly
 4. Empty fields handled correctly",□ Handles 10,000+ row files,
+CSV to Excel Converter,□ Tested,"1. Simple CSV files
+2. CSV with special characters
+3. CSV with different delimiters
+4. Large CSV files (10,000+ rows)
+5. CSV with quoted fields","1. Upload CSV file and preview data
+2. Test with comma, semicolon, tab delimiters
+3. Test with quoted fields containing commas
+4. Test with special characters (unicode)
+5. Download and verify Excel file","1. CSV data correctly parsed and displayed
+2. All delimiters properly handled
+3. Special characters preserved
+4. Excel file opens correctly in spreadsheet apps
+5. Data integrity maintained",□ Converts 50,000+ row files,
+XML to Excel Converter,□ Tested,"1. Simple XML with repeating elements
+2. Complex nested XML structures
+3. XML with multiple array levels
+4. XML with mixed content types
+5. Large XML files","1. Upload XML and detect row elements
+2. Test automatic element detection
+3. Test manual element selection
+4. Test nested object flattening
+5. Download and verify Excel output","1. XML structure correctly analyzed
+2. Repeating elements properly identified
+3. Manual selection works when multiple arrays
+4. Nested data flattened appropriately
+5. Excel file contains all data correctly",□ Processes XML with 10,000+ records,
+JSON to Excel Converter,□ Tested,"1. Direct JSON arrays
+2. JSON objects with nested arrays
+3. Complex nested JSON structures
+4. JSON with mixed data types
+5. Large JSON files","1. Upload JSON and detect structure
+2. Test with direct arrays vs objects
+3. Test array selection for complex JSON
+4. Test nested object flattening
+5. Download and verify Excel output","1. JSON structure correctly identified
+2. Arrays properly detected and listed
+3. Selection interface works correctly
+4. Nested objects flattened with dot notation
+5. Excel file preserves all data",□ Handles JSON with 25,000+ records,
+Excel to CSV Converter,□ Tested,"1. Simple Excel files
+2. Excel with multiple sheets
+3. Excel with formulas
+4. Excel with formatting","1. Convert single sheet to CSV
+2. Test sheet selection for multi-sheet files
+3. Test delimiter options
+4. Test quote character options
+5. Verify CSV output format","1. Correct sheet data extracted
+2. Sheet selection works properly
+3. Delimiter options applied correctly
+4. Quoted fields handled appropriately
+5. CSV format is valid",□ Converts 20-sheet workbooks,
+Excel to JSON Converter,□ Tested,"1. Excel with tabular data
+2. Excel with multiple sheets
+3. Excel with mixed data types
+4. Excel with empty cells","1. Convert sheet to JSON array
+2. Test sheet selection
+3. Test header row detection
+4. Test empty cell handling
+5. Validate JSON structure","1. Data converted to valid JSON
+2. Headers correctly identified
+3. Empty cells handled appropriately
+4. JSON structure is well-formed
+5. Data types preserved where possible",□ Handles 15,000+ row sheets,
+Excel to PDF Converter,□ Tested,"1. Excel with tables
+2. Excel with formatting
+3. Excel with charts/graphs
+4. Multi-sheet workbooks","1. Convert sheet to PDF
+2. Test page layout options
+3. Test sheet selection
+4. Test print area settings
+5. Verify PDF output quality","1. PDF correctly displays data
+2. Formatting preserved where possible
+3. Page breaks appropriate
+4. Text is readable and clear
+5. File size reasonable",□ Converts complex 10-sheet workbooks,
+Excel to HTML Converter,□ Tested,"1. Excel with formatting
+2. Excel with tables
+3. Excel with multiple sheets
+4. Excel with hyperlinks","1. Convert to HTML table
+2. Test CSS styling options
+3. Test responsive design
+4. Test sheet selection
+5. Verify HTML structure","1. HTML table properly structured
+2. CSS styles applied correctly
+3. Responsive design works
+4. Hyperlinks preserved
+5. Valid HTML markup",□ Handles sheets with 5,000+ rows,
+Excel to XML Converter,□ Tested,"1. Excel with structured data
+2. Excel with headers
+3. Excel with different data types
+4. Multi-sheet workbooks","1. Convert to XML format
+2. Test element naming options
+3. Test attribute vs element choice
+4. Test sheet selection
+5. Validate XML output","1. Valid XML structure generated
+2. Element names appropriate
+3. Data types preserved
+4. XML validates against schema
+5. Proper encoding used",□ Converts sheets with complex structures,
 CSV/Excel Column Filter,□ Tested,"1. CSV with many columns
 2. Excel with multiple sheets
 3. Files with mixed data types","1. Select specific columns to keep
@@ -51,15 +150,4 @@ CSV/Excel Duplicate Remover,□ Tested,"1. Files with duplicate rows
 5. Compare record counts before/after","1. Duplicates correctly identified
 2. Only duplicate rows removed
 3. Original data structure preserved
-4. Options applied correctly",□ Processes 10,000+ rows efficiently,
-Excel to Everything Converter,□ Tested,"1. Excel files with formatting
-2. Excel with charts/graphs
-3. Excel with formulas
-4. Multi-sheet workbooks","1. Convert Excel to CSV
-2. Convert Excel to JSON
-3. Convert Excel to HTML
-4. Convert Excel to PDF
-5. Test with different Excel versions","1. Data correctly converted to target format
-2. Structure preserved where format allows
-3. Formatting preserved where applicable
-4. Multiple sheets handled appropriately",□ Converts 20+ sheet workbooks, 
+4. Options applied correctly",□ Processes 10,000+ rows efficiently, 
