@@ -171,6 +171,15 @@ const FileHashVerifier: React.FC = () => {
           </div>
         </div>
 
+        {/* Add a short note at the top of the tool */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">What does this tool do?</h3>
+          <p className="text-blue-700 dark:text-blue-300 text-sm">
+            Quickly check the integrity and authenticity of any file by comparing its cryptographic hash (like SHA-256) to a known value.<br />
+            Use this tool to ensure your file hasn’t been tampered with or corrupted—no uploads, everything happens in your browser.
+          </p>
+        </div>
+
         {/* File Selection */}
         <div className="bg-white dark:bg-primary-light rounded-lg shadow p-6 mb-6">
           <h3 className="text-lg font-semibold mb-4">Select File</h3>
