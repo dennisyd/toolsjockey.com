@@ -243,7 +243,7 @@ function App() {
                 <Route path="tools/word-to-markdown" element={<WordToMarkdownPage />} />
                 <Route path="tools/excel-merger-splitter" element={<ExcelMergerSplitterPage />} />
                 <Route path="tools/csv-to-json" element={<CSVToJSONPage />} />
-                <Route path="tools/csv-tool-merger" element={<CSVToolMergerPage />} />
+                <Route path="tools/csv-merger" element={<CSVToolMergerPage />} />
                 <Route path="tools/color-picker" element={<ColorPickerTool />} />
                 <Route path="faq" element={<FAQ />} />
                 <Route path="terms" element={<Terms />} />
