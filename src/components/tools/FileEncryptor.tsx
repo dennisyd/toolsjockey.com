@@ -61,6 +61,16 @@ const FileEncryptor: React.FC = () => {
     return { encryptedData, iv, salt };
   };
 
+  // Helper to convert ArrayBuffer to base64
+  function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -102,7 +112,7 @@ const FileEncryptor: React.FC = () => {
       const encryptedBlob = new Blob([
         JSON.stringify(metadata),
         '\n',
-        result.encryptedData
+        arrayBufferToBase64(result.encryptedData)
       ], { type: 'application/octet-stream' });
 
       setEncryptedFile(encryptedBlob);
@@ -120,7 +130,10 @@ const FileEncryptor: React.FC = () => {
       const url = URL.createObjectURL(encryptedFile);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${selectedFile?.name || 'file'}.encrypted`;
+      // Use .encrypted extension after the original extension
+      let downloadName = selectedFile?.name || 'file';
+      downloadName = downloadName + '.encrypted';
+      a.download = downloadName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -281,6 +294,23 @@ const FileEncryptor: React.FC = () => {
         )}
 
         {/* Download Section */}
+        {encryptedFile && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  ⚠️ Important: Encrypted File Format
+                </h3>
+                <p className="text-yellow-700 dark:text-yellow-300 text-sm">
+                  The encrypted file will have a <b>.encrypted</b> extension (e.g., <b>report.xlsx.encrypted</b>).<br />
+                  <b>Do not try to open it directly in Excel, Word, or other programs.</b><br />
+                  To restore the original file, upload it to the Decryptor tool on ToolsJockey.com and enter your password.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {encryptedFile && (
           <div className="bg-white dark:bg-primary-light rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold mb-4">Download Encrypted File</h3>

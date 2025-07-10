@@ -48,6 +48,17 @@ const FileDecryptor: React.FC = () => {
     );
   };
 
+  // Helper to convert base64 to ArrayBuffer
+  function base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
   // Decrypt file with AES-256-GCM
   const decryptFile = async (file: File, password: string): Promise<ArrayBuffer> => {
     const fileBuffer = await file.arrayBuffer();
@@ -65,11 +76,8 @@ const FileDecryptor: React.FC = () => {
     const metadata: DecryptionMetadata = JSON.parse(metadataText);
     setMetadata(metadata);
     
-    // Convert encrypted data back to ArrayBuffer
-    const encryptedData = new Uint8Array(encryptedDataText.length);
-    for (let i = 0; i < encryptedDataText.length; i++) {
-      encryptedData[i] = encryptedDataText.charCodeAt(i);
-    }
+    // Convert encrypted data back to ArrayBuffer (from base64)
+    const encryptedData = base64ToArrayBuffer(encryptedDataText);
     
     const salt = new Uint8Array(metadata.salt);
     const iv = new Uint8Array(metadata.iv);
