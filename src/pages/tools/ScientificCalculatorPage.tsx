@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CalculatorIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useAnalytics } from '../../hooks/useAnalytics';
+import { evaluateMathExpression } from '../../utils/mathExpression';
 
 interface Calculation {
   expression: string;
@@ -25,12 +26,12 @@ const ScientificCalculatorPage: React.FC = () => {
 
   const buttons = [
     // Scientific functions
-    { label: 'sin', value: 'sin(', className: 'bg-blue-600 hover:bg-blue-700' },
-    { label: 'cos', value: 'cos(', className: 'bg-blue-600 hover:bg-blue-700' },
-    { label: 'tan', value: 'tan(', className: 'bg-blue-600 hover:bg-blue-700' },
-    { label: 'log', value: 'log(', className: 'bg-blue-600 hover:bg-blue-700' },
-    { label: 'ln', value: 'ln(', className: 'bg-blue-600 hover:bg-blue-700' },
-    { label: '√', value: 'sqrt(', className: 'bg-blue-600 hover:bg-blue-700' },
+    { label: 'sin', value: 'sin', className: 'bg-blue-600 hover:bg-blue-700' },
+    { label: 'cos', value: 'cos', className: 'bg-blue-600 hover:bg-blue-700' },
+    { label: 'tan', value: 'tan', className: 'bg-blue-600 hover:bg-blue-700' },
+    { label: 'log', value: 'log', className: 'bg-blue-600 hover:bg-blue-700' },
+    { label: 'ln', value: 'ln', className: 'bg-blue-600 hover:bg-blue-700' },
+    { label: '√', value: 'sqrt', className: 'bg-blue-600 hover:bg-blue-700' },
     { label: 'x²', value: '^2', className: 'bg-blue-600 hover:bg-blue-700' },
     { label: 'x³', value: '^3', className: 'bg-blue-600 hover:bg-blue-700' },
     { label: 'xʸ', value: '^', className: 'bg-blue-600 hover:bg-blue-700' },
@@ -100,8 +101,8 @@ const ScientificCalculatorPage: React.FC = () => {
       let newDisplay = display;
 
       // Handle special cases
-      if (['sin(', 'cos(', 'tan(', 'log(', 'ln(', 'sqrt('].includes(value)) {
-        // Function buttons
+      if (['sin', 'cos', 'tan', 'log', 'ln', 'sqrt'].includes(value)) {
+        // Function buttons (no parenthesis)
         newExpression += value;
         newDisplay = value;
       } else if (value === 'π') {
@@ -119,10 +120,15 @@ const ScientificCalculatorPage: React.FC = () => {
       } else if (value === '^') {
         newExpression += '^';
         newDisplay = '^';
-      } else if (['+', '-', '*', '/', '(', ')'].includes(value)) {
+      } else if (['+', '-', '*', '/', '('].includes(value)) {
         // Operators
         newExpression += value;
         newDisplay = value;
+      } else if (value === ')') {
+        // Closing parenthesis - special handling
+        newExpression += value;
+        // Don't change display immediately, let user see the full expression
+        newDisplay = display;
       } else {
         // Numbers and decimal point
         if (display === '0' || ['+', '-', '*', '/', '^', '(', 'π', 'e'].includes(display)) {
@@ -139,135 +145,29 @@ const ScientificCalculatorPage: React.FC = () => {
     }
   };
 
-  // Secure mathematical expression evaluator
-  const evaluateExpression = (expression: string): number => {
-    // Remove all whitespace
-    const cleanExpr = expression.replace(/\s/g, '');
-    
-    // Validate the expression contains only allowed characters
-    const allowedChars = /^[0-9+\-*/().,Math\s]+$/;
-    if (!allowedChars.test(cleanExpr)) {
-      throw new Error('Invalid characters in expression');
-    }
-    
-    // Create a safe evaluation context
-    const safeEval = (expr: string): number => {
-      // Use Function constructor instead of eval for better security
-      // This creates a new function scope with only Math object available
-      const func = new Function('Math', `return ${expr}`);
-      return func(Math);
-    };
-    
-    try {
-      return safeEval(cleanExpr);
-    } catch (error) {
-      throw new Error('Invalid mathematical expression');
-    }
-  };
-
   const calculateResult = async () => {
     if (!expression) return;
-
     setIsCalculating(true);
     setError(null);
-
     try {
-      let evalExpression = expression;
-      
-      // Replace mathematical symbols with JavaScript equivalents
-      evalExpression = evalExpression
-        .replace(/π/g, Math.PI.toString())
-        .replace(/e/g, Math.E.toString())
-        .replace(/\^/g, '**'); // Convert ^ to **
-
-      // Handle trigonometric functions with angle mode
-      if (angleMode === 'degrees') {
-        // Convert degrees to radians for trigonometric functions
-        evalExpression = evalExpression
-          .replace(/sin\(/g, 'Math.sin(Math.PI/180*')
-          .replace(/cos\(/g, 'Math.cos(Math.PI/180*')
-          .replace(/tan\(/g, 'Math.tan(Math.PI/180*');
-      } else {
-        // Use radians directly
-        evalExpression = evalExpression
-          .replace(/sin\(/g, 'Math.sin(')
-          .replace(/cos\(/g, 'Math.cos(')
-          .replace(/tan\(/g, 'Math.tan(');
-      }
-
-      // Handle other functions
-      evalExpression = evalExpression
-        .replace(/log\(/g, 'Math.log10(')
-        .replace(/ln\(/g, 'Math.log(')
-        .replace(/sqrt\(/g, 'Math.sqrt(');
-
-      // Basic validation
-      if (evalExpression.includes('Math.') && !evalExpression.includes('(')) {
-        throw new Error('Invalid function syntax');
-      }
-
-      // Evaluate the expression using secure evaluator
-      let result = evaluateExpression(evalExpression);
-
+      const result = evaluateMathExpression(expression, { angleMode });
       if (isNaN(result) || !isFinite(result)) {
         throw new Error('Invalid calculation');
       }
-
-      // Fix floating-point precision issues for common exact values
-      const roundedResult = fixFloatingPointPrecision(result);
-      
-      const resultString = roundedResult.toString();
+      const resultString = result.toString();
       setDisplay(resultString);
       setExpression(resultString);
-
-      // Add to history
       const calculation: Calculation = {
         expression: expression,
         result: resultString,
         timestamp: new Date()
       };
-
-      setHistory(prev => [calculation, ...prev.slice(0, 9)]); // Keep last 10 calculations
-
+      setHistory(prev => [calculation, ...prev.slice(0, 9)]);
     } catch (e: any) {
       setError('Invalid expression: ' + e.message);
     } finally {
       setIsCalculating(false);
     }
-  };
-
-  // Fix floating-point precision issues for common exact values
-  const fixFloatingPointPrecision = (value: number): number => {
-    // Common exact values that often have floating-point precision issues
-    const exactValues = [
-      { approx: 0, exact: 0 },
-      { approx: 1, exact: 1 },
-      { approx: -1, exact: -1 },
-      { approx: 0.5, exact: 0.5 },
-      { approx: -0.5, exact: -0.5 },
-      { approx: 0.7071067811865476, exact: Math.sqrt(2) / 2 }, // sin(45°), cos(45°)
-      { approx: -0.7071067811865476, exact: -Math.sqrt(2) / 2 },
-      { approx: 0.8660254037844386, exact: Math.sqrt(3) / 2 }, // sin(60°), cos(30°)
-      { approx: -0.8660254037844386, exact: -Math.sqrt(3) / 2 },
-      { approx: 0.5773502691896257, exact: 1 / Math.sqrt(3) }, // tan(30°)
-      { approx: -0.5773502691896257, exact: -1 / Math.sqrt(3) },
-      { approx: 1.7320508075688772, exact: Math.sqrt(3) }, // tan(60°)
-      { approx: -1.7320508075688772, exact: -Math.sqrt(3) },
-      { approx: 0.7853981633974483, exact: Math.PI / 4 }, // π/4
-      { approx: 1.5707963267948966, exact: Math.PI / 2 }, // π/2
-      { approx: 3.141592653589793, exact: Math.PI }, // π
-      { approx: 6.283185307179586, exact: 2 * Math.PI }, // 2π
-    ];
-
-    // Check if the value is very close to any exact value
-    for (const { approx, exact } of exactValues) {
-      if (Math.abs(value - approx) < 1e-14) {
-        return exact;
-      }
-    }
-
-    // For other values, round to 14 decimal places to avoid floating-point issues
-    return Math.round(value * 1e14) / 1e14;
   };
 
   const clearHistory = () => {
@@ -382,6 +282,11 @@ const ScientificCalculatorPage: React.FC = () => {
                 >
                   )
                 </button>
+              </div>
+              
+              {/* Help Text */}
+              <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                💡 Use functions like sin, cos, tan, log, ln, sqrt with explicit parentheses: e.g. cos(45), sin(30+15). Use ( and ) for grouping.
               </div>
             </div>
           </div>
