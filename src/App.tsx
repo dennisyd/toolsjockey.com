@@ -124,13 +124,6 @@ const InvestmentCalculatorPage = lazy(() => import('./pages/tools/InvestmentCalc
 const BMICalculatorPage = lazy(() => import('./pages/tools/BMICalculatorPage'));
 
 // Presentation tools - separate chunk
-const PPTXToPDFPage = lazy(() => import('./pages/tools/PPTXToPDFPage'));
-const PPTXToImagesPage = lazy(() => import('./pages/tools/PPTXToImagesPage'));
-const PPTXMergerPage = lazy(() => import('./pages/tools/PPTXMergerPage'));
-const PPTXSplitterPage = lazy(() => import('./pages/tools/PPTXSplitterPage'));
-const PPTXExtractTextPage = lazy(() => import('./pages/tools/PPTXExtractTextPage'));
-const PPTXMetadataEditorPage = lazy(() => import('./pages/tools/PPTXMetadataEditorPage'));
-const PPTXSlideCounterPage = lazy(() => import('./pages/tools/PPTXSlideCounterPage'));
 
 // Video tools - separate chunk
 const VideoConverterPage = lazy(() => import('./pages/tools/VideoConverterPage'));
@@ -300,13 +293,6 @@ function App() {
                 <Route path="tools/bmi-calculator" element={<BMICalculatorPage />} />
                 
                 {/* Presentation tool routes */}
-                <Route path="tools/pptx-to-pdf" element={<PPTXToPDFPage />} />
-                <Route path="tools/pptx-to-images" element={<PPTXToImagesPage />} />
-                <Route path="tools/pptx-merger" element={<PPTXMergerPage />} />
-                <Route path="tools/pptx-splitter" element={<PPTXSplitterPage />} />
-                <Route path="tools/pptx-extract-text" element={<PPTXExtractTextPage />} />
-                <Route path="tools/pptx-metadata-editor" element={<PPTXMetadataEditorPage />} />
-                <Route path="tools/pptx-slide-counter" element={<PPTXSlideCounterPage />} />
                 
                 {/* Audio tool routes */}
                 <Route path="tools/audio-converter" element={<AudioConverterPage />} />

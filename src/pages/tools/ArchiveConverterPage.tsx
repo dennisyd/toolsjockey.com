@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import JSZip from 'jszip';
+import pako from 'pako';
 import { Download, Upload, ArrowRight, File, Folder } from 'lucide-react';
 import { ArchiveBoxIcon } from '@heroicons/react/24/outline';
 import ArchiveToolPageLayout from '../../components/layout/ArchiveToolPageLayout';
@@ -13,7 +14,7 @@ interface ArchiveFile {
   path: string;
 }
 
-type TargetFormat = 'zip' | 'tar' | 'tar.gz' | 'tar.bz2';
+type TargetFormat = 'zip' | 'tar.gz';
 
 const ArchiveConverterPage: React.FC = () => {
   const [sourceArchive, setSourceArchive] = useState<JSZip | null>(null);
@@ -27,7 +28,6 @@ const ArchiveConverterPage: React.FC = () => {
   const [sourceSize, setSourceSize] = useState(0);
   const [targetSize, setTargetSize] = useState(0);
   const [compressionLevel, setCompressionLevel] = useState(6);
-  const [preserveStructure, setPreserveStructure] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cleanup blob URLs on unmount
@@ -118,25 +118,198 @@ const ArchiveConverterPage: React.FC = () => {
     setConvertedUrl(null);
     
     try {
-      // Note: This is a placeholder implementation
-      // In a real implementation, you would use specific libraries for each format
-      setError('Archive conversion requires specific libraries for each format. This is a demonstration of the interface.');
-      
-      // Simulate processing for demo
-      for (let i = 0; i <= 100; i += 10) {
-        setProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 100));
+      if (targetFormat === 'zip') {
+        await convertToZip();
+      } else if (targetFormat === 'tar.gz') {
+        await convertToTarGz();
       }
-      
-      // Simulate target size
-      setTargetSize(Math.floor(sourceSize * (0.8 + Math.random() * 0.4)));
-      
     } catch (e: any) {
       setError('Failed to convert archive: ' + e.message);
     }
     
     setIsProcessing(false);
     setTimeout(() => setProgress(0), 1000);
+  };
+
+  const convertToZip = async () => {
+    const newZip = new JSZip();
+    
+    // Extract and re-add files
+    let processed = 0;
+    const totalFiles = archiveFiles.length;
+    
+    for (const fileInfo of archiveFiles) {
+      if (!fileInfo.isDirectory) {
+        try {
+          const zipEntry = sourceArchive!.file(fileInfo.path);
+          if (zipEntry) {
+            const fileData = await zipEntry.async('uint8array');
+            newZip.file(fileInfo.path, fileData, {
+              compression: 'DEFLATE',
+              compressionOptions: {
+                level: Math.min(9, Math.max(1, compressionLevel))
+              }
+            });
+          }
+        } catch (e) {
+          console.warn(`Failed to process file: ${fileInfo.path}`);
+        }
+      }
+      processed++;
+      setProgress((processed / totalFiles) * 80);
+    }
+    
+    setProgress(90);
+    
+    // Generate the new zip file
+    const zipBlob = await newZip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: {
+        level: Math.min(9, Math.max(1, compressionLevel))
+      }
+    });
+    
+    setProgress(100);
+    
+    // Create download URL
+    const url = URL.createObjectURL(zipBlob);
+    setConvertedUrl(url);
+    setTargetSize(zipBlob.size);
+  };
+
+  const convertToTarGz = async () => {
+    // Create TAR structure from ZIP contents
+    const tarData = await createTarFromZip();
+    
+    setProgress(50);
+    
+    // Compress with gzip
+    const compressedData = pako.gzip(tarData, {
+      level: Math.min(9, Math.max(1, compressionLevel)) as 0|1|2|3|4|5|6|7|8|9
+    });
+    
+    setProgress(90);
+    
+    // Create blob and URL
+    const blob = new Blob([compressedData], { type: 'application/gzip' });
+    const url = URL.createObjectURL(blob);
+    setConvertedUrl(url);
+    setTargetSize(blob.size);
+    
+    setProgress(100);
+  };
+
+  const createTarFromZip = async (): Promise<Uint8Array> => {
+    const tarBlocks: Uint8Array[] = [];
+    
+    for (const fileInfo of archiveFiles) {
+      if (!fileInfo.isDirectory) {
+        try {
+          const zipEntry = sourceArchive!.file(fileInfo.path);
+          if (zipEntry) {
+            const fileData = await zipEntry.async('uint8array');
+            const fileBytes = new Uint8Array(fileData);
+            
+            // Create TAR header (512 bytes)
+            const header = new Uint8Array(512);
+            const encoder = new TextEncoder();
+            
+            // File name (100 bytes)
+            const nameBytes = encoder.encode(fileInfo.path);
+            header.set(nameBytes.slice(0, 100), 0);
+            
+            // File mode (8 bytes) - 0644
+            const modeBytes = encoder.encode('000644 ');
+            header.set(modeBytes, 100);
+            
+            // Owner ID (8 bytes)
+            const uidBytes = encoder.encode('000000 ');
+            header.set(uidBytes, 108);
+            
+            // Group ID (8 bytes)
+            const gidBytes = encoder.encode('000000 ');
+            header.set(gidBytes, 116);
+            
+            // File size (12 bytes) - octal
+            const sizeOctal = fileBytes.length.toString(8).padStart(11, '0') + ' ';
+            const sizeBytes = encoder.encode(sizeOctal);
+            header.set(sizeBytes, 124);
+            
+            // Modification time (12 bytes)
+            const timeOctal = Math.floor(Date.now() / 1000).toString(8).padStart(11, '0') + ' ';
+            const timeBytes = encoder.encode(timeOctal);
+            header.set(timeBytes, 136);
+            
+            // Checksum (8 bytes) - will be calculated
+            header.set(encoder.encode('        '), 148);
+            
+            // Type flag (1 byte) - '0' for regular file
+            header.set(encoder.encode('0'), 156);
+            
+            // Link name (100 bytes) - empty
+            header.set(new Uint8Array(100), 157);
+            
+            // Magic (6 bytes)
+            header.set(encoder.encode('ustar '), 257);
+            
+            // Version (2 bytes)
+            header.set(encoder.encode(' '), 263);
+            
+            // User name (32 bytes)
+            header.set(encoder.encode('toolsjockey'), 265);
+            
+            // Group name (32 bytes)
+            header.set(encoder.encode('toolsjockey'), 297);
+            
+            // Device major (8 bytes)
+            header.set(encoder.encode('000000 '), 329);
+            
+            // Device minor (8 bytes)
+            header.set(encoder.encode('000000 '), 337);
+            
+            // Prefix (155 bytes) - empty
+            header.set(new Uint8Array(155), 345);
+            
+            // Calculate checksum
+            let checksum = 0;
+            for (let j = 0; j < 512; j++) {
+              checksum += header[j];
+            }
+            const checksumOctal = checksum.toString(8).padStart(6, '0') + ' ';
+            const checksumBytes = encoder.encode(checksumOctal);
+            header.set(checksumBytes, 148);
+            
+            tarBlocks.push(header);
+            tarBlocks.push(fileBytes);
+            
+            // Pad to 512-byte boundary
+            const padding = 512 - (fileBytes.length % 512);
+            if (padding < 512) {
+              tarBlocks.push(new Uint8Array(padding));
+            }
+          }
+        } catch (e) {
+          console.warn(`Failed to process file: ${fileInfo.path}`);
+        }
+      }
+    }
+    
+    // Add two empty blocks at the end
+    tarBlocks.push(new Uint8Array(512));
+    tarBlocks.push(new Uint8Array(512));
+    
+    // Combine all blocks
+    const totalLength = tarBlocks.reduce((sum, block) => sum + block.length, 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    
+    for (const block of tarBlocks) {
+      result.set(block, offset);
+      offset += block.length;
+    }
+    
+    return result;
   };
 
   const downloadConverted = () => {
@@ -171,11 +344,7 @@ const ArchiveConverterPage: React.FC = () => {
   const getFormatInfo = (format: string) => {
     const info = {
       'zip': { name: 'ZIP', description: 'Universal archive format', compression: 'Good' },
-      '7z': { name: '7z', description: 'High compression format', compression: 'Excellent' },
-      'tar': { name: 'TAR', description: 'Uncompressed archive', compression: 'None' },
-      'tar.gz': { name: 'TAR.GZ', description: 'Gzip compressed', compression: 'Good' },
-      'tar.bz2': { name: 'TAR.BZ2', description: 'Bzip2 compressed', compression: 'Better' },
-      'rar': { name: 'RAR', description: 'Proprietary format', compression: 'Good' }
+      'tar.gz': { name: 'TAR.GZ', description: 'Gzip compressed archive', compression: 'Better' }
     };
     return info[format as keyof typeof info] || { name: format.toUpperCase(), description: '', compression: '' };
   };
@@ -203,123 +372,76 @@ const ArchiveConverterPage: React.FC = () => {
             Drag & drop archive file here, or click to select
           </p>
           <p className="text-sm text-gray-500">
-            Supports ZIP, 7z, TAR, RAR, and other formats
+            Supports ZIP, 7z, TAR, and other formats
           </p>
         </div>
-      </div>
-      {/* Progress */}
-      {isProcessing && (
-        <div className="mb-6">
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div
-              className="bg-accent h-3 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            ></div>
+        
+        {isProcessing && (
+          <div className="mt-4">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-accent h-2 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">Loading... {progress.toFixed(0)}%</p>
           </div>
-          <p className="text-center text-sm text-gray-600 mt-2">
-            Processing... {progress}%
-          </p>
-        </div>
-      )}
-      {/* Archive Info */}
+        )}
+        
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Archive Contents */}
       {archiveFiles.length > 0 && (
         <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Source Archive Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {archiveFiles.filter(f => !f.isDirectory).length}
+          <h2 className="text-xl font-semibold mb-4">Archive Contents ({archiveFiles.length} files)</h2>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {archiveFiles.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center flex-1 min-w-0">
+                  {file.isDirectory ? (
+                    <Folder className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0" />
+                  ) : (
+                    <File className="w-4 h-4 text-gray-500 mr-3 flex-shrink-0" />
+                  )}
+                  <span className="text-sm font-medium truncate">{file.name}</span>
+                </div>
+                <div className="flex items-center gap-3 ml-4">
+                  <span className="text-sm text-gray-500">
+                    {file.isDirectory ? 'Directory' : formatFileSize(file.size)}
+                  </span>
+                </div>
               </div>
-              <div className="text-sm text-gray-600">Files</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {formatFileSize(sourceSize)}
-              </div>
-              <div className="text-sm text-gray-600">Archive Size</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {getFormatInfo(targetFormat).name}
-              </div>
-              <div className="text-sm text-gray-600">Format</div>
-            </div>
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th className="text-left p-3">Type</th>
-                  <th className="text-left p-3">Name</th>
-                  <th className="text-left p-3">Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                {archiveFiles.slice(0, 10).map((file, index) => (
-                  <tr key={index} className="border-b border-gray-200 dark:border-gray-700">
-                    <td className="p-3">
-                      {file.isDirectory ? (
-                        <Folder className="w-4 h-4 text-blue-500" />
-                      ) : (
-                        <File className="w-4 h-4 text-gray-500" />
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <span className={file.isDirectory ? 'text-blue-600' : ''}>
-                        {file.name}
-                      </span>
-                    </td>
-                    <td className="p-3">{formatFileSize(file.size)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {archiveFiles.length > 10 && (
-              <p className="text-center text-sm text-gray-500 mt-2">
-                Showing first 10 files of {archiveFiles.length} total
-              </p>
-            )}
+            ))}
           </div>
         </div>
       )}
+
       {/* Conversion Settings */}
       {archiveFiles.length > 0 && (
         <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Conversion Settings</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Target Format */}
             <div>
               <label className="block text-sm font-medium mb-2">Target Format</label>
               <select
                 value={targetFormat}
                 onChange={e => setTargetFormat(e.target.value as TargetFormat)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-accent"
               >
                 <option value="zip">ZIP</option>
-                <option value="tar">TAR (Uncompressed)</option>
-                <option value="tar.gz">TAR.GZ (Gzip)</option>
-                <option value="tar.bz2">TAR.BZ2 (Bzip2)</option>
+                <option value="tar.gz">TAR.GZ</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 {getFormatInfo(targetFormat).description}
               </p>
             </div>
-            {/* Archive Name */}
             <div>
-              <label className="block text-sm font-medium mb-2">Output Archive Name</label>
-              <input
-                type="text"
-                value={archiveName}
-                onChange={e => setArchiveName(e.target.value)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                placeholder="converted_archive.zip"
-              />
-            </div>
-            {/* Compression Level */}
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Compression Level: {compressionLevel}
-              </label>
+              <label className="block text-sm font-medium mb-2">Compression Level: {compressionLevel}</label>
               <input
                 type="range"
                 min="1"
@@ -327,113 +449,98 @@ const ArchiveConverterPage: React.FC = () => {
                 value={compressionLevel}
                 onChange={e => setCompressionLevel(Number(e.target.value))}
                 className="w-full"
-                disabled={targetFormat === 'tar'}
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Fast (1)</span>
-                <span>Best (9)</span>
-              </div>
-            </div>
-            {/* Preserve Structure */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2">Options</label>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="preserveStructure"
-                  checked={preserveStructure}
-                  onChange={e => setPreserveStructure(e.target.checked)}
-                  className="mr-2"
-                />
-                <label htmlFor="preserveStructure" className="text-sm">
-                  Preserve folder structure
-                </label>
+                <span>Fast</span>
+                <span>Balanced</span>
+                <span>Best</span>
               </div>
             </div>
           </div>
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2">Output Archive Name</label>
+            <input
+              type="text"
+              value={archiveName}
+              onChange={e => setArchiveName(e.target.value)}
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-accent"
+              placeholder={`converted.${targetFormat}`}
+            />
+          </div>
         </div>
       )}
-      {/* Format Comparison */}
-      <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-blue-800 dark:text-blue-200">Format Comparison</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-          {(['zip', 'tar', 'tar.gz', 'tar.bz2'] as TargetFormat[]).map(format => {
-            const info = getFormatInfo(format);
-            const isSelected = format === targetFormat;
-            return (
-              <div
-                key={format}
-                className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                  isSelected
-                    ? 'border-accent bg-accent/10'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-accent'
-                }`}
-                onClick={() => setTargetFormat(format)}
-              >
-                <div className="font-medium mb-1">{info.name}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  {info.description}
-                </div>
-                <div className="text-xs">
-                  <span className="font-medium">Compression:</span> {info.compression}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+
       {/* Convert Button */}
       {archiveFiles.length > 0 && (
-        <div className="text-center mb-6">
+        <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
           <button
             onClick={convertArchive}
             disabled={isProcessing}
-            className="btn btn-primary text-lg px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+            className="w-full bg-accent hover:bg-accent/80 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            <ArrowRight className="w-5 h-5" />
-            {isProcessing ? 'Converting...' : 'Convert Archive'}
+            {isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Converting...
+              </>
+            ) : (
+              <>
+                <ArrowRight className="w-4 h-4" />
+                Convert to {getFormatInfo(targetFormat).name}
+              </>
+            )}
           </button>
+          
+          {isProcessing && (
+            <div className="mt-4">
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-accent h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">{progress.toFixed(0)}% Complete</p>
+            </div>
+          )}
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+            </div>
+          )}
         </div>
       )}
+
       {/* Results */}
-      {targetSize > 0 && (
+      {convertedUrl && (
         <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Conversion Complete!</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
-                {formatFileSize(sourceSize)}
-              </div>
-              <div className="text-sm text-gray-600">Original Size</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <h3 className="font-medium mb-2">Original Archive</h3>
+              <p className="text-sm text-gray-600">Size: {formatFileSize(sourceSize)}</p>
             </div>
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {formatFileSize(targetSize)}
-              </div>
-              <div className="text-sm text-gray-600">Converted Size</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">
-                {getCompressionRatio(sourceSize, targetSize)}%
-              </div>
-              <div className="text-sm text-gray-600">Size Change</div>
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <h3 className="font-medium mb-2">Converted Archive</h3>
+              <p className="text-sm text-gray-600">Size: {formatFileSize(targetSize)}</p>
+              <p className="text-sm text-green-600">
+                Compression: {getCompressionRatio(sourceSize, targetSize)}%
+              </p>
             </div>
           </div>
-          <div className="text-center">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-800 dark:text-green-200 font-medium">Archive Converted Successfully!</p>
+              <p className="text-green-700 dark:text-green-300 text-sm">Ready for download</p>
+            </div>
             <button
               onClick={downloadConverted}
-              className="btn btn-success text-lg px-6 py-3 flex items-center gap-2 mx-auto"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
-              <Download className="w-5 h-5" />
-              Download Converted Archive
+              <Download className="w-4 h-4" />
+              Download
             </button>
           </div>
-        </div>
-      )}
-      {/* Error */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-800 dark:text-red-200">
-          {error}
         </div>
       )}
     </ArchiveToolPageLayout>

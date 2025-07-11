@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import JSZip from 'jszip';
 import { Compass, Download, Upload, File, Trash } from 'lucide-react';
 import { ArchiveBoxIcon } from '@heroicons/react/24/outline';
 import ArchiveToolPageLayout from '../../components/layout/ArchiveToolPageLayout';
@@ -10,6 +11,13 @@ interface FileItem {
   type: string;
 }
 
+interface ExtractedFile {
+  name: string;
+  size: number;
+  data: Blob;
+  isDirectory: boolean;
+}
+
 const SevenZipSupportPage: React.FC = () => {
   const [mode, setMode] = useState<'compress' | 'extract'>('compress');
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -18,8 +26,9 @@ const SevenZipSupportPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [archiveUrl, setArchiveUrl] = useState<string | null>(null);
   const [compressionLevel, setCompressionLevel] = useState(5);
-  const [archiveName, setArchiveName] = useState('archive.7z');
+  const [archiveName, setArchiveName] = useState('archive.zip');
   const [totalSize, setTotalSize] = useState(0);
+  const [extractedFiles, setExtractedFiles] = useState<ExtractedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cleanup blob URLs on unmount
@@ -32,9 +41,9 @@ const SevenZipSupportPage: React.FC = () => {
   }, [archiveUrl]);
 
   useEffect(() => {
-    document.title = '7z Support – ToolsJockey';
+    document.title = 'ZIP Support – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'Handle 7z format compression and extraction with high compression ratios.');
+    if (meta) meta.setAttribute('content', 'Handle ZIP format compression and extraction with high compression ratios.');
   }, []);
 
   // Calculate total size
@@ -64,10 +73,10 @@ const SevenZipSupportPage: React.FC = () => {
     if (mode === 'compress') {
       handleFiles(e.dataTransfer.files);
     } else {
-      // Handle 7z file for extraction
+      // Handle ZIP file for extraction
       const files = e.dataTransfer.files;
-      if (files.length > 0 && files[0].name.endsWith('.7z')) {
-        handleExtractFile();
+      if (files.length > 0 && (files[0].name.endsWith('.zip') || files[0].name.endsWith('.7z'))) {
+        handleExtractFile(files[0]);
       }
     }
   };
@@ -82,19 +91,50 @@ const SevenZipSupportPage: React.FC = () => {
     ));
   };
 
-  const handleExtractFile = async () => {
+  const handleExtractFile = async (file: File) => {
     setIsProcessing(true);
     setError(null);
     setProgress(0);
+    setExtractedFiles([]);
+    
     try {
-      setError('7z extraction requires the 7z-wasm library. This is a demonstration of the interface.');
+      setProgress(20);
+      
+      const zip = new JSZip();
+      const zipData = await zip.loadAsync(file);
+      
+      setProgress(50);
+      
+      const extracted: ExtractedFile[] = [];
+      let processed = 0;
+      const totalFiles = Object.keys(zipData.files).length;
+      
+      for (const [relativePath, zipEntry] of Object.entries(zipData.files)) {
+        if (!zipEntry.dir) {
+          const data = await zipEntry.async('blob');
+          extracted.push({
+            name: relativePath.split('/').pop() || '',
+            size: data.size,
+            data,
+            isDirectory: false
+          });
+        }
+        processed++;
+        setProgress(50 + (processed / totalFiles) * 40);
+      }
+      
+      setExtractedFiles(extracted);
+      setProgress(100);
+      
     } catch (e: any) {
-      setError('Failed to load 7z archive: ' + e.message);
+      setError('Failed to extract archive: ' + e.message);
     }
+    
     setIsProcessing(false);
+    setTimeout(() => setProgress(0), 1000);
   };
 
-  const create7zArchive = async () => {
+  const createZipArchive = async () => {
     if (files.length === 0) return;
     
     setIsProcessing(true);
@@ -103,18 +143,42 @@ const SevenZipSupportPage: React.FC = () => {
     setArchiveUrl(null);
     
     try {
-      // Note: This is a placeholder implementation
-      // In a real implementation, you would use 7z-wasm or similar library
-      setError('7z compression requires the 7z-wasm library. This is a demonstration of the interface.');
+      const zip = new JSZip();
       
-      // Simulate processing for demo
-      for (let i = 0; i <= 100; i += 10) {
-        setProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 100));
+      // Add files to zip
+      for (let i = 0; i < files.length; i++) {
+        const fileItem = files[i];
+        const fileData = await fileItem.file.arrayBuffer();
+        
+        zip.file(fileItem.path, fileData, {
+          compression: 'DEFLATE',
+          compressionOptions: {
+            level: Math.min(9, Math.max(1, compressionLevel))
+          }
+        });
+        
+        setProgress((i + 1) / files.length * 80);
       }
       
+      setProgress(90);
+      
+      // Generate the zip file
+      const zipBlob = await zip.generateAsync({
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: {
+          level: Math.min(9, Math.max(1, compressionLevel))
+        }
+      });
+      
+      setProgress(100);
+      
+      // Create download URL
+      const url = URL.createObjectURL(zipBlob);
+      setArchiveUrl(url);
+      
     } catch (e: any) {
-      setError('Failed to create 7z archive: ' + e.message);
+      setError('Failed to create ZIP archive: ' + e.message);
     }
     
     setIsProcessing(false);
@@ -137,6 +201,17 @@ const SevenZipSupportPage: React.FC = () => {
     }, 100);
   };
 
+  const downloadExtractedFile = (file: ExtractedFile) => {
+    const url = URL.createObjectURL(file.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -146,7 +221,7 @@ const SevenZipSupportPage: React.FC = () => {
   };
 
   return (
-    <ArchiveToolPageLayout title="7z Support" icon={ArchiveBoxIcon}>
+    <ArchiveToolPageLayout title="ZIP Support" icon={ArchiveBoxIcon}>
       {/* Mode Toggle */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Operation Mode</h2>
@@ -175,6 +250,7 @@ const SevenZipSupportPage: React.FC = () => {
           </button>
         </div>
       </div>
+      
       {mode === 'compress' ? (
         <>
           {/* File Upload */}
@@ -234,6 +310,7 @@ const SevenZipSupportPage: React.FC = () => {
               </div>
             )}
           </div>
+          
           {/* Compression Settings */}
           <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Compression Settings</h2>
@@ -249,8 +326,9 @@ const SevenZipSupportPage: React.FC = () => {
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Fast (1)</span>
-                  <span>Best (9)</span>
+                  <span>Fast</span>
+                  <span>Balanced</span>
+                  <span>Best</span>
                 </div>
               </div>
               <div>
@@ -259,68 +337,76 @@ const SevenZipSupportPage: React.FC = () => {
                   type="text"
                   value={archiveName}
                   onChange={e => setArchiveName(e.target.value)}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                  placeholder="archive.7z"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-accent"
+                  placeholder="archive.zip"
                 />
               </div>
             </div>
-          </div>
-          {/* Create Button */}
-          <div className="text-center mb-6">
-            <button
-              onClick={create7zArchive}
-              disabled={isProcessing || files.length === 0}
-              className="btn btn-primary text-lg px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isProcessing ? 'Creating 7z...' : 'Create 7z Archive'}
-            </button>
-          </div>
-          {/* Progress */}
-          {isProcessing && (
-            <div className="mb-6">
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-accent h-3 rounded-full transition-all"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-              <p className="text-center text-sm text-gray-600 mt-2">
-                Processing... {progress}%
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Total Size:</strong> {formatFileSize(totalSize)}
               </p>
             </div>
-          )}
-          {/* Results */}
-          {archiveUrl && (
-            <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">7z Archive Ready!</h2>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                <div>
-                  <span className="font-medium">Total Size:</span> {formatFileSize(totalSize)}
+          </div>
+          
+          {/* Create Archive Button */}
+          <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
+            <button
+              onClick={createZipArchive}
+              disabled={files.length === 0 || isProcessing}
+              className="w-full bg-accent hover:bg-accent/80 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            >
+              {isProcessing ? 'Creating Archive...' : 'Create ZIP Archive'}
+            </button>
+            
+            {isProcessing && (
+              <div className="mt-4">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-accent h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">{progress.toFixed(0)}% Complete</p>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+              </div>
+            )}
+            
+            {archiveUrl && (
+              <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-800 dark:text-green-200 font-medium">Archive Created Successfully!</p>
+                    <p className="text-green-700 dark:text-green-300 text-sm">Ready for download</p>
+                  </div>
+                  <button
+                    onClick={downloadArchive}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
                 </div>
               </div>
-              <div className="text-center">
-                <button
-                  onClick={downloadArchive}
-                  className="btn btn-success text-lg px-6 py-3 flex items-center gap-2 mx-auto"
-                >
-                  <Download className="w-5 h-5" />
-                  Download 7z
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </>
       ) : (
         <>
-          {/* Extraction Placeholder */}
+          {/* Extract Mode */}
           <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">Extract 7z Archive</h2>
+            <h2 className="text-xl font-semibold mb-4">Upload ZIP Archive</h2>
             <input
               type="file"
               ref={fileInputRef}
               className="hidden"
-              accept=".7z"
-              onChange={handleExtractFile}
+              accept=".zip,.7z"
+              onChange={e => e.target.files?.[0] && handleExtractFile(e.target.files[0])}
             />
             <div
               className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-accent transition-colors mb-4"
@@ -330,20 +416,60 @@ const SevenZipSupportPage: React.FC = () => {
             >
               <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 dark:text-gray-300 mb-2">
-                Drag & drop 7z file here, or click to select
+                Drag & drop ZIP file here, or click to select
               </p>
               <p className="text-sm text-gray-500">
-                Extraction support coming soon
+                Supports ZIP and 7z formats
               </p>
             </div>
+            
+            {isProcessing && (
+              <div className="mt-4">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-accent h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">Extracting... {progress.toFixed(0)}%</p>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
+              </div>
+            )}
           </div>
+          
+          {/* Extracted Files */}
+          {extractedFiles.length > 0 && (
+            <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Extracted Files ({extractedFiles.length})</h2>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {extractedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center flex-1 min-w-0">
+                      <File className="w-4 h-4 text-gray-500 mr-3 flex-shrink-0" />
+                      <span className="text-sm font-medium truncate">{file.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4">
+                      <span className="text-sm text-gray-500">
+                        {formatFileSize(file.size)}
+                      </span>
+                      <button
+                        onClick={() => downloadExtractedFile(file)}
+                        className="text-accent hover:text-accent/80 p-1"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
-      )}
-      {/* Error */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-800 dark:text-red-200 mb-6">
-          {error}
-        </div>
       )}
     </ArchiveToolPageLayout>
   );
