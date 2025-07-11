@@ -75,6 +75,11 @@ const groupLabels: Record<string, { label: string; description: string; icon?: s
     description: 'Client-side encryption and security tools',
     icon: '🔒'
   },
+  email: { 
+    label: 'Email Tools', 
+    description: 'Email validation, signatures, and templates',
+    icon: '📧'
+  },
 };
 
 // Group tools by category
@@ -233,7 +238,7 @@ const NavBar: React.FC = () => {
                   <div className="p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {grouped
-                        .filter(([group]) => ['color', 'quick', 'converter'].includes(group))
+                        .filter(([group]) => ['color', 'quick', 'converter', 'email'].includes(group))
                         .map(([group, tools]) => (
                         <div key={group} className="p-3 rounded-lg hover:bg-gray-700 transition-colors">
                           <div className="flex items-center gap-2 mb-2">

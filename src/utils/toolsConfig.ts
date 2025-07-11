@@ -25,6 +25,8 @@ import {
   CurrencyDollarIcon,
   HeartIcon,
   PresentationChartBarIcon,
+  EnvelopeIcon,
+  DevicePhoneMobileIcon,
 
   ArrowPathIcon,
   ArrowUpTrayIcon,
@@ -800,6 +802,39 @@ export const toolsConfig: ToolMeta[] = [
     badges: ['NEW'],
     group: 'privacy',
   },
+  // Email Tools
+  {
+    id: 'email-validator',
+    title: 'Email Validator',
+    path: '/tools/email-validator',
+    description: 'Validate single emails or bulk validate via CSV upload. Check format, disposable domains, and export results.',
+    icon: EnvelopeIcon, // Use a suitable icon import or fallback
+    group: 'email',
+  },
+  {
+    id: 'email-signature-generator',
+    title: 'Email Signature Generator',
+    path: '/tools/email-signature-generator',
+    description: 'Create professional email signatures with multiple templates. Live preview and export options.',
+    icon: PencilSquareIcon, // Use a suitable icon import or fallback
+    group: 'email',
+  },
+  {
+    id: 'email-template-tester',
+    title: 'Email Template Tester',
+    path: '/tools/email-template-tester',
+    description: 'Test HTML emails across different devices and email clients. Check deliverability and responsive design.',
+    icon: DevicePhoneMobileIcon, // Use a suitable icon import or fallback
+    group: 'email',
+  },
+  {
+    id: 'markdown-to-email',
+    title: 'Markdown to Email Converter',
+    path: '/tools/markdown-to-email',
+    description: 'Convert Markdown to email-optimized HTML with live preview and export options.',
+    icon: DocumentTextIcon, // Use a suitable icon import or fallback
+    group: 'email',
+  },
 ];
 
 // Optionally, export group metadata for section headers, icons, etc.
@@ -817,4 +852,5 @@ export const toolGroups = [
   { id: 'presentation', label: '📊 Presentation Tools', icon: PresentationChartBarIcon },
   { id: 'calculation', label: '🧮 Calculation Tools', icon: CalculatorIcon },
   { id: 'privacy', label: '🔒 Privacy Tools', icon: ShieldCheckIcon },
+  { id: 'email', label: '📧 Email Tools', icon: EnvelopeIcon },
 ]; 

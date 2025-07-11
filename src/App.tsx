@@ -45,6 +45,7 @@ import ExcelCsvToolsPage from './pages/excelcsv-tools';
 import JSONToExcelPage from './pages/tools/JSONToExcelPage';
 import XMLToExcelPage from './pages/tools/XMLToExcelPage';
 import CSVToExcelPage from './pages/tools/CSVToExcelPage';
+import EmailToolsPage from './pages/email-tools';
 
 // Lazy load pages - Grouped by category for better chunking
 const AudioConverterPage = lazy(() => import('./pages/tools/AudioConverterPage'));
@@ -156,6 +157,12 @@ const RandomDataGeneratorPage = lazy(() => import('./pages/tools/RandomDataGener
 const EXIFDataViewerPage = lazy(() => import('./pages/tools/EXIFDataViewerPage'));
 const FileHashVerifierPage = lazy(() => import('./pages/tools/FileHashVerifierPage'));
 
+// Email tools - separate chunk
+const EmailValidatorPage = lazy(() => import('./pages/tools/EmailValidatorPage'));
+const EmailSignatureGeneratorPage = lazy(() => import('./pages/tools/EmailSignatureGeneratorPage'));
+const EmailTemplateTesterPage = lazy(() => import('./pages/tools/EmailTemplateTesterPage'));
+const MarkdownToEmailPage = lazy(() => import('./pages/tools/MarkdownToEmailPage'));
+
 // Loading fallback
 const LoadingFallback = () => (
   <div className="flex flex-col items-center justify-center h-screen">
@@ -221,6 +228,7 @@ function App() {
                 <Route path="color-design-tools" element={<ColorDesignToolsPage />} />
                 <Route path="word-tools" element={<WordToolsPage />} />
                 <Route path="excelcsv-tools" element={<ExcelCsvToolsPage />} />
+                <Route path="email-tools" element={<EmailToolsPage />} />
                 
                 {/* Individual tool routes */}
                 <Route path="tools/image-sharpener" element={<ImageSharpenerPage />} />
@@ -350,6 +358,12 @@ function App() {
                 <Route path="edit-metadata" element={<EditMetadataPage />} />
                 <Route path="compress-pdf" element={<CompressPDFPage />} />
                 <Route path="unlock-pdf" element={<UnlockPDFPage />} />
+                
+                {/* Email tool routes */}
+                <Route path="tools/email-validator" element={<EmailValidatorPage />} />
+                <Route path="tools/email-signature-generator" element={<EmailSignatureGeneratorPage />} />
+                <Route path="tools/email-template-tester" element={<EmailTemplateTesterPage />} />
+                <Route path="tools/markdown-to-email" element={<MarkdownToEmailPage />} />
                 
                 <Route path="not-found" element={<NotFound />} />
                 <Route path="*" element={<NotFound />} />
