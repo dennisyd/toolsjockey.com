@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface EmailValidationResult {
   email: string;
@@ -8,6 +9,7 @@ interface EmailValidationResult {
 }
 
 const EmailValidatorPage: React.FC = () => {
+  const { trackButtonClick, trackToolUsage } = useAnalytics();
   const [singleEmail, setSingleEmail] = useState('');
   const [singleResult, setSingleResult] = useState<EmailValidationResult | null>(null);
   const [bulkResults, setBulkResults] = useState<EmailValidationResult[]>([]);
@@ -76,6 +78,8 @@ const EmailValidatorPage: React.FC = () => {
   };
 
   const handleSingleEmailValidation = () => {
+    trackButtonClick('email_validator_single_validate', 'EmailValidator');
+    
     if (!singleEmail.trim()) {
       setSingleResult({
         email: singleEmail,
@@ -87,10 +91,19 @@ const EmailValidatorPage: React.FC = () => {
 
     const result = validateEmail(singleEmail);
     setSingleResult(result);
+    
+    trackToolUsage('email_validator', 'single_validation', {
+      email_count: 1,
+      result_status: result.status
+    });
   };
 
   const handleBulkValidation = async (file: File) => {
-    // setIsProcessing(true); // This line is removed
+    trackButtonClick('email_validator_bulk_validate', 'EmailValidator');
+    trackToolUsage('email_validator', 'bulk_validation_start', {
+      file_size: file.size,
+      file_type: file.type
+    });
     
     try {
       const text = await file.text();
@@ -105,16 +118,30 @@ const EmailValidatorPage: React.FC = () => {
       }
 
       setBulkResults(results);
+      
+      trackToolUsage('email_validator', 'bulk_validation_complete', {
+        email_count: results.length,
+        valid_count: results.filter(r => r.status === 'Valid').length,
+        invalid_count: results.filter(r => r.status === 'Invalid').length,
+        disposable_count: results.filter(r => r.status === 'Disposable').length,
+        suspicious_count: results.filter(r => r.status === 'Suspicious').length
+      });
     } catch (error) {
       console.error('Error processing file:', error);
       alert('Error processing file. Please ensure it\'s a valid CSV file.');
-    } finally {
-      // setIsProcessing(false); // This line is removed
+      trackToolUsage('email_validator', 'bulk_validation_error', {
+        error_message: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   };
 
   const exportResults = () => {
     if (bulkResults.length === 0) return;
+
+    trackButtonClick('email_validator_export_results', 'EmailValidator');
+    trackToolUsage('email_validator', 'export_results', {
+      result_count: bulkResults.length
+    });
 
     const csvContent = [
       'Email,Status,Message',

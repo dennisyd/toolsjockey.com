@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 // Minimal markdown parser (for demo, use a real one for production)
 function simpleMarkdownToHtml(md: string): string {
@@ -29,12 +30,23 @@ const emailSafeStyles = `
 `;
 
 const MarkdownToEmailPage: React.FC = () => {
+  const { trackButtonClick, trackToolUsage } = useAnalytics();
   const [markdown, setMarkdown] = useState('');
   const [html, setHtml] = useState('');
 
   const handleMarkdownChange = (md: string) => {
     setMarkdown(md);
     setHtml(simpleMarkdownToHtml(md));
+    
+    // Track markdown content changes
+    trackToolUsage('markdown_to_email', 'markdown_changed', {
+      content_length: md.length,
+      has_headers: md.includes('#'),
+      has_links: md.includes('[') && md.includes(']('),
+      has_images: md.includes('!['),
+      has_bold: md.includes('**'),
+      has_italic: md.includes('*')
+    });
   };
 
   const getEmailHtml = () => {
@@ -42,6 +54,11 @@ const MarkdownToEmailPage: React.FC = () => {
   };
 
   const copyToClipboard = async () => {
+    trackButtonClick('markdown_to_email_copy', 'MarkdownToEmail');
+    trackToolUsage('markdown_to_email', 'copy_html', {
+      html_length: getEmailHtml().length
+    });
+    
     try {
       await navigator.clipboard.writeText(getEmailHtml());
       alert('Copied HTML to clipboard!');
@@ -51,6 +68,11 @@ const MarkdownToEmailPage: React.FC = () => {
   };
 
   const downloadHtml = () => {
+    trackButtonClick('markdown_to_email_download', 'MarkdownToEmail');
+    trackToolUsage('markdown_to_email', 'download_html', {
+      html_length: getEmailHtml().length
+    });
+    
     const blob = new Blob([getEmailHtml()], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

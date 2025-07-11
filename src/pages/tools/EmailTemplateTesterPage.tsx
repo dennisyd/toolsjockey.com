@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface DeliverabilityIssue {
   type: 'warning' | 'error';
@@ -8,6 +9,7 @@ interface DeliverabilityIssue {
 }
 
 const EmailTemplateTesterPage: React.FC = () => {
+  const { trackButtonClick, trackToolUsage } = useAnalytics();
   const [htmlContent, setHtmlContent] = useState('');
   const [selectedDevice, setSelectedDevice] = useState('desktop');
   const [selectedClient, setSelectedClient] = useState('gmail');
@@ -104,6 +106,26 @@ const EmailTemplateTesterPage: React.FC = () => {
   const handleHtmlChange = (content: string) => {
     setHtmlContent(content);
     checkDeliverability(content);
+    
+    // Track HTML content changes
+    trackToolUsage('email_template_tester', 'html_content_changed', {
+      content_length: content.length,
+      has_doctype: content.includes('<!DOCTYPE html>'),
+      has_external_css: content.includes('<link') && content.includes('stylesheet'),
+      has_javascript: content.includes('<script')
+    });
+  };
+
+  const handleDeviceChange = (device: string) => {
+    setSelectedDevice(device);
+    trackButtonClick('email_template_tester_device_change', 'EmailTemplateTester');
+    trackToolUsage('email_template_tester', 'device_changed', { device });
+  };
+
+  const handleClientChange = (client: string) => {
+    setSelectedClient(client);
+    trackButtonClick('email_template_tester_client_change', 'EmailTemplateTester');
+    trackToolUsage('email_template_tester', 'client_changed', { client });
   };
 
   const inlineCSS = (html: string) => {
@@ -266,7 +288,7 @@ const EmailTemplateTesterPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Device</label>
                   <select
                     value={selectedDevice}
-                    onChange={(e) => setSelectedDevice(e.target.value)}
+                    onChange={(e) => handleDeviceChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {Object.entries(devices).map(([key, device]) => (
@@ -279,7 +301,7 @@ const EmailTemplateTesterPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email Client</label>
                   <select
                     value={selectedClient}
-                    onChange={(e) => setSelectedClient(e.target.value)}
+                    onChange={(e) => handleClientChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {Object.entries(emailClients).map(([key, client]) => (

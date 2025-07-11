@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface SignatureData {
   name: string;
@@ -15,6 +16,7 @@ interface SignatureData {
 }
 
 const EmailSignatureGeneratorPage: React.FC = () => {
+  const { trackButtonClick, trackToolUsage } = useAnalytics();
   const [signatureData, setSignatureData] = useState<SignatureData>({
     name: '',
     title: '',
@@ -190,6 +192,12 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   };
 
   const copyToClipboard = async (text: string) => {
+    trackButtonClick('email_signature_copy', 'EmailSignatureGenerator');
+    trackToolUsage('email_signature_generator', 'copy_signature', {
+      template: selectedTemplate,
+      preview_mode: previewMode
+    });
+    
     try {
       await navigator.clipboard.writeText(text);
       alert('Copied to clipboard!');
@@ -200,6 +208,12 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   };
 
   const downloadHTML = () => {
+    trackButtonClick('email_signature_download', 'EmailSignatureGenerator');
+    trackToolUsage('email_signature_generator', 'download_signature', {
+      template: selectedTemplate,
+      has_logo: !!signatureData.logo
+    });
+    
     const html = generateSignatureHTML();
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
