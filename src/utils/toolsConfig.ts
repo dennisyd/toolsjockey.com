@@ -25,8 +25,7 @@ import {
   CurrencyDollarIcon,
   HeartIcon,
   PresentationChartBarIcon,
-  DocumentArrowDownIcon,
-  DocumentArrowUpIcon,
+
   ArrowPathIcon,
   ArrowUpTrayIcon,
   AdjustmentsHorizontalIcon,
