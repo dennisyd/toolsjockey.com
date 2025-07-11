@@ -120,7 +120,7 @@ const NavBar: React.FC = () => {
         <div className="hidden md:flex items-center gap-2 ml-8 flex-1 justify-end">
           {/* Main visible categories */}
           {grouped
-            .filter(([group]) => ['pdf', 'excelcsv', 'image', 'developer', 'archive', 'media', 'calculation', 'privacy', 'word'].includes(group))
+            .filter(([group]) => ['pdf', 'excelcsv', 'image', 'developer', 'archive', 'media', 'calculation', 'privacy', 'word'].includes(group) && group !== 'presentation')
             .map(([group, tools]) => (
             <div key={group} className="relative">
               <button
@@ -233,7 +233,7 @@ const NavBar: React.FC = () => {
                   <div className="p-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {grouped
-                        .filter(([group]) => ['color', 'quick', 'converter', 'presentation'].includes(group))
+                        .filter(([group]) => ['color', 'quick', 'converter'].includes(group))
                         .map(([group, tools]) => (
                         <div key={group} className="p-3 rounded-lg hover:bg-gray-700 transition-colors">
                           <div className="flex items-center gap-2 mb-2">

@@ -18,23 +18,9 @@ const PresentationToolsPage: React.FC = () => {
             <h1 className="text-4xl font-bold text-gray-900">Presentation Tools</h1>
           </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Professional presentation and document tools for converting, editing, and managing PowerPoint files.
+            There are currently no presentation tools available.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {presentationTools.map(tool => (
-            <ToolCard 
-              key={tool.id} 
-              title={tool.title}
-              description={tool.description}
-              path={tool.path}
-              icon={tool.icon}
-              isNew={tool.badges?.includes('NEW')}
-            />
-          ))}
-        </div>
-
         <div className="mt-12 text-center">
           <Link
             to="/"
