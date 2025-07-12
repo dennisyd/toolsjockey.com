@@ -114,6 +114,10 @@ const ExcelToFormatsConverter: React.FC = () => {
     layout: 'table',
     branding: false,
     charts: false,
+    orientation: 'portrait',
+    fontSize: 8,
+    maxRows: 100,
+    includeHeaders: true,
   };
   const defaultSheetsOptions: SheetsOptions = {
     formulaPreservation: false,
@@ -236,11 +240,34 @@ const ExcelToFormatsConverter: React.FC = () => {
               <option value="detailed">Detailed</option>
             </select>
           </label>
+          <label className="block mb-1 text-xs">Orientation:
+            <select value={pdfOptions.orientation} onChange={e => setPDFOptions(o => ({ ...o, orientation: e.target.value as any }))} className="ml-2">
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
+            </select>
+          </label>
+          <label className="block mb-1 text-xs">Font Size:
+            <select value={pdfOptions.fontSize} onChange={e => setPDFOptions(o => ({ ...o, fontSize: parseInt(e.target.value) }))} className="ml-2">
+              <option value={6}>6pt</option>
+              <option value={8}>8pt</option>
+              <option value={10}>10pt</option>
+              <option value={12}>12pt</option>
+            </select>
+          </label>
+          <label className="block mb-1 text-xs">Max Rows:
+            <select value={pdfOptions.maxRows} onChange={e => setPDFOptions(o => ({ ...o, maxRows: parseInt(e.target.value) }))} className="ml-2">
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={250}>250</option>
+              <option value={500}>500</option>
+              <option value={1000}>1000</option>
+            </select>
+          </label>
+          <label className="block mb-1 text-xs">Include Headers:
+            <input type="checkbox" checked={pdfOptions.includeHeaders} onChange={e => setPDFOptions(o => ({ ...o, includeHeaders: e.target.checked }))} className="ml-2" />
+          </label>
           <label className="block mb-1 text-xs">Branding:
             <input type="checkbox" checked={pdfOptions.branding} onChange={e => setPDFOptions(o => ({ ...o, branding: e.target.checked }))} className="ml-2" />
-          </label>
-          <label className="block mb-1 text-xs">Charts:
-            <input type="checkbox" checked={pdfOptions.charts} onChange={e => setPDFOptions(o => ({ ...o, charts: e.target.checked }))} className="ml-2" />
           </label>
         </div>
       )}

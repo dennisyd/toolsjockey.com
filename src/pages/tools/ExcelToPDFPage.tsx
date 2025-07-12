@@ -7,6 +7,10 @@ const defaultOptions: PDFOptions = {
   layout: 'table',
   branding: true,
   charts: false,
+  orientation: 'portrait',
+  fontSize: 8,
+  maxRows: 100,
+  includeHeaders: true,
 };
 
 const ExcelToPDFPage: React.FC = () => {
@@ -14,6 +18,7 @@ const ExcelToPDFPage: React.FC = () => {
   const [options, setOptions] = useState<PDFOptions>(defaultOptions);
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
@@ -21,6 +26,8 @@ const ExcelToPDFPage: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setFileName(file.name.replace(/\.[^.]+$/, ''));
+    setIsProcessing(true);
+    
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: 'array' });
@@ -31,6 +38,8 @@ const ExcelToPDFPage: React.FC = () => {
     } catch (err: any) {
       setError('Failed to parse Excel file or generate PDF.');
       setPdfBlob(null);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -46,31 +55,155 @@ const ExcelToPDFPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
       <h1 className="text-3xl font-bold mb-4">Excel to PDF Converter</h1>
-      <p className="mb-4 text-gray-600">Convert your Excel (.xlsx) files to PDF format. Choose layout and branding options.</p>
-      <input type="file" accept=".xlsx,.xls" onChange={handleFile} className="mb-4" />
-      <div className="mb-4 flex gap-4 flex-wrap">
-        <label>
-          Layout:
-          <select value={options.layout} onChange={e => setOptions(o => ({ ...o, layout: e.target.value as any }))} className="ml-2">
-            <option value="table">Table</option>
-            <option value="report">Report</option>
-            <option value="summary">Summary</option>
-            <option value="detailed">Detailed</option>
-          </select>
-        </label>
-        <label>
-          <input type="checkbox" checked={options.branding} onChange={e => setOptions(o => ({ ...o, branding: e.target.checked }))} className="ml-2" /> Branding
-        </label>
-        <label>
-          <input type="checkbox" checked={options.charts} onChange={e => setOptions(o => ({ ...o, charts: e.target.checked }))} className="ml-2" /> Charts (if supported)
-        </label>
+      
+      {/* Use Case Information */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h2 className="text-lg font-semibold text-blue-800 mb-2">📋 Best Use Cases</h2>
+        <ul className="text-sm text-blue-700 space-y-1">
+          <li>• <strong>Small to medium datasets</strong> (up to 1000 rows recommended)</li>
+          <li>• <strong>Simple tables</strong> with standard column headers</li>
+          <li>• <strong>Reports and summaries</strong> for sharing or printing</li>
+          <li>• <strong>Data snapshots</strong> for documentation</li>
+        </ul>
+        
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+          <h3 className="text-sm font-semibold text-yellow-800 mb-1">⚠️ Limitations</h3>
+          <ul className="text-xs text-yellow-700 space-y-1">
+            <li>• <strong>Wide tables</strong> with many columns may not display properly</li>
+            <li>• <strong>Long header names</strong> may be truncated</li>
+            <li>• <strong>Complex formatting</strong> (colors, formulas) is not preserved</li>
+            <li>• <strong>Large datasets</strong> (&gt;1000 rows) may be slow or incomplete</li>
+          </ul>
+        </div>
       </div>
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-      {pdfBlob && (
-        <button onClick={handleDownload} className="btn btn-primary mb-2">Download PDF</button>
-      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* File Upload Section */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Excel File
+            </label>
+            <input 
+              type="file" 
+              accept=".xlsx,.xls" 
+              onChange={handleFile} 
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {isProcessing && (
+            <div className="text-blue-600 text-sm">Processing your file...</div>
+          )}
+
+          {error && (
+            <div className="text-red-600 text-sm bg-red-50 p-3 rounded">{error}</div>
+          )}
+
+          {pdfBlob && (
+            <button 
+              onClick={handleDownload} 
+              className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+            >
+              Download PDF
+            </button>
+          )}
+        </div>
+
+        {/* Options Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-800">PDF Options</h3>
+          
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Layout Style
+              </label>
+              <select 
+                value={options.layout} 
+                onChange={e => setOptions(o => ({ ...o, layout: e.target.value as any }))} 
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="table">Table - Standard grid layout</option>
+                <option value="report">Report - Professional report format</option>
+                <option value="summary">Summary - First 10 rows with statistics</option>
+                <option value="detailed">Detailed - Full data with page numbers</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Orientation
+              </label>
+              <select 
+                value={options.orientation} 
+                onChange={e => setOptions(o => ({ ...o, orientation: e.target.value as any }))} 
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="portrait">Portrait - Better for tall tables</option>
+                <option value="landscape">Landscape - Better for wide tables</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Font Size
+              </label>
+              <select 
+                value={options.fontSize} 
+                onChange={e => setOptions(o => ({ ...o, fontSize: parseInt(e.target.value) }))} 
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value={6}>6pt - Small (more data per page)</option>
+                <option value={8}>8pt - Medium (default)</option>
+                <option value={10}>10pt - Large (easier to read)</option>
+                <option value={12}>12pt - Extra Large (very readable)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Maximum Rows
+              </label>
+              <select 
+                value={options.maxRows} 
+                onChange={e => setOptions(o => ({ ...o, maxRows: parseInt(e.target.value) }))} 
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value={50}>50 rows</option>
+                <option value={100}>100 rows (default)</option>
+                <option value={250}>250 rows</option>
+                <option value={500}>500 rows</option>
+                <option value={1000}>1000 rows (max)</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  checked={options.includeHeaders} 
+                  onChange={e => setOptions(o => ({ ...o, includeHeaders: e.target.checked }))} 
+                  className="mr-2"
+                />
+                Include Headers (first row as column titles)
+              </label>
+              
+              <label className="flex items-center">
+                <input 
+                  type="checkbox" 
+                  checked={options.branding} 
+                  onChange={e => setOptions(o => ({ ...o, branding: e.target.checked }))} 
+                  className="mr-2"
+                />
+                Add ToolsJockey Branding
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
