@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
-import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface EmailValidationResult {
   email: string;
@@ -9,24 +9,30 @@ interface EmailValidationResult {
 }
 
 const EmailValidatorPage: React.FC = () => {
-  // Use analytics hook for automatic page view tracking
+  // Use analytics hook for automatic page view tracking (same as working tools)
   useAnalytics();
-  
-  // Use tool-specific analytics for detailed tracking
-  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('email_validator');
   
   const [singleEmail, setSingleEmail] = useState('');
   const [singleResult, setSingleResult] = useState<EmailValidationResult | null>(null);
   const [bulkResults, setBulkResults] = useState<EmailValidationResult[]>([]);
   const [validationMode, setValidationMode] = useState<'single' | 'bulk'>('single');
 
-  // Track tool start on component mount
+  // Set document title
   useEffect(() => {
-    trackToolStart({
+    document.title = 'Email Validator - ToolsJockey.com';
+  }, []);
+
+  // Test analytics function
+  const testAnalytics = () => {
+    console.log('Testing analytics for Email Validator...');
+    // This will trigger a page view event
+    window.gtag && window.gtag('event', 'test_email_validator', {
       page_title: 'Email Validator',
-      page_path: '/tools/email-validator'
+      page_path: '/tools/email-validator',
+      timestamp: new Date().toISOString()
     });
-  }, [trackToolStart]);
+    alert('Analytics test event sent! Check console and GA.');
+  };
 
   // Disposable email domains list
   const disposableDomains = [
@@ -91,8 +97,6 @@ const EmailValidatorPage: React.FC = () => {
   };
 
   const handleSingleEmailValidation = () => {
-    trackCurrentPageButtonClick('single_validate');
-    
     if (!singleEmail.trim()) {
       setSingleResult({
         email: singleEmail,
@@ -104,20 +108,9 @@ const EmailValidatorPage: React.FC = () => {
 
     const result = validateEmail(singleEmail);
     setSingleResult(result);
-    
-    trackToolFeatureUse('single_validation', {
-      email_count: 1,
-      result_status: result.status
-    });
   };
 
   const handleBulkValidation = async (file: File) => {
-    trackCurrentPageButtonClick('bulk_validate');
-    trackToolFeatureUse('bulk_validation_start', {
-      file_size: file.size,
-      file_type: file.type
-    });
-    
     try {
       const text = await file.text();
       const lines = text.split('\n').filter(line => line.trim());
@@ -131,30 +124,14 @@ const EmailValidatorPage: React.FC = () => {
       }
 
       setBulkResults(results);
-      
-      trackToolFeatureUse('bulk_validation_complete', {
-        email_count: results.length,
-        valid_count: results.filter(r => r.status === 'Valid').length,
-        invalid_count: results.filter(r => r.status === 'Invalid').length,
-        disposable_count: results.filter(r => r.status === 'Disposable').length,
-        suspicious_count: results.filter(r => r.status === 'Suspicious').length
-      });
     } catch (error) {
       console.error('Error processing file:', error);
       alert('Error processing file. Please ensure it\'s a valid CSV file.');
-      trackToolFeatureUse('bulk_validation_error', {
-        error_message: error instanceof Error ? error.message : 'Unknown error'
-      });
     }
   };
 
   const exportResults = () => {
     if (bulkResults.length === 0) return;
-
-    trackCurrentPageButtonClick('export_results');
-    trackToolFeatureUse('export_results', {
-      result_count: bulkResults.length
-    });
 
     const csvContent = [
       'Email,Status,Message',
@@ -202,6 +179,13 @@ const EmailValidatorPage: React.FC = () => {
           <p className="text-xl text-gray-600">
             Validate single emails or bulk validate via CSV upload. Check format, disposable domains, and export results.
           </p>
+          {/* Test Analytics Button */}
+          <button
+            onClick={testAnalytics}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Test Analytics
+          </button>
         </div>
 
         {/* Mode Toggle */}

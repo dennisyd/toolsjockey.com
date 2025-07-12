@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
-import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface DeliverabilityIssue {
   type: 'warning' | 'error';
@@ -9,11 +9,8 @@ interface DeliverabilityIssue {
 }
 
 const EmailTemplateTesterPage: React.FC = () => {
-  // Use analytics hook for automatic page view tracking
+  // Use analytics hook for automatic page view tracking (same as working tools)
   useAnalytics();
-  
-  // Use tool-specific analytics for detailed tracking
-  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('email_template_tester');
   
   const [htmlContent, setHtmlContent] = useState('');
   const [selectedDevice, setSelectedDevice] = useState('desktop');
@@ -21,13 +18,10 @@ const EmailTemplateTesterPage: React.FC = () => {
   const [deliverabilityIssues, setDeliverabilityIssues] = useState<DeliverabilityIssue[]>([]);
   const [showInlineCSS, setShowInlineCSS] = useState(false);
 
-  // Track tool start on component mount
+  // Set document title
   useEffect(() => {
-    trackToolStart({
-      page_title: 'Email Template Tester',
-      page_path: '/tools/email-template-tester'
-    });
-  }, [trackToolStart]);
+    document.title = 'Email Template Tester - ToolsJockey.com';
+  }, []);
 
   const devices = {
     desktop: { name: 'Desktop', width: '100%', height: '600px' },
@@ -121,24 +115,19 @@ const EmailTemplateTesterPage: React.FC = () => {
     checkDeliverability(content);
     
     // Track HTML content changes
-    trackToolFeatureUse('html_content_changed', {
-      content_length: content.length,
-      has_doctype: content.includes('<!DOCTYPE html>'),
-      has_external_css: content.includes('<link') && content.includes('stylesheet'),
-      has_javascript: content.includes('<script')
-    });
+    // Removed useToolAnalytics as per edit hint
   };
 
   const handleDeviceChange = (device: string) => {
     setSelectedDevice(device);
-    trackCurrentPageButtonClick('device_change');
-    trackToolFeatureUse('device_changed', { device });
+    // Removed trackCurrentPageButtonClick as per edit hint
+    // Removed trackToolFeatureUse as per edit hint
   };
 
   const handleClientChange = (client: string) => {
     setSelectedClient(client);
-    trackCurrentPageButtonClick('client_change');
-    trackToolFeatureUse('client_changed', { client });
+    // Removed trackCurrentPageButtonClick as per edit hint
+    // Removed trackToolFeatureUse as per edit hint
   };
 
   const inlineCSS = (html: string) => {

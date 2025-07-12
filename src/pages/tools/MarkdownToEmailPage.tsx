@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 // Minimal markdown parser (for demo, use a real one for production)
 function simpleMarkdownToHtml(md: string): string {
@@ -31,36 +31,23 @@ const emailSafeStyles = `
 `;
 
 const MarkdownToEmailPage: React.FC = () => {
-  // Use analytics hook for automatic page view tracking
+  // Use analytics hook for automatic page view tracking (same as working tools)
   useAnalytics();
-  
-  // Use tool-specific analytics for detailed tracking
-  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('markdown_to_email');
   
   const [markdownContent, setMarkdownContent] = useState('');
   const [htmlOutput, setHtmlOutput] = useState('');
 
-  // Track tool start on component mount
+  // Set document title
   useEffect(() => {
-    trackToolStart({
-      page_title: 'Markdown to Email Converter',
-      page_path: '/tools/markdown-to-email'
-    });
-  }, [trackToolStart]);
+    document.title = 'Markdown to Email Converter - ToolsJockey.com';
+  }, []);
 
   const handleMarkdownChange = (md: string) => {
     setMarkdownContent(md);
     setHtmlOutput(simpleMarkdownToHtml(md));
     
     // Track markdown content changes
-    trackToolFeatureUse('markdown_changed', {
-      content_length: md.length,
-      has_headers: md.includes('#'),
-      has_links: md.includes('[') && md.includes(']('),
-      has_images: md.includes('!['),
-      has_bold: md.includes('**'),
-      has_italic: md.includes('*')
-    });
+    // Removed useToolAnalytics as per edit hint
   };
 
   const getEmailHtml = () => {
@@ -68,10 +55,8 @@ const MarkdownToEmailPage: React.FC = () => {
   };
 
   const copyToClipboard = async (text: string) => {
-    trackCurrentPageButtonClick('copy_html');
-    trackToolFeatureUse('copy_html', {
-      content_length: text.length
-    });
+    // Removed trackCurrentPageButtonClick as per edit hint
+    // Removed trackToolFeatureUse as per edit hint
     
     try {
       await navigator.clipboard.writeText(text);
@@ -83,10 +68,8 @@ const MarkdownToEmailPage: React.FC = () => {
   };
 
   const downloadHTML = () => {
-    trackCurrentPageButtonClick('download_html');
-    trackToolFeatureUse('download_html', {
-      content_length: htmlOutput.length
-    });
+    // Removed trackCurrentPageButtonClick as per edit hint
+    // Removed trackToolFeatureUse as per edit hint
     
     const blob = new Blob([htmlOutput], { type: 'text/html' });
     const url = URL.createObjectURL(blob);

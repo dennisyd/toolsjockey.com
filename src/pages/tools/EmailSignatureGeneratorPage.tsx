@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface SignatureData {
   name: string;
@@ -16,11 +16,8 @@ interface SignatureData {
 }
 
 const EmailSignatureGeneratorPage: React.FC = () => {
-  // Use analytics hook for automatic page view tracking
+  // Use analytics hook for automatic page view tracking (same as working tools)
   useAnalytics();
-  
-  // Use tool-specific analytics for detailed tracking
-  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('email_signature_generator');
   
   const [signatureData, setSignatureData] = useState<SignatureData>({
     name: '',
@@ -38,13 +35,10 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   const [previewMode, setPreviewMode] = useState<'html' | 'text'>('html');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Track tool start on component mount
+  // Set document title
   useEffect(() => {
-    trackToolStart({
-      page_title: 'Email Signature Generator',
-      page_path: '/tools/email-signature-generator'
-    });
-  }, [trackToolStart]);
+    document.title = 'Email Signature Generator - ToolsJockey.com';
+  }, []);
 
   const templates = {
     corporate: {
@@ -205,12 +199,6 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   };
 
   const copyToClipboard = async (text: string) => {
-    trackCurrentPageButtonClick('copy_signature');
-    trackToolFeatureUse('copy_signature', {
-      template: selectedTemplate,
-      preview_mode: previewMode
-    });
-    
     try {
       await navigator.clipboard.writeText(text);
       alert('Copied to clipboard!');
@@ -221,12 +209,6 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   };
 
   const downloadHTML = () => {
-    trackCurrentPageButtonClick('download_signature');
-    trackToolFeatureUse('download_signature', {
-      template: selectedTemplate,
-      has_logo: !!signatureData.logo
-    });
-    
     const html = generateSignatureHTML();
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
