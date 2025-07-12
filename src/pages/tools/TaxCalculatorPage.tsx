@@ -1,125 +1,301 @@
 import React, { useState, useEffect } from 'react';
-import { ReceiptPercentIcon, CalculatorIcon } from '@heroicons/react/24/outline';
+import { ReceiptPercentIcon, CalculatorIcon, BanknotesIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface TaxCalculation {
-  income: number;
+  wages: number;
+  interestIncome: number;
+  dividendIncome: number;
+  capitalGains: number;
   deductions: number;
+  credits: number;
+  stateTaxRate: number;
   taxableIncome: number;
-  taxAmount: number;
+  federalTax: number;
+  stateTax: number;
+  totalTax: number;
   effectiveRate: number;
+  afterTaxIncome: number;
   timestamp: Date;
 }
 
+interface TaxBracket {
+  min: number;
+  max: number;
+  rate: number;
+  baseTax: number;
+}
+
+const FEDERAL_BRACKETS_2024: TaxBracket[] = [
+  { min: 0, max: 11600, rate: 0.10, baseTax: 0 },
+  { min: 11600, max: 47150, rate: 0.12, baseTax: 1160 },
+  { min: 47150, max: 100525, rate: 0.22, baseTax: 5423 },
+  { min: 100525, max: 191950, rate: 0.24, baseTax: 16290 },
+  { min: 191950, max: 243725, rate: 0.32, baseTax: 37104 },
+  { min: 243725, max: 609350, rate: 0.35, baseTax: 52832 },
+  { min: 609350, max: Infinity, rate: 0.37, baseTax: 174238.25 }
+];
+
+const CAPITAL_GAINS_BRACKETS = [
+  { min: 0, max: 44725, rate: 0.0 },
+  { min: 44725, max: 492300, rate: 0.15 },
+  { min: 492300, max: Infinity, rate: 0.20 }
+];
+
 const TaxCalculatorPage: React.FC = () => {
   const { trackButtonClick } = useAnalytics();
-  const [income, setIncome] = useState('');
+  const [wages, setWages] = useState('');
+  const [interestIncome, setInterestIncome] = useState('');
+  const [interestRate, setInterestRate] = useState('');
+  const [dividendIncome, setDividendIncome] = useState('');
+  const [capitalGains, setCapitalGains] = useState('');
   const [deductions, setDeductions] = useState('');
-  const [taxableIncome, setTaxableIncome] = useState('');
-  const [taxAmount, setTaxAmount] = useState('');
-  const [effectiveRate, setEffectiveRate] = useState('');
+  const [credits, setCredits] = useState('');
+  const [stateTaxRate, setStateTaxRate] = useState('');
+  const [results, setResults] = useState<Partial<TaxCalculation> | null>(null);
   const [history, setHistory] = useState<TaxCalculation[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Tax Calculator – ToolsJockey';
+    document.title = 'Advanced Tax Calculator – ToolsJockey';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'Basic tax calculations and deductions for various scenarios.');
+    if (meta) meta.setAttribute('content', 'Advanced tax calculations with interest rates, multiple income sources, and comprehensive tax planning.');
   }, []);
 
+  const calculateTaxBracket = (income: number, brackets: TaxBracket[]): number => {
+    for (let i = brackets.length - 1; i >= 0; i--) {
+      if (income > brackets[i].min) {
+        return brackets[i].baseTax + (income - brackets[i].min) * brackets[i].rate;
+      }
+    }
+    return 0;
+  };
+
+  const calculateCapitalGainsTax = (gains: number, totalIncome: number): number => {
+    for (const bracket of CAPITAL_GAINS_BRACKETS) {
+      if (totalIncome <= bracket.max) {
+        return gains * bracket.rate;
+      }
+    }
+    return gains * 0.20; // Top bracket
+  };
+
   const calculateTax = () => {
-    if (!income) {
-      setError('Please enter your income');
+    if (!wages && !interestIncome && !dividendIncome && !capitalGains) {
+      setError('Please enter at least one income source');
       return;
     }
 
     try {
-      const grossIncome = parseFloat(income);
+      const wagesAmount = parseFloat(wages) || 0;
+      const interestAmount = parseFloat(interestIncome) || 0;
+      const dividendAmount = parseFloat(dividendIncome) || 0;
+      const gainsAmount = parseFloat(capitalGains) || 0;
       const deductionAmount = parseFloat(deductions) || 0;
-      
-      if (grossIncome < 0) {
-        throw new Error('Income must be positive');
+      const creditAmount = parseFloat(credits) || 0;
+      const stateRate = parseFloat(stateTaxRate) || 0;
+
+      if (wagesAmount < 0 || interestAmount < 0 || dividendAmount < 0 || gainsAmount < 0) {
+        throw new Error('Income amounts must be positive');
       }
 
-      const taxableIncome = Math.max(0, grossIncome - deductionAmount);
-      let taxAmount = 0;
+      // Calculate total income
+      const totalIncome = wagesAmount + interestAmount + dividendAmount + gainsAmount;
+      const taxableIncome = Math.max(0, totalIncome - deductionAmount);
 
-      // Simplified tax brackets (2023 US Federal)
-      if (taxableIncome <= 11000) {
-        taxAmount = taxableIncome * 0.10;
-      } else if (taxableIncome <= 44725) {
-        taxAmount = 1100 + (taxableIncome - 11000) * 0.12;
-      } else if (taxableIncome <= 95375) {
-        taxAmount = 5147 + (taxableIncome - 44725) * 0.22;
-      } else if (taxableIncome <= 182100) {
-        taxAmount = 16290 + (taxableIncome - 95375) * 0.24;
-      } else if (taxableIncome <= 231250) {
-        taxAmount = 37104 + (taxableIncome - 182100) * 0.32;
-      } else if (taxableIncome <= 578125) {
-        taxAmount = 52832 + (taxableIncome - 231250) * 0.35;
-      } else {
-        taxAmount = 174238.25 + (taxableIncome - 578125) * 0.37;
-      }
+      // Calculate federal tax
+      let federalTax = calculateTaxBracket(taxableIncome - gainsAmount, FEDERAL_BRACKETS_2024);
+      federalTax += calculateCapitalGainsTax(gainsAmount, taxableIncome);
 
-      const effectiveRate = (taxAmount / grossIncome) * 100;
+      // Apply credits
+      federalTax = Math.max(0, federalTax - creditAmount);
 
-      setTaxableIncome(taxableIncome.toFixed(2));
-      setTaxAmount(taxAmount.toFixed(2));
-      setEffectiveRate(effectiveRate.toFixed(2));
+      // Calculate state tax
+      const stateTax = taxableIncome * (stateRate / 100);
+
+      const totalTax = federalTax + stateTax;
+      const effectiveRate = totalTax > 0 ? (totalTax / totalIncome) * 100 : 0;
+      const afterTaxIncome = totalIncome - totalTax;
 
       const calculation: TaxCalculation = {
-        income: grossIncome,
+        wages: wagesAmount,
+        interestIncome: interestAmount,
+        dividendIncome: dividendAmount,
+        capitalGains: gainsAmount,
         deductions: deductionAmount,
+        credits: creditAmount,
+        stateTaxRate: stateRate,
         taxableIncome,
-        taxAmount,
+        federalTax,
+        stateTax,
+        totalTax,
         effectiveRate,
+        afterTaxIncome,
         timestamp: new Date()
       };
+
+      setResults(calculation);
       setHistory(prev => [calculation, ...prev.slice(0, 9)]);
       setError(null);
-      trackButtonClick('tax_calc_calculate', 'TaxCalculator');
+      trackButtonClick('tax_calc_advanced', 'TaxCalculator');
     } catch (e: any) {
       setError(e.message);
     }
   };
 
+  const calculateInterestIncome = () => {
+    if (!interestRate) {
+      setError('Please enter an interest rate');
+      return;
+    }
+
+    const rate = parseFloat(interestRate);
+    if (rate <= 0 || rate > 100) {
+      setError('Interest rate must be between 0 and 100');
+      return;
+    }
+
+    // Calculate interest income based on a hypothetical investment
+    const hypotheticalInvestment = 100000; // $100k example
+    const interestAmount = (hypotheticalInvestment * rate) / 100;
+    setInterestIncome(interestAmount.toFixed(2));
+    setError(null);
+  };
+
+  const getTaxBracketInfo = (income: number): string => {
+    for (const bracket of FEDERAL_BRACKETS_2024) {
+      if (income <= bracket.max) {
+        return `${bracket.rate * 100}% bracket ($${bracket.min.toLocaleString()} - $${bracket.max === Infinity ? '∞' : bracket.max.toLocaleString()})`;
+      }
+    }
+    return '37% bracket (highest)';
+  };
+
   return (
     <div className="container-app mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <ReceiptPercentIcon className="w-8 h-8 text-accent" />
-            <h1 className="text-3xl font-bold">Tax Calculator</h1>
+            <h1 className="text-3xl font-bold">Advanced Tax Calculator</h1>
           </div>
           <p className="text-gray-600 dark:text-gray-300">
-            Basic tax calculations and deductions for various scenarios.
+            Comprehensive tax calculations with interest rates, multiple income sources, and tax planning.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Calculator */}
+          <div className="lg:col-span-2 bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Tax Calculator</h2>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Gross Income ($)</label>
-                <input
-                  type="number"
-                  value={income}
-                  onChange={(e) => setIncome(e.target.value)}
-                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                  placeholder="Enter your gross income"
-                />
+              {/* Income Sources */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Wages/Salary ($)</label>
+                  <input
+                    type="number"
+                    value={wages}
+                    onChange={(e) => setWages(e.target.value)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Interest Income ($)</label>
+                  <input
+                    type="number"
+                    value={interestIncome}
+                    onChange={(e) => setInterestIncome(e.target.value)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Dividend Income ($)</label>
+                  <input
+                    type="number"
+                    value={dividendIncome}
+                    onChange={(e) => setDividendIncome(e.target.value)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Capital Gains ($)</label>
+                  <input
+                    type="number"
+                    value={capitalGains}
+                    onChange={(e) => setCapitalGains(e.target.value)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="0"
+                  />
+                </div>
               </div>
 
+              {/* Interest Rate Calculator */}
+              <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Interest Rate Calculator</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={interestRate}
+                    onChange={(e) => setInterestRate(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Interest rate %"
+                    step="0.01"
+                  />
+                  <button
+                    onClick={calculateInterestIncome}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Calculate
+                  </button>
+                </div>
+                <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+                  Calculates interest income based on a $100,000 investment
+                </p>
+              </div>
+
+              {/* Deductions and Credits */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Deductions ($)</label>
+                  <input
+                    type="number"
+                    value={deductions}
+                    onChange={(e) => setDeductions(e.target.value)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="Standard deduction: $13,850"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Tax Credits ($)</label>
+                  <input
+                    type="number"
+                    value={credits}
+                    onChange={(e) => setCredits(e.target.value)}
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              {/* State Tax */}
               <div>
-                <label className="block text-sm font-medium mb-2">Deductions ($)</label>
+                <label className="block text-sm font-medium mb-2">State Tax Rate (%)</label>
                 <input
                   type="number"
-                  value={deductions}
-                  onChange={(e) => setDeductions(e.target.value)}
+                  value={stateTaxRate}
+                  onChange={(e) => setStateTaxRate(e.target.value)}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                  placeholder="Enter total deductions"
+                  placeholder="0"
+                  step="0.01"
                 />
               </div>
 
@@ -138,22 +314,46 @@ const TaxCalculatorPage: React.FC = () => {
               </div>
             )}
 
-            {(taxableIncome || taxAmount || effectiveRate) && (
-              <div className="mt-6 space-y-3">
+            {/* Results */}
+            {results && (
+              <div className="mt-6 space-y-4">
                 <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">Results:</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Taxable Income:</span>
-                      <span className="font-mono font-semibold">${taxableIncome}</span>
+                  <h3 className="font-semibold text-green-800 dark:text-green-200 mb-3">Tax Results:</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Total Income:</span>
+                        <span className="font-mono font-semibold">${(results.wages! + results.interestIncome! + results.dividendIncome! + results.capitalGains!).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Taxable Income:</span>
+                        <span className="font-mono font-semibold">${results.taxableIncome!.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Federal Tax:</span>
+                        <span className="font-mono font-semibold">${results.federalTax!.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>State Tax:</span>
+                        <span className="font-mono font-semibold">${results.stateTax!.toFixed(2)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Tax Amount:</span>
-                      <span className="font-mono font-semibold">${taxAmount}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Effective Tax Rate:</span>
-                      <span className="font-mono font-semibold">{effectiveRate}%</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Total Tax:</span>
+                        <span className="font-mono font-semibold text-red-600">${results.totalTax!.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Effective Tax Rate:</span>
+                        <span className="font-mono font-semibold">{results.effectiveRate!.toFixed(2)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>After-Tax Income:</span>
+                        <span className="font-mono font-semibold text-green-600">${results.afterTaxIncome!.toFixed(2)}</span>
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {getTaxBracketInfo(results.taxableIncome!)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -161,6 +361,7 @@ const TaxCalculatorPage: React.FC = () => {
             )}
           </div>
 
+          {/* History */}
           <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Calculation History</h2>
             
@@ -173,13 +374,13 @@ const TaxCalculatorPage: React.FC = () => {
                 {history.map((calc, index) => (
                   <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                      ${calc.income.toLocaleString()} income, ${calc.deductions.toLocaleString()} deductions
+                      ${calc.wages.toLocaleString()} wages
                     </div>
                     <div className="font-mono text-sm space-y-1">
-                      <div>Taxable: ${calc.taxableIncome.toFixed(2)}</div>
-                      <div>Tax: ${calc.taxAmount.toFixed(2)}</div>
+                      <div>Tax: ${calc.totalTax.toFixed(2)}</div>
+                      <div>Rate: {calc.effectiveRate.toFixed(2)}%</div>
                       <div className="text-green-600 dark:text-green-400">
-                        Rate: {calc.effectiveRate.toFixed(2)}%
+                        Net: ${calc.afterTaxIncome.toFixed(2)}
                       </div>
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -192,24 +393,31 @@ const TaxCalculatorPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Features Grid */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-3">Tax Calculations</h3>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <BanknotesIcon className="w-5 h-5 text-accent" />
+              Income Sources
+            </h3>
             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <li>• Federal tax bracket calculations</li>
-              <li>• Standard deduction support</li>
-              <li>• Effective tax rate calculation</li>
-              <li>• Simplified tax scenarios</li>
+              <li>• Wages and salary income</li>
+              <li>• Interest income with rate calculator</li>
+              <li>• Dividend income</li>
+              <li>• Capital gains (different rates)</li>
             </ul>
           </div>
 
           <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-3">Financial Planning</h3>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <ChartBarIcon className="w-5 h-5 text-accent" />
+              Tax Planning
+            </h3>
             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <li>• Estimate tax liability</li>
-              <li>• Plan for tax season</li>
-              <li>• Understand tax brackets</li>
-              <li>• Calculate effective rates</li>
+              <li>• Federal and state tax calculations</li>
+              <li>• Deductions and credits</li>
+              <li>• Effective tax rate analysis</li>
+              <li>• After-tax income planning</li>
             </ul>
           </div>
 
