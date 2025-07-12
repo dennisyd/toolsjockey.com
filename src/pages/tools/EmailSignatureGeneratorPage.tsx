@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
 
 interface SignatureData {
   name: string;
@@ -16,7 +16,12 @@ interface SignatureData {
 }
 
 const EmailSignatureGeneratorPage: React.FC = () => {
-  const { trackButtonClick, trackToolUsage } = useAnalytics();
+  // Use analytics hook for automatic page view tracking
+  useAnalytics();
+  
+  // Use tool-specific analytics for detailed tracking
+  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('email_signature_generator');
+  
   const [signatureData, setSignatureData] = useState<SignatureData>({
     name: '',
     title: '',
@@ -33,13 +38,13 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   const [previewMode, setPreviewMode] = useState<'html' | 'text'>('html');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Track page view on component mount
+  // Track tool start on component mount
   useEffect(() => {
-    trackToolUsage('email_signature_generator', 'page_view', {
+    trackToolStart({
       page_title: 'Email Signature Generator',
       page_path: '/tools/email-signature-generator'
     });
-  }, [trackToolUsage]);
+  }, [trackToolStart]);
 
   const templates = {
     corporate: {
@@ -200,8 +205,8 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   };
 
   const copyToClipboard = async (text: string) => {
-    trackButtonClick('email_signature_copy', 'EmailSignatureGenerator');
-    trackToolUsage('email_signature_generator', 'copy_signature', {
+    trackCurrentPageButtonClick('copy_signature');
+    trackToolFeatureUse('copy_signature', {
       template: selectedTemplate,
       preview_mode: previewMode
     });
@@ -216,8 +221,8 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   };
 
   const downloadHTML = () => {
-    trackButtonClick('email_signature_download', 'EmailSignatureGenerator');
-    trackToolUsage('email_signature_generator', 'download_signature', {
+    trackCurrentPageButtonClick('download_signature');
+    trackToolFeatureUse('download_signature', {
       template: selectedTemplate,
       has_logo: !!signatureData.logo
     });

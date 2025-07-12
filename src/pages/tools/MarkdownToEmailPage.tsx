@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
 
 // Minimal markdown parser (for demo, use a real one for production)
 function simpleMarkdownToHtml(md: string): string {
@@ -15,8 +15,9 @@ function simpleMarkdownToHtml(md: string): string {
   // Lists
   html = html.replace(/^\s*[-*] (.*)$/gim, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
-  // Tables (very basic)
+  // Tables
   html = html.replace(/\|(.+)\|/g, '<tr><td>$1</td></tr>');
+  html = html.replace(/<tr><td>(.+)<\/td><\/tr>/g, '<table><tr><td>$1</td></tr></table>');
   return html;
 }
 
@@ -30,24 +31,29 @@ const emailSafeStyles = `
 `;
 
 const MarkdownToEmailPage: React.FC = () => {
-  const { trackButtonClick, trackToolUsage } = useAnalytics();
-  const [markdown, setMarkdown] = useState('');
-  const [html, setHtml] = useState('');
+  // Use analytics hook for automatic page view tracking
+  useAnalytics();
+  
+  // Use tool-specific analytics for detailed tracking
+  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('markdown_to_email');
+  
+  const [markdownContent, setMarkdownContent] = useState('');
+  const [htmlOutput, setHtmlOutput] = useState('');
 
-  // Track page view on component mount
+  // Track tool start on component mount
   useEffect(() => {
-    trackToolUsage('markdown_to_email', 'page_view', {
+    trackToolStart({
       page_title: 'Markdown to Email Converter',
       page_path: '/tools/markdown-to-email'
     });
-  }, [trackToolUsage]);
+  }, [trackToolStart]);
 
   const handleMarkdownChange = (md: string) => {
-    setMarkdown(md);
-    setHtml(simpleMarkdownToHtml(md));
+    setMarkdownContent(md);
+    setHtmlOutput(simpleMarkdownToHtml(md));
     
     // Track markdown content changes
-    trackToolUsage('markdown_to_email', 'markdown_changed', {
+    trackToolFeatureUse('markdown_changed', {
       content_length: md.length,
       has_headers: md.includes('#'),
       has_links: md.includes('[') && md.includes(']('),
@@ -58,34 +64,35 @@ const MarkdownToEmailPage: React.FC = () => {
   };
 
   const getEmailHtml = () => {
-    return `<!DOCTYPE html><html><head><style>${emailSafeStyles}</style></head><body>${html}</body></html>`;
+    return `<!DOCTYPE html><html><head><style>${emailSafeStyles}</style></head><body>${htmlOutput}</body></html>`;
   };
 
-  const copyToClipboard = async () => {
-    trackButtonClick('markdown_to_email_copy', 'MarkdownToEmail');
-    trackToolUsage('markdown_to_email', 'copy_html', {
-      html_length: getEmailHtml().length
+  const copyToClipboard = async (text: string) => {
+    trackCurrentPageButtonClick('copy_html');
+    trackToolFeatureUse('copy_html', {
+      content_length: text.length
     });
     
     try {
-      await navigator.clipboard.writeText(getEmailHtml());
-      alert('Copied HTML to clipboard!');
+      await navigator.clipboard.writeText(text);
+      alert('Copied to clipboard!');
     } catch (err) {
-      alert('Failed to copy');
+      console.error('Failed to copy:', err);
+      alert('Failed to copy to clipboard');
     }
   };
 
-  const downloadHtml = () => {
-    trackButtonClick('markdown_to_email_download', 'MarkdownToEmail');
-    trackToolUsage('markdown_to_email', 'download_html', {
-      html_length: getEmailHtml().length
+  const downloadHTML = () => {
+    trackCurrentPageButtonClick('download_html');
+    trackToolFeatureUse('download_html', {
+      content_length: htmlOutput.length
     });
     
-    const blob = new Blob([getEmailHtml()], { type: 'text/html' });
+    const blob = new Blob([htmlOutput], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'email.html';
+    a.download = 'email-template.html';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -107,7 +114,7 @@ const MarkdownToEmailPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-semibold mb-4">Markdown Input</h2>
             <textarea
-              value={markdown}
+              value={markdownContent}
               onChange={e => handleMarkdownChange(e.target.value)}
               placeholder="Write your email in Markdown..."
               className="w-full h-64 p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
@@ -120,17 +127,17 @@ const MarkdownToEmailPage: React.FC = () => {
               <h2 className="text-2xl font-semibold">Live Preview</h2>
               <div className="flex gap-2">
                 <button
-                  onClick={copyToClipboard}
+                  onClick={() => copyToClipboard(getEmailHtml())}
                   className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                 >Copy HTML</button>
                 <button
-                  onClick={downloadHtml}
+                  onClick={downloadHTML}
                   className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                 >Download .html</button>
               </div>
             </div>
             <div className="border rounded-lg p-4 bg-gray-50 min-h-[300px]">
-              <div dangerouslySetInnerHTML={{ __html: html }} />
+              <div dangerouslySetInnerHTML={{ __html: htmlOutput }} />
             </div>
           </div>
         </div>

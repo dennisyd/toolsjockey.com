@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
-import { useAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
 
 interface EmailValidationResult {
   email: string;
@@ -9,20 +9,24 @@ interface EmailValidationResult {
 }
 
 const EmailValidatorPage: React.FC = () => {
-  const { trackButtonClick, trackToolUsage } = useAnalytics();
+  // Use analytics hook for automatic page view tracking
+  useAnalytics();
+  
+  // Use tool-specific analytics for detailed tracking
+  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('email_validator');
+  
   const [singleEmail, setSingleEmail] = useState('');
   const [singleResult, setSingleResult] = useState<EmailValidationResult | null>(null);
   const [bulkResults, setBulkResults] = useState<EmailValidationResult[]>([]);
   const [validationMode, setValidationMode] = useState<'single' | 'bulk'>('single');
 
-  // Track page view on component mount
+  // Track tool start on component mount
   useEffect(() => {
-    console.log('EmailValidatorPage: Tracking page view');
-    trackToolUsage('email_validator', 'page_view', {
+    trackToolStart({
       page_title: 'Email Validator',
       page_path: '/tools/email-validator'
     });
-  }, [trackToolUsage]);
+  }, [trackToolStart]);
 
   // Disposable email domains list
   const disposableDomains = [
@@ -87,7 +91,7 @@ const EmailValidatorPage: React.FC = () => {
   };
 
   const handleSingleEmailValidation = () => {
-    trackButtonClick('email_validator_single_validate', 'EmailValidator');
+    trackCurrentPageButtonClick('single_validate');
     
     if (!singleEmail.trim()) {
       setSingleResult({
@@ -101,15 +105,15 @@ const EmailValidatorPage: React.FC = () => {
     const result = validateEmail(singleEmail);
     setSingleResult(result);
     
-    trackToolUsage('email_validator', 'single_validation', {
+    trackToolFeatureUse('single_validation', {
       email_count: 1,
       result_status: result.status
     });
   };
 
   const handleBulkValidation = async (file: File) => {
-    trackButtonClick('email_validator_bulk_validate', 'EmailValidator');
-    trackToolUsage('email_validator', 'bulk_validation_start', {
+    trackCurrentPageButtonClick('bulk_validate');
+    trackToolFeatureUse('bulk_validation_start', {
       file_size: file.size,
       file_type: file.type
     });
@@ -128,7 +132,7 @@ const EmailValidatorPage: React.FC = () => {
 
       setBulkResults(results);
       
-      trackToolUsage('email_validator', 'bulk_validation_complete', {
+      trackToolFeatureUse('bulk_validation_complete', {
         email_count: results.length,
         valid_count: results.filter(r => r.status === 'Valid').length,
         invalid_count: results.filter(r => r.status === 'Invalid').length,
@@ -138,7 +142,7 @@ const EmailValidatorPage: React.FC = () => {
     } catch (error) {
       console.error('Error processing file:', error);
       alert('Error processing file. Please ensure it\'s a valid CSV file.');
-      trackToolUsage('email_validator', 'bulk_validation_error', {
+      trackToolFeatureUse('bulk_validation_error', {
         error_message: error instanceof Error ? error.message : 'Unknown error'
       });
     }
@@ -147,8 +151,8 @@ const EmailValidatorPage: React.FC = () => {
   const exportResults = () => {
     if (bulkResults.length === 0) return;
 
-    trackButtonClick('email_validator_export_results', 'EmailValidator');
-    trackToolUsage('email_validator', 'export_results', {
+    trackCurrentPageButtonClick('export_results');
+    trackToolFeatureUse('export_results', {
       result_count: bulkResults.length
     });
 

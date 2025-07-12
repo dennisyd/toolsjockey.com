@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
-import { useAnalytics } from '../../hooks/useAnalytics';
+import { useAnalytics, useToolAnalytics } from '../../hooks/useAnalytics';
 
 interface DeliverabilityIssue {
   type: 'warning' | 'error';
@@ -9,20 +9,25 @@ interface DeliverabilityIssue {
 }
 
 const EmailTemplateTesterPage: React.FC = () => {
-  const { trackButtonClick, trackToolUsage } = useAnalytics();
+  // Use analytics hook for automatic page view tracking
+  useAnalytics();
+  
+  // Use tool-specific analytics for detailed tracking
+  const { trackToolStart, trackToolFeatureUse, trackCurrentPageButtonClick } = useToolAnalytics('email_template_tester');
+  
   const [htmlContent, setHtmlContent] = useState('');
   const [selectedDevice, setSelectedDevice] = useState('desktop');
   const [selectedClient, setSelectedClient] = useState('gmail');
   const [deliverabilityIssues, setDeliverabilityIssues] = useState<DeliverabilityIssue[]>([]);
   const [showInlineCSS, setShowInlineCSS] = useState(false);
 
-  // Track page view on component mount
+  // Track tool start on component mount
   useEffect(() => {
-    trackToolUsage('email_template_tester', 'page_view', {
+    trackToolStart({
       page_title: 'Email Template Tester',
       page_path: '/tools/email-template-tester'
     });
-  }, [trackToolUsage]);
+  }, [trackToolStart]);
 
   const devices = {
     desktop: { name: 'Desktop', width: '100%', height: '600px' },
@@ -116,7 +121,7 @@ const EmailTemplateTesterPage: React.FC = () => {
     checkDeliverability(content);
     
     // Track HTML content changes
-    trackToolUsage('email_template_tester', 'html_content_changed', {
+    trackToolFeatureUse('html_content_changed', {
       content_length: content.length,
       has_doctype: content.includes('<!DOCTYPE html>'),
       has_external_css: content.includes('<link') && content.includes('stylesheet'),
@@ -126,14 +131,14 @@ const EmailTemplateTesterPage: React.FC = () => {
 
   const handleDeviceChange = (device: string) => {
     setSelectedDevice(device);
-    trackButtonClick('email_template_tester_device_change', 'EmailTemplateTester');
-    trackToolUsage('email_template_tester', 'device_changed', { device });
+    trackCurrentPageButtonClick('device_change');
+    trackToolFeatureUse('device_changed', { device });
   };
 
   const handleClientChange = (client: string) => {
     setSelectedClient(client);
-    trackButtonClick('email_template_tester_client_change', 'EmailTemplateTester');
-    trackToolUsage('email_template_tester', 'client_changed', { client });
+    trackCurrentPageButtonClick('client_change');
+    trackToolFeatureUse('client_changed', { client });
   };
 
   const inlineCSS = (html: string) => {
