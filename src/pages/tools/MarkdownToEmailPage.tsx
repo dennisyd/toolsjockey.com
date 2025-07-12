@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 // Minimal markdown parser (for demo, use a real one for production)
@@ -33,6 +33,14 @@ const MarkdownToEmailPage: React.FC = () => {
   const { trackButtonClick, trackToolUsage } = useAnalytics();
   const [markdown, setMarkdown] = useState('');
   const [html, setHtml] = useState('');
+
+  // Track page view on component mount
+  useEffect(() => {
+    trackToolUsage('markdown_to_email', 'page_view', {
+      page_title: 'Markdown to Email Converter',
+      page_path: '/tools/markdown-to-email'
+    });
+  }, [trackToolUsage]);
 
   const handleMarkdownChange = (md: string) => {
     setMarkdown(md);

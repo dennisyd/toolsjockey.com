@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
@@ -14,6 +14,15 @@ const EmailValidatorPage: React.FC = () => {
   const [singleResult, setSingleResult] = useState<EmailValidationResult | null>(null);
   const [bulkResults, setBulkResults] = useState<EmailValidationResult[]>([]);
   const [validationMode, setValidationMode] = useState<'single' | 'bulk'>('single');
+
+  // Track page view on component mount
+  useEffect(() => {
+    console.log('EmailValidatorPage: Tracking page view');
+    trackToolUsage('email_validator', 'page_view', {
+      page_title: 'Email Validator',
+      page_path: '/tools/email-validator'
+    });
+  }, [trackToolUsage]);
 
   // Disposable email domains list
   const disposableDomains = [

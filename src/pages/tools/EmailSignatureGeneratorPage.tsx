@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
 interface SignatureData {
@@ -32,6 +32,14 @@ const EmailSignatureGeneratorPage: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState('corporate');
   const [previewMode, setPreviewMode] = useState<'html' | 'text'>('html');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Track page view on component mount
+  useEffect(() => {
+    trackToolUsage('email_signature_generator', 'page_view', {
+      page_title: 'Email Signature Generator',
+      page_path: '/tools/email-signature-generator'
+    });
+  }, [trackToolUsage]);
 
   const templates = {
     corporate: {

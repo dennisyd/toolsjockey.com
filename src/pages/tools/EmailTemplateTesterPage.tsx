@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FileUploader from '../../components/shared/FileUploader';
 import { useAnalytics } from '../../hooks/useAnalytics';
 
@@ -15,6 +15,14 @@ const EmailTemplateTesterPage: React.FC = () => {
   const [selectedClient, setSelectedClient] = useState('gmail');
   const [deliverabilityIssues, setDeliverabilityIssues] = useState<DeliverabilityIssue[]>([]);
   const [showInlineCSS, setShowInlineCSS] = useState(false);
+
+  // Track page view on component mount
+  useEffect(() => {
+    trackToolUsage('email_template_tester', 'page_view', {
+      page_title: 'Email Template Tester',
+      page_path: '/tools/email-template-tester'
+    });
+  }, [trackToolUsage]);
 
   const devices = {
     desktop: { name: 'Desktop', width: '100%', height: '600px' },

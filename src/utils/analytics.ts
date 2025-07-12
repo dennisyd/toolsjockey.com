@@ -34,7 +34,12 @@ export const trackPageView = (url: string, title?: string) => {
 
 // Track custom events - crucial for showing user engagement
 export const trackEvent = (eventName: string, parameters: Record<string, any> = {}) => {
-  if (!isGtagAvailable()) return;
+  if (!isGtagAvailable()) {
+    console.log('Analytics: gtag not available');
+    return;
+  }
+  
+  console.log('Analytics: Tracking event', eventName, parameters);
   
   window.gtag('event', eventName, {
     ...parameters,
