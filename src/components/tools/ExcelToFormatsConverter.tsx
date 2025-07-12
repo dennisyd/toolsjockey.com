@@ -234,10 +234,10 @@ const ExcelToFormatsConverter: React.FC = () => {
           <div className="font-semibold mb-1">PDF Options</div>
           <label className="block mb-1 text-xs">Layout:
             <select value={pdfOptions.layout} onChange={e => setPDFOptions(o => ({ ...o, layout: e.target.value as any }))} className="ml-2">
-              <option value="table">Table</option>
-              <option value="report">Report</option>
-              <option value="summary">Summary</option>
-              <option value="detailed">Detailed</option>
+              <option value="table">Table - Gray headers</option>
+              <option value="report">Report - Blue headers</option>
+              <option value="summary">Summary - With stats</option>
+              <option value="detailed">Detailed - With page numbers</option>
             </select>
           </label>
           <label className="block mb-1 text-xs">Orientation:

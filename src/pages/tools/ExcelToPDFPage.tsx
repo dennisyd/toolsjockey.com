@@ -126,10 +126,10 @@ const ExcelToPDFPage: React.FC = () => {
                 onChange={e => setOptions(o => ({ ...o, layout: e.target.value as any }))} 
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="table">Table - Standard grid layout</option>
-                <option value="report">Report - Professional report format</option>
+                <option value="table">Table - Gray headers with grid lines</option>
+                <option value="report">Report - Blue headers with clean styling</option>
                 <option value="summary">Summary - First 10 rows with statistics</option>
-                <option value="detailed">Detailed - Full data with page numbers</option>
+                <option value="detailed">Detailed - Dark headers with page numbers</option>
               </select>
             </div>
 

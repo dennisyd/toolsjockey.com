@@ -25,10 +25,9 @@ export async function pdfConverter(worksheetData: string[][], options: PDFOption
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     const margin = 15;
-    
     let startY = margin;
-    
-    // Add branding if requested
+
+    // Only add branding if requested
     if (options.branding) {
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
@@ -61,9 +60,17 @@ export async function pdfConverter(worksheetData: string[][], options: PDFOption
           head: options.includeHeaders && summaryData.length > 0 ? [summaryData[0]] : [],
           body: options.includeHeaders ? summaryData.slice(1) : summaryData,
           startY: startY,
-          theme: 'striped',
+          theme: 'grid',
+          useCss: false,
           styles: { fontSize: options.fontSize },
-          headStyles: { fillColor: [66, 139, 202] },
+          headStyles: {
+            fillColor: [0, 0, 255], // Pure blue
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            halign: 'center'
+          },
+          tableLineColor: [0, 0, 255],
+          tableLineWidth: 0.5,
           margin: { top: 5 }
         });
       }
@@ -79,6 +86,7 @@ export async function pdfConverter(worksheetData: string[][], options: PDFOption
           body: options.includeHeaders ? dataToShow.slice(1) : dataToShow,
           startY: startY,
           theme: 'grid',
+          useCss: false,
           styles: { fontSize: options.fontSize },
           headStyles: { 
             fillColor: [51, 51, 51],
@@ -98,34 +106,40 @@ export async function pdfConverter(worksheetData: string[][], options: PDFOption
       }
       
     } else if (options.layout === 'report') {
-      // Report layout - formatted for reports
+      // Report layout - formatted for reports with vibrant blue headers
       const maxRows = Math.min(options.maxRows, worksheetData.length);
       const dataToShow = worksheetData.slice(0, maxRows);
-      
+      let startYReport = startY;
       // Add report header
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
-      doc.text('Data Report', margin, startY);
-      startY += 10;
-      
+      doc.text('Data Report', margin, startYReport);
+      startYReport += 10;
       if (dataToShow.length > 0) {
         autoTable(doc, {
           head: options.includeHeaders ? [dataToShow[0]] : [],
           body: options.includeHeaders ? dataToShow.slice(1) : dataToShow,
-          startY: startY,
-          theme: 'plain',
+          startY: startYReport,
+          theme: 'grid',
+          useCss: false,
           styles: { fontSize: options.fontSize },
-          headStyles: { 
-            fillColor: [70, 130, 180],
+          headStyles: {
+            fillColor: [0, 0, 255], // Pure blue
             textColor: [255, 255, 255],
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            halign: 'center'
+          },
+          tableLineColor: [0, 0, 255],
+          tableLineWidth: 0.5,
+          bodyStyles: {
+            lineWidth: 0.1
           },
           margin: { top: 5 }
         });
       }
       
     } else {
-      // Default table layout
+      // Default table layout - simple grid
       const maxRows = Math.min(options.maxRows, worksheetData.length);
       const dataToShow = worksheetData.slice(0, maxRows);
       
@@ -135,8 +149,13 @@ export async function pdfConverter(worksheetData: string[][], options: PDFOption
           body: options.includeHeaders ? dataToShow.slice(1) : dataToShow,
           startY: startY,
           theme: 'grid',
+          useCss: false,
           styles: { fontSize: options.fontSize },
-          headStyles: { fillColor: [100, 100, 100] },
+          headStyles: { 
+            fillColor: [100, 100, 100], // Gray
+            textColor: [255, 255, 255],
+            fontStyle: 'bold'
+          },
           margin: { top: 5 }
         });
       }
