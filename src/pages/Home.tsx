@@ -133,16 +133,16 @@ const Home = () => {
 
       {/* Featured Tools Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-        {/* Excel to Everything Converter featured card */}
+        {/* Excel & CSV Tools Suite featured card */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-center gap-4">
-          <span className="text-4xl">📤</span>
+          <span className="text-4xl">📊</span>
           <div className="flex-1">
-            <div className="font-bold text-lg">Excel to Everything Converter</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Convert Excel files to CSV, JSON, HTML, PDF, Google Sheets, and more. Batch, privacy-first, and pro-grade.</div>
+            <div className="font-bold text-lg">Excel & CSV Tools Suite</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Merge, split, convert, and analyze Excel and CSV files. Includes converters, mergers, filters, and more—privacy-first and all in your browser.</div>
             <a 
-              href="/tools/excel-to-formats" 
+              href="/excelcsv-tools" 
               className="inline-block bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
-              onClick={() => trackButtonClick('excel_converter_featured', 'Home')}
+              onClick={() => trackButtonClick('excel_csv_tools_featured', 'Home')}
             >
               Try Now
             </a>
