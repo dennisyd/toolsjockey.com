@@ -431,6 +431,9 @@ const BatchPDFFormFiller: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 rounded p-3 text-sm text-blue-700 dark:text-blue-300 mb-2">
           <strong>Note:</strong> Due to client-side processing limitations, multiselect fields cannot be processed. All other field types are supported.
         </div>
+        <div className="bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800 rounded p-3 text-sm text-yellow-700 dark:text-yellow-300 mb-2">
+          <strong>Auto-Detection Note:</strong> The application tries to auto-detect the type of each field. If it auto-detects the wrong type, the field may not be filled correctly. You can change the field type using the dropdown next to each field name and try the import again.
+        </div>
         <input
           type="file"
           accept="application/pdf"
