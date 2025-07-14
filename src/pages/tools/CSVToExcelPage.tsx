@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import Cropper from 'react-easy-crop';
 import Slider from '@mui/material/Slider';
 
@@ -40,22 +40,34 @@ const ImageCropper: React.FC = () => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [aspect, setAspect] = useState<number | null>(null); // null = free, 1 = 1:1, 16/9, etc.
+  const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null);
+  const [originalFileSize, setOriginalFileSize] = useState<string | null>(null);
 
-  const onCropComplete = useCallback((_: any, croppedAreaPixels: any) => {
+  const onCropComplete = (croppedAreaPixels: any) => {
     setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+  };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      // Set file size immediately
+      setOriginalFileSize(formatFileSize(file.size));
       const reader = new FileReader();
-      reader.addEventListener('load', () => setImageSrc(reader.result as string));
+      reader.onload = () => {
+        setImageSrc(reader.result as string);
+        // Only set dimensions after image loads
+        const img = new window.Image();
+        img.onload = () => {
+          setOriginalSize({ width: img.width, height: img.height });
+        };
+        img.src = reader.result as string;
+      };
       reader.readAsDataURL(file);
       setCroppedImage(null); // Reset preview on new image
     }
   };
 
-  const showCroppedImage = useCallback(async () => {
+  const showCroppedImage = async () => {
     if (!imageSrc || !croppedAreaPixels) return;
     try {
       const croppedImg = await getCroppedImg(imageSrc, croppedAreaPixels);
@@ -63,7 +75,13 @@ const ImageCropper: React.FC = () => {
     } catch (e) {
       alert('Failed to crop image.');
     }
-  }, [imageSrc, croppedAreaPixels]);
+  };
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} bytes`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
@@ -131,6 +149,11 @@ const ImageCropper: React.FC = () => {
           >
             Download Cropped Image
           </a>
+        </div>
+      )}
+      {originalFileSize && originalSize && (
+        <div className="mt-2 mb-4 text-gray-700">
+          <strong>Size:</strong> {originalFileSize} • {originalSize.width} x {originalSize.height}:
         </div>
       )}
     </div>
