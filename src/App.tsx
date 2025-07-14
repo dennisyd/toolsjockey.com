@@ -147,7 +147,6 @@ const LoremIpsumGeneratorPage = lazy(() => import('./pages/tools/LoremIpsumGener
 const ImageCollageMakerPage = lazy(() => import('./pages/tools/ImageCollageMakerPage'));
 const ImageCropperPage = lazy(() => import('./pages/tools/ImageCropperPage'));
 const ImageOptimizerPage = lazy(() => import('./pages/tools/ImageOptimizerPage'));
-const ImageDownscalerPage = lazy(() => import('./pages/tools/ImageDownscalerPage'));
 
 // Privacy tools - separate chunk
 const FileEncryptorPage = lazy(() => import('./pages/tools/FileEncryptorPage'));
@@ -334,7 +333,6 @@ function App() {
                 <Route path="tools/image-collage-maker" element={<ImageCollageMakerPage />} />
                 <Route path="tools/image-cropper" element={<ImageCropperPage />} />
                 <Route path="tools/image-optimizer" element={<ImageOptimizerPage />} />
-                <Route path="tools/image-downscaler" element={<ImageDownscalerPage />} />
                 
                 {/* Privacy tool routes */}
                 <Route path="tools/file-encryptor" element={<FileEncryptorPage />} />
