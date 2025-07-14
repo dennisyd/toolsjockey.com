@@ -45,17 +45,21 @@ const TextFromImagePage: React.FC = () => {
     setProgress(0);
     try {
       const { data } = await Tesseract.recognize(image, 'eng', {
-        workerPath: '/tesseract-worker.min.js', // Use local worker
-        corePath: '/tesseract-core-simd-lstm.wasm.js', // Use local core loader
-        langPath: '/', // Use local language data in public/
+        workerPath: '/tesseract-worker.min.js',
+        corePath: '/tesseract-core-simd-lstm.wasm.js',
+        langPath: '/eng.traineddata.gz', // Use the compressed language data
         logger: m => {
-          if (m.status === 'recognizing text' && m.progress) setProgress(Math.round(m.progress * 100));
+          console.log('Tesseract progress:', m);
+          if (m.status === 'recognizing text' && m.progress) {
+            setProgress(Math.round(m.progress * 100));
+          }
         },
       });
       setOcrText(data.text);
       setProgress(100);
-    } catch (e) {
-      setError('Failed to extract text from image.');
+    } catch (e: any) {
+      console.error('Tesseract error:', e);
+      setError('Failed to extract text from image. Please try again.');
     }
     setIsProcessing(false);
     setTimeout(() => setProgress(0), 1000);

@@ -63,6 +63,15 @@ const FileArchiverPage: React.FC = () => {
       type: file.type || 'application/octet-stream'
     }));
     
+    // Check total size to prevent memory issues
+    const totalSize = newFiles.reduce((sum, file) => sum + file.size, 0);
+    const maxSize = 500 * 1024 * 1024; // 500MB limit
+    
+    if (totalSize > maxSize) {
+      setError(`Total file size (${formatFileSize(totalSize)}) exceeds the 500MB limit. Please select smaller files.`);
+      return;
+    }
+    
     setFiles(prev => [...prev, ...newFiles]);
     setArchiveUrl(null);
     setError(null);
@@ -350,6 +359,14 @@ const FileArchiverPage: React.FC = () => {
 
   const createTarData = async (): Promise<Uint8Array> => {
     const tarBlocks: Uint8Array[] = [];
+    
+    // Check total size before processing
+    const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+    const maxSize = 500 * 1024 * 1024; // 500MB limit
+    
+    if (totalSize > maxSize) {
+      throw new Error(`Total file size (${formatFileSize(totalSize)}) exceeds the 500MB limit.`);
+    }
     
     for (let i = 0; i < files.length; i++) {
       const fileItem = files[i];
