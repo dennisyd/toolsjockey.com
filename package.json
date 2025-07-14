@@ -11,13 +11,10 @@
     "generate-sitemap": "node scripts/generate-sitemap.js"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
     "@ffmpeg/core": "^0.11.0",
     "@ffmpeg/ffmpeg": "^0.11.6",
     "@hello-pangea/dnd": "^18.0.1",
     "@heroicons/react": "^2.2.0",
-    "@mui/material": "^7.2.0",
     "@neslinesli93/qpdf-wasm": "^0.2.0",
     "@tensorflow/tfjs": "^4.22.0",
     "browser-image-compression": "^2.0.2",

@@ -1,163 +1,95 @@
 import React, { useState } from 'react';
-import Cropper from 'react-easy-crop';
-import Slider from '@mui/material/Slider';
 
-// Helper function to crop the image
-function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const image = new window.Image();
-    image.src = imageSrc;
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = pixelCrop.width;
-      canvas.height = pixelCrop.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return reject();
-      ctx.drawImage(
-        image,
-        pixelCrop.x,
-        pixelCrop.y,
-        pixelCrop.width,
-        pixelCrop.height,
-        0,
-        0,
-        pixelCrop.width,
-        pixelCrop.height
-      );
-      canvas.toBlob(blob => {
-        if (!blob) return reject();
-        resolve(URL.createObjectURL(blob));
-      }, 'image/png');
-    };
-    image.onerror = reject;
-  });
-}
+const CSVToExcelPage: React.FC = () => {
+  const [csvData, setCsvData] = useState<string[][] | null>(null);
+  const [fileName, setFileName] = useState<string>('');
 
-const ImageCropper: React.FC = () => {
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const [aspect, setAspect] = useState<number | null>(null); // null = free, 1 = 1:1, 16/9, etc.
-  const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null);
-  const [originalFileSize, setOriginalFileSize] = useState<string | null>(null);
-
-  const onCropComplete = (croppedAreaPixels: any) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      // Set file size immediately
-      setOriginalFileSize(formatFileSize(file.size));
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageSrc(reader.result as string);
-        // Only set dimensions after image loads
-        const img = new window.Image();
-        img.onload = () => {
-          setOriginalSize({ width: img.width, height: img.height });
-        };
-        img.src = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-      setCroppedImage(null); // Reset preview on new image
+  const handleFileUpload = async (files: File[]) => {
+    const file = files[0];
+    if (!file) return;
+    
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      alert('Please upload a CSV file.');
+      return;
     }
-  };
 
-  const showCroppedImage = async () => {
-    if (!imageSrc || !croppedAreaPixels) return;
+    setFileName(file.name.replace(/\.csv$/i, ''));
+    
     try {
-      const croppedImg = await getCroppedImg(imageSrc, croppedAreaPixels);
-      setCroppedImage(croppedImg);
-    } catch (e) {
-      alert('Failed to crop image.');
+      const text = await file.text();
+      const lines = text.split('\n');
+      const data = lines
+        .filter(line => line.trim() !== '')
+        .map(line => line.split(',').map(cell => cell.trim().replace(/"/g, '')));
+      
+      setCsvData(data);
+    } catch (error) {
+      alert('Error reading CSV file.');
     }
   };
 
-  function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} bytes`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  }
+  const downloadExcel = () => {
+    if (!csvData) return;
+    
+    // Convert to Excel format and download
+    // This is a placeholder - you'll need to implement the actual Excel conversion
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-4">Image Cropper</h1>
-      <input type="file" accept="image/*" onChange={handleFileChange} className="mb-4" />
-      {imageSrc && (
-        <div style={{ position: 'relative', width: '100%', height: 400, background: '#333' }}>
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspect || undefined}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
+      <h1 className="text-3xl font-bold mb-4">CSV to Excel Converter</h1>
+      
+      <div className="mb-6">
+        <input 
+          type="file" 
+          accept=".csv" 
+          onChange={(e) => e.target.files && handleFileUpload(Array.from(e.target.files))}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        />
+      </div>
+
+      {csvData && (
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-4">Preview</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-300">
+              <tbody>
+                {csvData.slice(0, 10).map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {row.map((cell, cellIndex) => (
+                      <td key={cellIndex} className="border border-gray-300 px-2 py-1">
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-sm text-gray-600 mt-2">
+            Showing first 10 rows of {csvData.length} total rows
+          </p>
         </div>
       )}
-      {imageSrc && (
-        <div className="my-4">
-          <label className="mr-2">Zoom:</label>
-          <Slider
-            value={zoom}
-            min={1}
-            max={3}
-            step={0.01}
-            onChange={(_, value) => setZoom(value as number)}
-            style={{ width: 200, display: 'inline-block', verticalAlign: 'middle' }}
-          />
-        </div>
-      )}
-      {imageSrc && (
-        <div className="my-4">
-          <label className="mr-2">Aspect Ratio:</label>
-          <select
-            value={aspect === null ? 'free' : aspect}
-            onChange={e => {
-              const val = e.target.value;
-              setAspect(val === 'free' ? null : Number(val));
-            }}
-          >
-            <option value="free">Free</option>
-            <option value={1}>1:1</option>
-            <option value={16 / 9}>16:9</option>
-            <option value={4 / 3}>4:3</option>
-          </select>
-        </div>
-      )}
-      {imageSrc && (
+
+      {csvData && (
         <button
-          onClick={showCroppedImage}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mb-4"
+          onClick={downloadExcel}
+          className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors"
         >
-          Crop & Preview
+          Download Excel File
         </button>
-      )}
-      {croppedImage && (
-        <div className="my-4">
-          <h2 className="text-lg font-semibold mb-2">Cropped Preview</h2>
-          <img src={croppedImage} alt="Cropped" className="max-w-full border rounded" />
-          <a
-            href={croppedImage}
-            download="cropped-image.png"
-            className="block mt-2 bg-green-600 text-white px-4 py-2 rounded-md text-center hover:bg-green-700"
-          >
-            Download Cropped Image
-          </a>
-        </div>
-      )}
-      {originalFileSize && originalSize && (
-        <div className="mt-2 mb-4 text-gray-700">
-          <strong>Size:</strong> {originalFileSize} • {originalSize.width} x {originalSize.height}:
-        </div>
       )}
     </div>
   );
 };
 
-export default ImageCropper;
+export default CSVToExcelPage;
