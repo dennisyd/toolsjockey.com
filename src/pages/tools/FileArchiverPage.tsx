@@ -531,6 +531,11 @@ const FileArchiverPage: React.FC = () => {
 
   return (
     <ArchiveToolPageLayout title="File Archiver" icon={ArchiveBoxIcon}>
+      <h1 className="text-2xl font-bold mb-4">File Archiver</h1>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The File Archiver lets you combine multiple files into a single archive in your chosen format (ZIP, TAR, 7Z, etc.), with optional compression. This makes it easy to organize, compress, and share groups of files efficiently.
+      </div>
       {/* File Upload */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Add Files</h2>

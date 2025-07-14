@@ -222,6 +222,11 @@ const SevenZipSupportPage: React.FC = () => {
 
   return (
     <ArchiveToolPageLayout title="ZIP Support" icon={ArchiveBoxIcon}>
+      <h1 className="text-2xl font-bold mb-4">7z Support</h1>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The 7z Support tool enables you to create and extract 7z (7-Zip) archives, a high-compression format popular for reducing file sizes and bundling many files together.
+      </div>
       {/* Mode Toggle */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Operation Mode</h2>

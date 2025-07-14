@@ -161,6 +161,11 @@ const ZipCreatorPage: React.FC = () => {
 
   return (
     <ArchiveToolPageLayout title="ZIP Creator" icon={ArchiveBoxIcon}>
+      <h1 className="text-2xl font-bold mb-4">ZIP Creator</h1>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The ZIP Creator lets you bundle multiple files into a single ZIP archive, making it easy to compress, organize, and share files in a widely supported format.
+      </div>
       {/* File Upload */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Add Files</h2>

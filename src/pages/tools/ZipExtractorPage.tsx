@@ -209,6 +209,11 @@ const ZipExtractorPage: React.FC = () => {
 
   return (
     <ArchiveToolPageLayout title="ZIP Extractor" icon={ArchiveBoxIcon}>
+      <h1 className="text-2xl font-bold mb-4">ZIP Extractor</h1>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The ZIP Extractor allows you to open and extract files from ZIP archives, so you can access the contents of compressed files quickly and easily.
+      </div>
       {/* File Upload */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Upload ZIP Archive</h2>

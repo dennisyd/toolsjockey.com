@@ -351,6 +351,11 @@ const ArchiveConverterPage: React.FC = () => {
 
   return (
     <ArchiveToolPageLayout title="Archive Converter" icon={ArchiveBoxIcon}>
+      <h1 className="text-2xl font-bold mb-4">Archive Converter</h1>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The Archive Converter allows you to convert existing archive files (ZIP, TAR, etc.) to other formats, making it easy to switch between archive types or extract files on different platforms.
+      </div>
       {/* File Upload */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Upload Source Archive</h2>

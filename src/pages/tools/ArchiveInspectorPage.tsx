@@ -162,6 +162,11 @@ const ArchiveInspectorPage: React.FC = () => {
 
   return (
     <ArchiveToolPageLayout title="Archive Inspector" icon={ArchiveBoxIcon}>
+      <h1 className="text-2xl font-bold mb-4">Archive Inspector</h1>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The Archive Inspector lets you view the contents of archive files (ZIP, TAR, etc.) without extracting them, so you can quickly see what’s inside before downloading or opening large archives.
+      </div>
       {/* File Upload */}
       <div className="bg-white dark:bg-primary-light rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Upload Archive</h2>
