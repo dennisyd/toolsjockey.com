@@ -45,6 +45,7 @@ const TextFromImagePage: React.FC = () => {
     setProgress(0);
     try {
       const { data } = await Tesseract.recognize(image, 'eng', {
+        workerPath: '/tesseract-worker.min.js', // <-- Use local worker to avoid CSP issues
         logger: m => {
           if (m.status === 'recognizing text' && m.progress) setProgress(Math.round(m.progress * 100));
         },
