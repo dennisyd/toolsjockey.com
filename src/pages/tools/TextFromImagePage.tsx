@@ -47,7 +47,7 @@ const TextFromImagePage: React.FC = () => {
       const { data } = await Tesseract.recognize(image, 'eng', {
         workerPath: '/tesseract-worker.min.js',
         corePath: '/tesseract-core-simd-lstm.wasm.js',
-        langPath: '/eng.traineddata.gz', // Use the compressed language data
+        langPath: '/eng.traineddata', // Use the uncompressed language data
         logger: m => {
           console.log('Tesseract progress:', m);
           if (m.status === 'recognizing text' && m.progress) {
