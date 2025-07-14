@@ -1,109 +1,140 @@
-import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
-import Papa from 'papaparse';
+import React, { useState, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
+import Slider from '@mui/material/Slider';
 
-const CSVToExcelPage: React.FC = () => {
-  const [error, setError] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('');
-  const [previewData, setPreviewData] = useState<string[][] | null>(null);
+// Helper function to crop the image
+function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.src = imageSrc;
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = pixelCrop.width;
+      canvas.height = pixelCrop.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject();
+      ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+      );
+      canvas.toBlob(blob => {
+        if (!blob) return reject();
+        resolve(URL.createObjectURL(blob));
+      }, 'image/png');
+    };
+    image.onerror = reject;
+  });
+}
 
-  const handleFileUpload = async (files: File[]) => {
-    setError(null);
-    setPreviewData(null);
-    const file = files[0];
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setError('Only CSV files are supported.');
-      return;
+const ImageCropper: React.FC = () => {
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
+  const [aspect, setAspect] = useState<number | null>(null); // null = free, 1 = 1:1, 16/9, etc.
+
+  const onCropComplete = useCallback((_: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.addEventListener('load', () => setImageSrc(reader.result as string));
+      reader.readAsDataURL(file);
+      setCroppedImage(null); // Reset preview on new image
     }
-    setFileName(file.name.replace(/\.csv$/i, ''));
+  };
 
+  const showCroppedImage = useCallback(async () => {
+    if (!imageSrc || !croppedAreaPixels) return;
     try {
-      const text = await file.text();
-      // Robust CSV parsing with PapaParse
-      const result = Papa.parse<string[]>(text, { skipEmptyLines: true });
-      if (result.errors.length > 0) {
-        setError('Failed to parse CSV file.');
-        return;
-      }
-      setPreviewData(result.data);
-    } catch (err) {
-      setError('Failed to parse CSV file.');
+      const croppedImg = await getCroppedImg(imageSrc, croppedAreaPixels);
+      setCroppedImage(croppedImg);
+    } catch (e) {
+      alert('Failed to crop image.');
     }
-  };
-
-  const handleDownload = () => {
-    if (!previewData) return;
-    const ws = XLSX.utils.aoa_to_sheet(previewData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${fileName || 'converted'}.xlsx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  }, [imageSrc, croppedAreaPixels]);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-4">CSV to Excel Converter</h1>
-      <p className="mb-4 text-gray-600">Upload a CSV file to preview and convert it to Excel (.xlsx).</p>
-      <input
-        type="file"
-        accept=".csv"
-        onChange={e => {
-          if (e.target.files) handleFileUpload(Array.from(e.target.files));
-        }}
-        className="mb-4"
-      />
-      {error && <div className="text-red-600 mb-2">{error}</div>}
-
-      {previewData && (
-        <>
-          <div className="mb-4">
-            <button
-              onClick={handleDownload}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mb-2"
-            >
-              Download Excel
-            </button>
-          </div>
-          <div className="overflow-x-auto bg-slate-100 rounded p-2 mb-4">
-            <table className="min-w-full text-xs">
-              <thead>
-                <tr>
-                  {previewData[0]?.map((cell, idx) => (
-                    <th key={idx} className="border px-2 py-1 bg-gray-200">{cell}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {previewData.slice(1, 21).map((row, rIdx) => (
-                  <tr key={rIdx}>
-                    {row.map((cell, cIdx) => (
-                      <td key={cIdx} className="border px-2 py-1">{cell}</td>
-                    ))}
-                  </tr>
-                ))}
-                {previewData.length > 21 && (
-                  <tr>
-                    <td colSpan={previewData[0]?.length || 1} className="text-center text-gray-500">
-                      ...showing first 20 rows
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
+      <h1 className="text-3xl font-bold mb-4">Image Cropper</h1>
+      <input type="file" accept="image/*" onChange={handleFileChange} className="mb-4" />
+      {imageSrc && (
+        <div style={{ position: 'relative', width: '100%', height: 400, background: '#333' }}>
+          <Cropper
+            image={imageSrc}
+            crop={crop}
+            zoom={zoom}
+            aspect={aspect || undefined}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={onCropComplete}
+          />
+        </div>
+      )}
+      {imageSrc && (
+        <div className="my-4">
+          <label className="mr-2">Zoom:</label>
+          <Slider
+            value={zoom}
+            min={1}
+            max={3}
+            step={0.01}
+            onChange={(_, value) => setZoom(value as number)}
+            style={{ width: 200, display: 'inline-block', verticalAlign: 'middle' }}
+          />
+        </div>
+      )}
+      {imageSrc && (
+        <div className="my-4">
+          <label className="mr-2">Aspect Ratio:</label>
+          <select
+            value={aspect === null ? 'free' : aspect}
+            onChange={e => {
+              const val = e.target.value;
+              setAspect(val === 'free' ? null : Number(val));
+            }}
+          >
+            <option value="free">Free</option>
+            <option value={1}>1:1</option>
+            <option value={16 / 9}>16:9</option>
+            <option value={4 / 3}>4:3</option>
+          </select>
+        </div>
+      )}
+      {imageSrc && (
+        <button
+          onClick={showCroppedImage}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors mb-4"
+        >
+          Crop & Preview
+        </button>
+      )}
+      {croppedImage && (
+        <div className="my-4">
+          <h2 className="text-lg font-semibold mb-2">Cropped Preview</h2>
+          <img src={croppedImage} alt="Cropped" className="max-w-full border rounded" />
+          <a
+            href={croppedImage}
+            download="cropped-image.png"
+            className="block mt-2 bg-green-600 text-white px-4 py-2 rounded-md text-center hover:bg-green-700"
+          >
+            Download Cropped Image
+          </a>
+        </div>
       )}
     </div>
   );
 };
 
-export default CSVToExcelPage; 
+export default ImageCropper;

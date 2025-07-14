@@ -1,238 +1,136 @@
-import React, { useRef, useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import Cropper from 'react-easy-crop';
+import Slider from '@mui/material/Slider';
 
-const aspectRatios = [
-  { label: 'Freeform', value: null },
-  { label: '1:1 (Square)', value: 1 },
-  { label: '16:9', value: 16 / 9 },
-  { label: '4:3', value: 4 / 3 },
-  { label: '3:2', value: 3 / 2 },
-];
+async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.src = imageSrc;
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = pixelCrop.width;
+      canvas.height = pixelCrop.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject();
+      ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+      );
+      canvas.toBlob(blob => {
+        if (!blob) return reject();
+        resolve(URL.createObjectURL(blob));
+      }, 'image/png');
+    };
+    image.onerror = reject;
+  });
+}
 
 const ImageCropper: React.FC = () => {
-  const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [crop, setCrop] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
-  const [dragging, setDragging] = useState<boolean>(false);
-  const [resizing, setResizing] = useState<boolean>(false);
-  const [resizeCorner, setResizeCorner] = useState<string | null>(null);
-  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [aspect, setAspect] = useState<number | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const previewRef = useRef<HTMLCanvasElement>(null);
 
-  // Handle image upload
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    const img = new window.Image();
-    img.onload = () => {
-      setImage(img);
-      // Default crop: center square or full image
-      const minDim = Math.min(img.width, img.height);
-      setCrop({
-        x: Math.round((img.width - minDim) / 2),
-        y: Math.round((img.height - minDim) / 2),
-        w: minDim,
-        h: minDim,
-      });
+  const onCropComplete = useCallback((_: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.addEventListener('load', () => setImageSrc(reader.result as string));
+      reader.readAsDataURL(file);
+      setCroppedImage(null); // Reset preview on new image
+    }
+  };
+
+  // Automatically update cropped image preview when crop, zoom, aspect, or image changes
+  useEffect(() => {
+    const updateCroppedImage = async () => {
+      if (!imageSrc || !croppedAreaPixels) {
+        setCroppedImage(null);
+        return;
+      }
+      try {
+        const croppedImg = await getCroppedImg(imageSrc, croppedAreaPixels);
+        setCroppedImage(croppedImg);
+      } catch {
+        setCroppedImage(null);
+      }
     };
-    img.src = url;
-  };
-
-  // Draw image and crop rectangle
-  React.useEffect(() => {
-    if (!image || !crop || !canvasRef.current) return;
-    const ctx = canvasRef.current.getContext('2d')!;
-    canvasRef.current.width = image.width;
-    canvasRef.current.height = image.height;
-    ctx.clearRect(0, 0, image.width, image.height);
-    ctx.drawImage(image, 0, 0);
-    // Draw crop rectangle
-    ctx.save();
-    ctx.strokeStyle = '#7c3aed';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.strokeRect(crop.x, crop.y, crop.w, crop.h);
-    ctx.setLineDash([]);
-    ctx.restore();
-    // Draw resize handles
-    const handleSize = 10;
-    const corners = [
-      [crop.x, crop.y],
-      [crop.x + crop.w, crop.y],
-      [crop.x, crop.y + crop.h],
-      [crop.x + crop.w, crop.y + crop.h],
-    ];
-    ctx.fillStyle = '#fff';
-    ctx.strokeStyle = '#7c3aed';
-    corners.forEach(([x, y]) => {
-      ctx.beginPath();
-      ctx.arc(x, y, handleSize / 2, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    });
-  }, [image, crop]);
-
-  // Draw preview
-  React.useEffect(() => {
-    if (!image || !crop || !previewRef.current) return;
-    const ctx = previewRef.current.getContext('2d')!;
-    previewRef.current.width = crop.w;
-    previewRef.current.height = crop.h;
-    ctx.clearRect(0, 0, crop.w, crop.h);
-    ctx.drawImage(image, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
-  }, [image, crop]);
-
-  // Mouse events for crop area
-  const getCorner = (mx: number, my: number) => {
-    if (!crop) return null;
-    const corners = [
-      { name: 'nw', x: crop.x, y: crop.y },
-      { name: 'ne', x: crop.x + crop.w, y: crop.y },
-      { name: 'sw', x: crop.x, y: crop.y + crop.h },
-      { name: 'se', x: crop.x + crop.w, y: crop.y + crop.h },
-    ];
-    for (const corner of corners) {
-      if (Math.abs(mx - corner.x) < 10 && Math.abs(my - corner.y) < 10) return corner.name;
-    }
-    return null;
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!crop || !canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const corner = getCorner(mx, my);
-    if (corner) {
-      setResizing(true);
-      setResizeCorner(corner);
-      setStartPos({ x: mx, y: my });
-      return;
-    }
-    // Inside crop area?
-    if (
-      mx >= crop.x &&
-      mx <= crop.x + crop.w &&
-      my >= crop.y &&
-      my <= crop.y + crop.h
-    ) {
-      setDragging(true);
-      setStartPos({ x: mx, y: my });
-    }
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!crop || !canvasRef.current || (!dragging && !resizing)) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    if (dragging && startPos) {
-      // Move crop
-      const dx = mx - startPos.x;
-      const dy = my - startPos.y;
-      let newX = crop.x + dx;
-      let newY = crop.y + dy;
-      // Clamp
-      newX = Math.max(0, Math.min(newX, image!.width - crop.w));
-      newY = Math.max(0, Math.min(newY, image!.height - crop.h));
-      setCrop({ ...crop, x: newX, y: newY });
-      setStartPos({ x: mx, y: my });
-    } else if (resizing && startPos && resizeCorner) {
-      // Resize crop
-      let { x, y, w, h } = crop;
-      let dx = mx - startPos.x;
-      let dy = my - startPos.y;
-      if (resizeCorner === 'nw') {
-        x += dx;
-        y += dy;
-        w -= dx;
-        h -= dy;
-      } else if (resizeCorner === 'ne') {
-        y += dy;
-        w += dx;
-        h -= dy;
-      } else if (resizeCorner === 'sw') {
-        x += dx;
-        w -= dx;
-        h += dy;
-      } else if (resizeCorner === 'se') {
-        w += dx;
-        h += dy;
-      }
-      // Aspect ratio lock
-      if (aspect) {
-        if (w / h > aspect) {
-          w = Math.round(h * aspect);
-        } else {
-          h = Math.round(w / aspect);
-        }
-      }
-      // Clamp
-      if (w < 10) w = 10;
-      if (h < 10) h = 10;
-      if (x < 0) x = 0;
-      if (y < 0) y = 0;
-      if (x + w > image!.width) w = image!.width - x;
-      if (y + h > image!.height) h = image!.height - y;
-      setCrop({ x, y, w, h });
-      setStartPos({ x: mx, y: my });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setDragging(false);
-    setResizing(false);
-    setResizeCorner(null);
-    setStartPos(null);
-  };
-
-  // Download cropped image
-  const handleDownload = () => {
-    if (!previewRef.current) return;
-    const url = previewRef.current.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'cropped.png';
-    a.click();
-  };
+    updateCroppedImage();
+  }, [imageSrc, croppedAreaPixels, aspect, zoom, crop]);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold">Image Cropper</h2>
-      <input type="file" accept="image/*" onChange={handleFile} />
-      <div className="flex flex-col md:flex-row gap-8">
-        <div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium mb-1">Aspect Ratio</label>
-            <select
-              className="px-2 py-1 border rounded"
-              value={aspect ?? ''}
-              onChange={e => setAspect(e.target.value ? Number(e.target.value) : null)}
-            >
-              {aspectRatios.map(opt => (
-                <option key={opt.label} value={opt.value ?? ''}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div
-            style={{ position: 'relative', border: '1px solid #888', display: 'inline-block', background: '#fff' }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <h1 className="text-3xl font-bold mb-4">Image Cropper</h1>
+      <input type="file" accept="image/*" onChange={handleFileChange} className="mb-4" />
+      {imageSrc && (
+        <div style={{ position: 'relative', width: '100%', height: 400, background: '#333' }}>
+          <Cropper
+            image={imageSrc}
+            crop={crop}
+            zoom={zoom}
+            aspect={aspect || undefined}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={onCropComplete}
+          />
+        </div>
+      )}
+      {imageSrc && (
+        <div className="my-4">
+          <label className="mr-2">Zoom:</label>
+          <Slider
+            value={zoom}
+            min={1}
+            max={3}
+            step={0.01}
+            onChange={(_, value) => setZoom(value as number)}
+            style={{ width: 200, display: 'inline-block', verticalAlign: 'middle' }}
+          />
+        </div>
+      )}
+      {imageSrc && (
+        <div className="my-4">
+          <label className="mr-2">Aspect Ratio:</label>
+          <select
+            value={aspect === null ? 'free' : aspect}
+            onChange={e => {
+              const val = e.target.value;
+              setAspect(val === 'free' ? null : Number(val));
+            }}
           >
-            <canvas ref={canvasRef} style={{ maxWidth: 400, maxHeight: 400, cursor: dragging ? 'move' : resizing ? 'nwse-resize' : 'crosshair' }} />
-          </div>
+            <option value="free">Free</option>
+            <option value={1}>1:1</option>
+            <option value={16 / 9}>16:9</option>
+            <option value={4 / 3}>4:3</option>
+          </select>
         </div>
-        <div>
-          <div className="mb-2 font-medium">Cropped Preview</div>
-          <canvas ref={previewRef} style={{ maxWidth: 300, maxHeight: 300, border: '1px solid #ccc', background: '#fff' }} />
-          <div className="mt-2">
-            <button onClick={handleDownload} className="px-4 py-2 bg-accent text-white rounded hover:bg-accent-dark">Download Cropped Image</button>
-          </div>
+      )}
+      {croppedImage && (
+        <div className="my-4">
+          <h2 className="text-lg font-semibold mb-2">Cropped Preview</h2>
+          <img src={croppedImage} alt="Cropped" className="max-w-full border rounded" />
+          <a
+            href={croppedImage}
+            download="cropped-image.png"
+            className="block mt-2 bg-green-600 text-white px-4 py-2 rounded-md text-center hover:bg-green-700"
+          >
+            Download Cropped Image
+          </a>
         </div>
-      </div>
+      )}
     </div>
   );
 };
