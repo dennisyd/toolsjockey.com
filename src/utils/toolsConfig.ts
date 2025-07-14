@@ -300,6 +300,7 @@ export const toolsConfig: ToolMeta[] = [
     icon: PhotoIcon,
     group: 'image',
   },
+  // Only these 5 should have group: 'color'
   {
     id: 'color-palette-generator',
     title: 'Color Palette Generator',
@@ -444,7 +445,7 @@ export const toolsConfig: ToolMeta[] = [
     path: '/tools/text-from-image',
     description: 'Extract text from images using OCR.',
     icon: EyeIcon,
-    group: 'quick',
+    group: 'image',
   },
   // Converters
   {

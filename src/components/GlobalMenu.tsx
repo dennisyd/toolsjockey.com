@@ -9,6 +9,13 @@ const MENU = [
       { label: 'PDF Tools', to: '/pdf-tools' },
       { label: 'Excel Tools', to: '/tools/excel-merger-splitter' },
       { label: 'Color Tools', to: '/tools/color-palette-generator' },
+      { label: 'Image Tools', to: '/image-tools' },
+    ],
+  },
+  {
+    label: 'Image Tools',
+    children: [
+      { label: 'Text from Image', to: '/tools/text-from-image' },
     ],
   },
   {
