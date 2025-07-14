@@ -739,14 +739,6 @@ export const toolsConfig: ToolMeta[] = [
     icon: PhotoIcon,
     description: 'Optimize images: compress, strip metadata, convert formats, and reduce file size without changing resolution.',
   },
-  {
-    id: 'image-downscaler',
-    title: 'Image Downscaler',
-    group: 'image',
-    path: '/tools/image-downscaler',
-    icon: PhotoIcon,
-    description: 'Downscale images by dimensions or target file size. Compress, convert, and optimize images easily.',
-  },
   // Privacy Tools
   {
     id: 'file-encryptor',
