@@ -45,8 +45,9 @@ const TextFromImagePage: React.FC = () => {
     setProgress(0);
     try {
       const { data } = await Tesseract.recognize(image, 'eng', {
-        workerPath: '/tesseract-worker.min.js', // Local worker in public/
-        corePath: '/tesseract-core-simd-lstm.wasm.js', // Local core loader in public/
+        workerPath: '/tesseract-worker.min.js', // Use local worker
+        corePath: '/tesseract-core-simd-lstm.wasm.js', // Use local core loader
+        langPath: '/', // Use local language data in public/
         logger: m => {
           if (m.status === 'recognizing text' && m.progress) setProgress(Math.round(m.progress * 100));
         },
