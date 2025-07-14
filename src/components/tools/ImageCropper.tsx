@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import Slider from '@mui/material/Slider';
+// Remove this line:
+// import Slider from '@mui/material/Slider';
 
 async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -91,14 +92,16 @@ const ImageCropper: React.FC = () => {
       {imageSrc && (
         <div className="my-4">
           <label className="mr-2">Zoom:</label>
-          <Slider
+          <input
+            type="range"
+            min="1"
+            max="3"
+            step="0.01"
             value={zoom}
-            min={1}
-            max={3}
-            step={0.01}
-            onChange={(_, value) => setZoom(value as number)}
-            style={{ width: 200, display: 'inline-block', verticalAlign: 'middle' }}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="w-48"
           />
+          <span className="ml-2">{zoom.toFixed(2)}x</span>
         </div>
       )}
       {imageSrc && (
