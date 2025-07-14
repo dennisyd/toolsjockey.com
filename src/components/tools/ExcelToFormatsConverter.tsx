@@ -113,7 +113,6 @@ const ExcelToFormatsConverter: React.FC = () => {
   const defaultPDFOptions: PDFOptions = {
     layout: 'table',
     branding: false,
-    charts: false,
     orientation: 'portrait',
     fontSize: 8,
     maxRows: 100,
@@ -240,6 +239,9 @@ const ExcelToFormatsConverter: React.FC = () => {
               <option value="detailed">Detailed - With page numbers</option>
             </select>
           </label>
+          <label className="block mb-1 text-xs">Branding:
+            <input type="checkbox" checked={pdfOptions.branding} onChange={e => setPDFOptions(o => ({ ...o, branding: e.target.checked }))} className="ml-2" />
+          </label>
           <label className="block mb-1 text-xs">Orientation:
             <select value={pdfOptions.orientation} onChange={e => setPDFOptions(o => ({ ...o, orientation: e.target.value as any }))} className="ml-2">
               <option value="portrait">Portrait</option>
@@ -265,9 +267,6 @@ const ExcelToFormatsConverter: React.FC = () => {
           </label>
           <label className="block mb-1 text-xs">Include Headers:
             <input type="checkbox" checked={pdfOptions.includeHeaders} onChange={e => setPDFOptions(o => ({ ...o, includeHeaders: e.target.checked }))} className="ml-2" />
-          </label>
-          <label className="block mb-1 text-xs">Branding:
-            <input type="checkbox" checked={pdfOptions.branding} onChange={e => setPDFOptions(o => ({ ...o, branding: e.target.checked }))} className="ml-2" />
           </label>
         </div>
       )}
