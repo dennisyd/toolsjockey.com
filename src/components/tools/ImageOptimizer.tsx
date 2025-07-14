@@ -91,6 +91,10 @@ const ImageOptimizer: React.FC = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Image Optimizer</h2>
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded text-blue-900 text-sm mb-4">
+        <strong>What does this tool do?</strong><br />
+        The Image Optimizer reduces image file size by re-encoding your image in a modern format (JPEG, PNG, WebP, or AVIF) and adjusting quality settings. It strips most metadata and preserves visual quality, making your images faster to load and easier to share online.
+      </div>
       <input type="file" accept="image/*" onChange={handleFile} />
       {originalUrl && (
         <div className="flex flex-col md:flex-row gap-8 mt-4">
