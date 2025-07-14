@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as XLSX from 'xlsx'; // <-- Add this import
 
 const CSVToExcelPage: React.FC = () => {
   const [csvData, setCsvData] = useState<string[][] | null>(null);
@@ -28,19 +29,17 @@ const CSVToExcelPage: React.FC = () => {
     }
   };
 
+  // FIX: Use xlsx to generate a real Excel file
   const downloadExcel = () => {
     if (!csvData) return;
-    
-    // Convert to Excel format and download
-    // This is a placeholder - you'll need to implement the actual Excel conversion
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${fileName}.xlsx`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    // Create a worksheet from the CSV data
+    const worksheet = XLSX.utils.aoa_to_sheet(csvData);
+    // Create a new workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    // Write the workbook as an Excel file
+    XLSX.writeFile(workbook, `${fileName || 'converted'}.xlsx`);
   };
 
   return (
