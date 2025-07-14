@@ -13,11 +13,13 @@ function isFormatSupported(type: string) {
   return canvas.toDataURL(type).indexOf(`data:${type}`) === 0;
 }
 
-const presetSizes = [
-  { label: '1920 × 1080', width: 1920, height: 1080 },
-  { label: '1280 × 720', width: 1280, height: 720 },
-  { label: '1024 × 1024', width: 1024, height: 1024 },
-  { label: '800 × 800', width: 800, height: 800 },
+const DOWNSCALE_OPTIONS = [
+  { label: '1920 x 1080', width: 1920, height: 1080 },
+  { label: '1280 x 720', width: 1280, height: 720 },
+  { label: '800 x 600', width: 800, height: 600 },
+  { label: '640 x 480', width: 640, height: 480 },
+  { label: '320 x 240', width: 320, height: 240 },
+  // ...add more if needed
 ];
 
 const ImageDownscaler: React.FC = () => {
@@ -27,10 +29,10 @@ const ImageDownscaler: React.FC = () => {
   const [outputFormat, setOutputFormat] = useState<string>('original');
   const [quality, setQuality] = useState<number>(80);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [originalSize, setOriginalSize] = useState<number | null>(null);
+  const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null);
   const [downscaledSize, setDownscaledSize] = useState<number | null>(null);
   const [downscaleMode, setDownscaleMode] = useState<'dimensions' | 'filesize'>('dimensions');
-  const [selectedSize, setSelectedSize] = useState<{ width: number; height: number }>(presetSizes[0]);
+  const [selectedSize, setSelectedSize] = useState<{ width: number; height: number }>(DOWNSCALE_OPTIONS[0]);
   const [customWidth, setCustomWidth] = useState<number>(1920);
   const [customHeight, setCustomHeight] = useState<number>(1080);
   const [useCustomSize, setUseCustomSize] = useState(false);
@@ -48,7 +50,7 @@ const ImageDownscaler: React.FC = () => {
     const url = URL.createObjectURL(f);
     setOriginalUrl(url);
     setDownscaledUrl(null);
-    setOriginalSize(f.size);
+    setOriginalSize({ width: 0, height: 0 }); // Initialize with 0, will be updated by img.onload
     setDownscaledSize(null);
     setDownscaledDims(null);
   };
@@ -136,6 +138,13 @@ const ImageDownscaler: React.FC = () => {
     img.src = originalUrl!;
   };
 
+  // Filter downscale options to only those smaller than the original image
+  const filteredOptions = originalSize
+    ? DOWNSCALE_OPTIONS.filter(
+        opt => opt.width < originalSize.width && opt.height < originalSize.height
+      )
+    : DOWNSCALE_OPTIONS;
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold">Image Downscaler</h2>
@@ -146,7 +155,7 @@ const ImageDownscaler: React.FC = () => {
             <div className="mb-2 font-medium">Original</div>
             <img ref={imgRef} src={originalUrl} alt="Original" className="max-w-xs max-h-64 rounded border" />
             {originalSize && (
-              <div className="text-xs text-gray-500 mt-1">Size: {(originalSize / 1024).toFixed(2)} KB</div>
+              <div className="text-xs text-gray-500 mt-1">Size: {(originalSize.width * originalSize.height / 1024).toFixed(2)} KB</div>
             )}
           </div>
           <div>
@@ -194,7 +203,7 @@ const ImageDownscaler: React.FC = () => {
               <>
                 <label className="block text-sm font-medium mb-2">Downscale To:</label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {presetSizes.map(size => (
+                  {filteredOptions.map(size => (
                     <button
                       key={size.label}
                       type="button"
