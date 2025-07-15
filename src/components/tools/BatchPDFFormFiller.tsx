@@ -76,6 +76,11 @@ function getFieldTypeAndOptions(field: any) {
 const BatchPDFFormFiller: React.FC = () => {
   console.log('BatchPDFFormFiller rendering');
   
+  // Tool Capabilities Note: This tool can process multiple PDF forms simultaneously
+  // by filling them with data from CSV or Excel files. It supports text fields,
+  // checkboxes, radio buttons, and dropdown menus. The tool automatically detects
+  // field types and provides manual override options for complex forms.
+  
   // PDF upload and field extraction
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [fieldNames, setFieldNames] = useState<string[]>([]);
