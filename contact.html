@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - ToolsJockey.com</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        accent: '#3b82f6',
+                        'accent-hover': '#2563eb'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .radio-input:checked + .radio-label {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .radio-input:checked + .radio-label .radio-dot {
+            background-color: #3b82f6;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .form-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        @media (prefers-color-scheme: dark) {
+            .form-container {
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            }
+            .radio-input:checked + .radio-label {
+                background-color: #1e3a8a;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Contact Us</h1>
+            <p class="text-gray-600 dark:text-gray-300">We'd love to hear from you!</p>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="form-container rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
+            <form 
+                action="https://formsubmit.co/contact@toolsjockey.com" 
+                method="POST"
+                class="space-y-6"
+                id="contactForm"
+            >
+                <!-- Hidden fields for FormSubmit.co configuration -->
+                <input type="hidden" name="_next" value="https://toolsjockey.com/thank-you.html">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_template" value="table">
+                
+                <!-- Name Field -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Name *
+                    </label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        required
+                        class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        placeholder="Your full name"
+                    >
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Email *
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
+                        placeholder="your.email@example.com"
+                    >
+                </div>
+
+                <!-- Message Type Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        Message Type *
+                    </label>
+                    <div class="space-y-3">
+                        <label class="radio-label flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500">
+                            <input 
+                                type="radio" 
+                                name="messageType" 
+                                value="Question" 
+                                required
+                                class="radio-input sr-only"
+                                checked
+                            >
+                            <div class="radio-dot w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded-full mr-3 flex-shrink-0"></div>
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white">Question</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Ask us anything about our tools or services</div>
+                            </div>
+                        </label>
+                        
+                        <label class="radio-label flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-400 dark:hover:border-gray-500">
+                            <input 
+                                type="radio" 
+                                name="messageType" 
+                                value="Testimonial" 
+                                required
+                                class="radio-input sr-only"
+                            >
+                            <div class="radio-dot w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded-full mr-3 flex-shrink-0"></div>
+                            <div>
+                                <div class="font-medium text-gray-900 dark:text-white">Testimonial</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Share your experience with our tools</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Message Field -->
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Message *
+                    </label>
+                    <textarea 
+                        id="message" 
+                        name="message" 
+                        rows="5" 
+                        required
+                        class="form-input w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none transition-colors duration-200"
+                        placeholder="Tell us what's on your mind..."
+                    ></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="btn-primary w-full py-3 px-6 text-white font-semibold rounded-lg text-center"
+                >
+                    Send Message
+                </button>
+            </form>
+
+            <!-- Additional Info -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Or email us directly at 
+                    <a href="mailto:contact@toolsjockey.com" class="text-accent hover:text-accent-hover underline">
+                        contact@toolsjockey.com
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Back to Home Link -->
+        <div class="text-center mt-6">
+            <a href="https://toolsjockey.com" class="text-accent hover:text-accent-hover underline">
+                ← Back to ToolsJockey.com
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Handle radio button styling
+        document.querySelectorAll('.radio-input').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Remove checked class from all radio labels
+                document.querySelectorAll('.radio-label').forEach(label => {
+                    label.classList.remove('border-blue-500', 'bg-blue-50');
+                });
+                
+                // Add checked class to selected radio label
+                if (this.checked) {
+                    this.closest('.radio-label').classList.add('border-blue-500', 'bg-blue-50');
+                }
+            });
+        });
+
+        // Form submission handling
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            // Show loading state
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-75');
+            
+            // Form will submit normally to FormSubmit.co
+            // The redirect will happen automatically via the _next parameter
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('message');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    </script>
+</body>
+</html> 
