@@ -32,7 +32,7 @@ interface Theme {
 }
 
 const languages: Language[] = [
-  { value: 'html', label: 'HTML', prismLanguage: 'markup' },
+  { value: 'html', label: 'HTML', prismLanguage: 'html' },
   { value: 'css', label: 'CSS', prismLanguage: 'css' },
   { value: 'javascript', label: 'JavaScript', prismLanguage: 'javascript' },
   { value: 'typescript', label: 'TypeScript', prismLanguage: 'typescript' },
@@ -42,7 +42,6 @@ const languages: Language[] = [
   { value: 'python', label: 'Python', prismLanguage: 'python' },
   { value: 'java', label: 'Java', prismLanguage: 'java' },
   { value: 'csharp', label: 'C#', prismLanguage: 'csharp' },
-  { value: 'php', label: 'PHP', prismLanguage: 'php' },
   { value: 'ruby', label: 'Ruby', prismLanguage: 'ruby' },
   { value: 'go', label: 'Go', prismLanguage: 'go' },
   { value: 'rust', label: 'Rust', prismLanguage: 'rust' },
@@ -74,12 +73,18 @@ const SyntaxHighlighterTool: React.FC = () => {
     if (inputCode) {
       const selectedLanguage = languages.find(lang => lang.value === language);
       if (selectedLanguage) {
-        const highlighted = Prism.highlight(
-          inputCode,
-          Prism.languages[selectedLanguage.prismLanguage],
-          selectedLanguage.prismLanguage
-        );
-        setHighlightedCode(highlighted);
+        try {
+          const highlighted = Prism.highlight(
+            inputCode,
+            Prism.languages[selectedLanguage.prismLanguage],
+            selectedLanguage.prismLanguage
+          );
+          setHighlightedCode(highlighted);
+        } catch (error) {
+          console.warn(`Failed to highlight ${selectedLanguage.label} code:`, error);
+          // Fall back to plain text if highlighting fails
+          setHighlightedCode(inputCode.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+        }
       }
     } else {
       setHighlightedCode('');
@@ -230,7 +235,7 @@ const SyntaxHighlighterTool: React.FC = () => {
       
       <div className="text-sm text-gray-600 dark:text-gray-400">
         <p>
-          <strong>Supported Languages:</strong> HTML, CSS, JavaScript, TypeScript, JSX, TSX, JSON, Python, Java, C#, PHP, Ruby, Go, Rust, SQL, Bash, YAML, Markdown
+          <strong>Supported Languages:</strong> HTML, CSS, JavaScript, TypeScript, JSX, TSX, JSON, Python, Java, C#, Ruby, Go, Rust, SQL, Bash, YAML, Markdown
         </p>
         <p>
           <strong>Features:</strong> Syntax highlighting, multiple themes, line numbers, copy code and HTML output
