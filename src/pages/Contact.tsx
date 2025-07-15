@@ -4,31 +4,9 @@ import { useAnalytics } from '../hooks/useAnalytics';
 
 const Contact: React.FC = () => {
   const { trackEngagement } = useAnalytics();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMessageType, setSelectedMessageType] = useState('Question');
   
-  const handleSubmit = (e: React.FormEvent) => {
-    // Get form data for analytics
-    const form = e.target as HTMLFormElement;
-    const name = (form.elements.namedItem('name') as HTMLInputElement).value;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const messageType = (form.elements.namedItem('messageType') as HTMLInputElement).value;
-    const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
-    
-    trackEngagement('contact_form_submit', 1, { 
-      message_length: message.length,
-      has_email: !!email,
-      has_name: !!name,
-      message_type: messageType
-    });
 
-    // Show loading state
-    setIsSubmitting(true);
-    
-    // Let the form submit naturally - no preventDefault()
-    // The form will redirect to the thank you page automatically
-    // via the _next parameter in the hidden fields
-  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
@@ -61,7 +39,6 @@ const Contact: React.FC = () => {
           <form 
             action="https://formsubmit.co/contact@toolsjockey.com"
             method="POST"
-            onSubmit={handleSubmit}
             className="space-y-6"
             id="contactForm"
           >
@@ -177,11 +154,10 @@ const Contact: React.FC = () => {
             {/* Submit Button */}
             <button 
               type="submit" 
-              disabled={isSubmitting}
-              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg relative overflow-hidden transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:transform hover:-translate-y-2 hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg relative overflow-hidden transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:transform hover:-translate-y-2 hover:shadow-lg"
             >
               <span className="relative z-10">
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                Send Message
               </span>
             </button>
           </form>
