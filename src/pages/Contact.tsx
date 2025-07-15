@@ -22,10 +22,10 @@ const Contact: React.FC = () => {
       message_type: messageType
     });
 
-    // Let the form submit naturally to FormSubmit.co
-    // The form action and method will handle the submission
+    // Show loading state
     setIsSubmitting(true);
     
+    // Let the form submit naturally - no preventDefault()
     // The form will redirect to the thank you page automatically
     // via the _next parameter in the hidden fields
   };
