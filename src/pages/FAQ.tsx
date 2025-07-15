@@ -31,7 +31,7 @@ const faqData: FAQItemType[] = [
   },
   {
     question: 'Can I use ToolsJockey on mobile devices?',
-    answer: 'Yes! The site is fully responsive and works great on phones, tablets, and desktops.',
+    answer: 'Yes! The site is fully responsive and works great on phones, tablets, and desktops. However, some tools may have limited functionality on mobile devices due to browser limitations, particularly for file processing and video editing tools. For the best experience with complex tools, we recommend using a desktop or laptop computer.',
   },
   {
     question: 'How do I suggest a new tool or feature?',
