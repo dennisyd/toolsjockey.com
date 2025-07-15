@@ -95,7 +95,7 @@ const infoLinks = [
   { label: 'FAQ', to: '/faq' },
   { label: 'Blog', to: '/blog' },
   { label: 'Tutorials', to: '/tutorials' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'Contact', to: '/contact.html' },
   { label: 'Terms', to: '/terms' },
   { label: 'Privacy', to: '/privacy' },
   { label: 'About', to: '/about' },
