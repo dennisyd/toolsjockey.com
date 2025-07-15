@@ -6,6 +6,7 @@ const Contact: React.FC = () => {
   const { trackEngagement } = useAnalytics();
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMessageType, setSelectedMessageType] = useState('Question');
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +62,10 @@ const Contact: React.FC = () => {
     if (e.target.value) {
       trackEngagement('contact_form_email_entered');
     }
+  };
+
+  const handleRadioChange = (value: string) => {
+    setSelectedMessageType(value);
   };
 
   if (submitted) {
@@ -152,31 +157,50 @@ const Contact: React.FC = () => {
                 Message Type *
               </label>
               <div className="space-y-3">
-                <label className="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1">
+                <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1 ${
+                  selectedMessageType === 'Question' 
+                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100' 
+                    : 'border-gray-200'
+                }`}>
                   <input 
                     type="radio" 
                     name="messageType" 
                     value="Question" 
                     required
                     className="sr-only"
-                    defaultChecked
+                    checked={selectedMessageType === 'Question'}
+                    onChange={() => handleRadioChange('Question')}
                   />
-                  <div className="w-5 h-5 border-2 border-gray-300 rounded-full mr-4 flex-shrink-0 transition-all duration-300"></div>
+                  <div className={`w-5 h-5 border-2 rounded-full mr-4 flex-shrink-0 transition-all duration-300 ${
+                    selectedMessageType === 'Question' 
+                      ? 'border-blue-500 bg-blue-500' 
+                      : 'border-gray-300'
+                  }`}></div>
                   <div>
                     <div className="font-semibold text-gray-900">Question</div>
                     <div className="text-sm text-gray-600">Ask us anything about our tools or services</div>
                   </div>
                 </label>
                 
-                <label className="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1">
+                <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1 ${
+                  selectedMessageType === 'Testimonial' 
+                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100' 
+                    : 'border-gray-200'
+                }`}>
                   <input 
                     type="radio" 
                     name="messageType" 
                     value="Testimonial" 
                     required
                     className="sr-only"
+                    checked={selectedMessageType === 'Testimonial'}
+                    onChange={() => handleRadioChange('Testimonial')}
                   />
-                  <div className="w-5 h-5 border-2 border-gray-300 rounded-full mr-4 flex-shrink-0 transition-all duration-300"></div>
+                  <div className={`w-5 h-5 border-2 rounded-full mr-4 flex-shrink-0 transition-all duration-300 ${
+                    selectedMessageType === 'Testimonial' 
+                      ? 'border-blue-500 bg-blue-500' 
+                      : 'border-gray-300'
+                  }`}></div>
                   <div>
                     <div className="font-semibold text-gray-900">Testimonial</div>
                     <div className="text-sm text-gray-600">Share your experience with our tools</div>
@@ -258,17 +282,7 @@ const Contact: React.FC = () => {
           color: #3b82f6;
         }
         
-        input[type="radio"]:checked + label {
-          border-color: #3b82f6;
-          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.3);
-        }
-        
-        input[type="radio"]:checked + label div:first-child {
-          background-color: #3b82f6;
-          transform: scale(1.2);
-        }
+
       `}</style>
     </div>
   );
