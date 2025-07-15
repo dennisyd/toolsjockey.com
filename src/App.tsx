@@ -9,6 +9,7 @@ import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
+import ThankYou from './pages/ThankYou';
 import About from './pages/About';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
@@ -279,6 +280,7 @@ function App() {
                 <Route path="tutorials/:id" element={<TutorialPage />} />
                 <Route path="about" element={<About />} />
                 <Route path="contact" element={<Contact />} />
+                <Route path="thank-you" element={<ThankYou />} />
                 
                 {/* Archive tool routes */}
                 <Route path="tools/zip-creator" element={<ZipCreatorPage />} />

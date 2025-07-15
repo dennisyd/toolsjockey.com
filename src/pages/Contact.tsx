@@ -44,7 +44,7 @@ const Contact: React.FC = () => {
             id="contactForm"
           >
             {/* Hidden fields for FormSubmit.co configuration */}
-            <input type="hidden" name="_next" value="https://toolsjockey.com/thank-you.html" />
+            <input type="hidden" name="_next" value="https://toolsjockey.com/thank-you" />
             <input type="hidden" name="_captcha" value="false" />
             <input type="hidden" name="_template" value="table" />
             {/* Name Field */}
