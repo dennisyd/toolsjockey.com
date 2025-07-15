@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Eye, File, Folder } from 'lucide-react';
-import JSZip from 'jszip';
+import { unzipSync } from 'fflate';
 import { ArchiveBoxIcon } from '@heroicons/react/24/outline';
 import ArchiveToolPageLayout from '../../components/layout/ArchiveToolPageLayout';
 
@@ -53,44 +53,37 @@ const ArchiveInspectorPage: React.FC = () => {
     setSelectedFile(null);
     
     try {
-      const zip = new JSZip();
       setProgress(20);
-      
-      // Load the archive
-      const zipData = await zip.loadAsync(file);
-      
+      // Read file as ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const zipData = new Uint8Array(arrayBuffer);
       setProgress(40);
-      
-      // Extract file information
+      // Unzip using fflate
+      const unzipped = unzipSync(zipData, { filter: () => true });
       const files: ArchiveFile[] = [];
       let totalSize = 0;
       let compressedSize = 0;
       let fileCount = 0;
       let directoryCount = 0;
-      
-      zipData.forEach((relativePath, zipEntry) => {
-        const isDirectory = zipEntry.dir;
-        const date = zipEntry.date;
-        const comment = zipEntry.comment;
-        if (!isDirectory) {
-          fileCount++;
-        } else {
-          directoryCount++;
-        }
+      Object.entries(unzipped).forEach(([relativePath, entryRaw]) => {
+        const entry = entryRaw as Uint8Array & { originalSize?: number };
+        const isDirectory = false; // fflate does not expose directories in unzipSync
+        const date = new Date(); // fflate does not store file dates; fallback to now
+        const size = entry.length;
+        const compSize = typeof entry.originalSize === 'number' ? entry.originalSize : size;
+        fileCount++;
+        totalSize += size;
+        compressedSize += compSize;
         files.push({
-          name: zipEntry.name.split('/').pop() || '',
-          size: 0,
-          compressedSize: 0,
+          name: relativePath.split('/').pop() || '',
+          size,
+          compressedSize: compSize,
           isDirectory,
           date,
           path: relativePath,
-          comment
         });
       });
-      
       setArchiveFiles(files);
-      
-      // Set archive info
       setArchiveInfo({
         name: file.name,
         size: file.size,
@@ -99,15 +92,12 @@ const ArchiveInspectorPage: React.FC = () => {
         totalSize,
         compressedSize,
         isPasswordProtected: false,
-        format: 'ZIP'
+        format: 'ZIP',
       });
-      
       setProgress(100);
-      
     } catch (e: any) {
       setError('Failed to load archive: ' + e.message);
     }
-    
     setIsProcessing(false);
     setTimeout(() => setProgress(0), 1000);
   };
