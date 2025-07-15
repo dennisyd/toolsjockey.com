@@ -30,7 +30,7 @@ const MENU = [
     label: 'Info',
     children: [
       { label: 'About', to: '/about' },
-      { label: 'Contact', to: '/contact.html' },
+      { label: 'Contact', to: '/contact' },
       { label: 'Terms', to: '/terms' },
       { label: 'Privacy', to: '/privacy' },
     ],

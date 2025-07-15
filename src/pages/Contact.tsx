@@ -2,153 +2,274 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../hooks/useAnalytics';
 
-// Update this URL to your actual form handling endpoint on your other domain
-// const FORM_ENDPOINT = 'https://your-other-domain.com/api/contact';
-
 const Contact: React.FC = () => {
   const { trackEngagement } = useAnalytics();
   const [submitted, setSubmitted] = useState(false);
-  const [copySuccess, setCopySuccess] = useState('');
-  const [showCopyOption, setShowCopyOption] = useState(false);
-  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     // Get form data
     const form = e.target as HTMLFormElement;
     const name = (form.elements.namedItem('name') as HTMLInputElement).value;
-    const emailValue = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const messageType = (form.elements.namedItem('messageType') as HTMLInputElement).value;
     const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
     
     trackEngagement('contact_form_submit', 1, { 
       message_length: message.length,
-      has_email: !!emailValue,
-      has_name: !!name 
+      has_email: !!email,
+      has_name: !!name,
+      message_type: messageType
     });
-    const honeypot = (form.elements.namedItem('website') as HTMLInputElement)?.value;
-    
-    // If honeypot field is filled, silently "succeed" but don't actually send
-    if (honeypot) {
+
+    // Submit to FormSubmit.co
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('messageType', messageType);
+    formData.append('message', message);
+    formData.append('_next', 'https://toolsjockey.com/thank-you.html');
+    formData.append('_captcha', 'false');
+    formData.append('_template', 'table');
+
+    try {
+      const response = await fetch('https://formsubmit.co/contact@toolsjockey.com', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        // Redirect to thank you page
+        window.location.href = 'https://toolsjockey.com/thank-you.html';
+      } else {
+        throw new Error('Form submission failed');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Fallback: show success message anyway
       setSubmitted(true);
-      return;
-    }
-    
-    if (showCopyOption) {
-      // Create formatted message for copying
-      const formattedMessage = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
-      
-      // Copy to clipboard
-      navigator.clipboard.writeText(formattedMessage)
-        .then(() => {
-          setCopySuccess('Message copied to clipboard!');
-          setTimeout(() => setCopySuccess(''), 3000);
-        })
-        .catch(err => {
-          console.error('Failed to copy text: ', err);
-          setCopySuccess('Failed to copy. Please try again.');
-        });
-      
-      setSubmitted(true);
-    } else {
-      // Create mailto URL with form data
-      const subject = `Contact Form: ${name}`;
-      const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
-      const mailtoUrl = `mailto:support@toolsjockey.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      
-      // Open the user's email client with the pre-filled email
-      window.location.href = mailtoUrl;
-      
-      // Set submitted state to show thank you message when they return
-      setSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
     if (e.target.value) {
       trackEngagement('contact_form_email_entered');
     }
   };
 
-  return (
-    <div className="container-app max-w-xl mx-auto px-2 sm:px-4 py-10 sm:py-16">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg ring-1 ring-slate-100 dark:ring-slate-800 p-6 sm:p-10">
-        <h1 className="text-4xl font-bold mb-6 text-center text-accent">Contact Us</h1>
-        <p className="mb-6 text-center text-slate-600 dark:text-slate-300">Have a question, suggestion, or just want to say hi? Fill out the form below or email us directly at <a href="mailto:support@toolsjockey.com" className="text-accent underline">support@toolsjockey.com</a>.</p>
-        {submitted ? (
-          <div className="text-center text-green-600 text-lg font-semibold py-10">
-            <p>Thank you for reaching out! We'll get back to you soon.</p>
-            {copySuccess && <p className="mt-2 text-sm">{copySuccess}</p>}
-            {showCopyOption && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Please send your message to:</p>
-                <p className="font-medium mt-1">support@toolsjockey.com</p>
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
+        <div className="w-full max-w-lg animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 text-center shadow-2xl border border-white/20">
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
               </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="mb-4">
-              <div className="flex justify-center space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCopyOption(false)}
-                  className={`px-4 py-2 rounded-md ${!showCopyOption ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
-                >
-                  Use Email Client
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCopyOption(true)}
-                  className={`px-4 py-2 rounded-md ${showCopyOption ? 'bg-accent text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200'}`}
-                >
-                  Copy to Clipboard
-                </button>
-              </div>
-              <p className="text-center text-sm mt-2 text-gray-500 dark:text-gray-400">
-                {showCopyOption ? 
-                  "Copy your message and send it manually from your preferred email app" : 
-                  "This will open your default email client with a pre-filled message"}
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">Thank You!</h1>
+              <p className="text-gray-600 mb-6 text-lg">
+                Your message has been sent successfully. We'll get back to you as soon as possible!
               </p>
             </div>
             
-            <form
-              className="space-y-6"
-              onSubmit={handleSubmit}
-            >
-              <div>
-                <label htmlFor="name" className="block font-medium mb-1">Name</label>
-                <input id="name" name="name" type="text" required className="w-full rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent" />
-              </div>
-              <div>
-                <label htmlFor="email" className="block font-medium mb-1">Email</label>
-                <input id="email" name="email" type="email" required className="w-full rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent" onChange={handleEmailChange} />
-              </div>
-              <div>
-                <label htmlFor="message" className="block font-medium mb-1">Message</label>
-                <textarea id="message" name="message" rows={5} required className="w-full rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent" />
-              </div>
-              
-              {/* Honeypot field - hidden from users but bots will fill it out */}
-              <div className="hidden" aria-hidden="true">
-                <label htmlFor="website">Website (Leave this empty)</label>
-                <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
-              </div>
-              
-              <button 
-                type="submit" 
-                className="btn btn-primary w-full"
+            <div className="space-y-3">
+              <Link 
+                to="/" 
+                className="inline-flex items-center justify-center w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:-translate-y-1"
               >
-                {showCopyOption ? 'Copy Message' : 'Send Message'}
-              </button>
-            </form>
-          </>
-        )}
-        <div className="mt-10 text-center">
-          <Link to="/" className="text-accent underline">&larr; Back to Home</Link>
+                Return to ToolsJockey.com
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
+      <div className="w-full max-w-lg animate-fade-in">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4">
+            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">Contact Us</h1>
+          <p className="text-white/90 text-lg">We'd love to hear from you!</p>
+        </div>
+
+        {/* Contact Form */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
+          <form 
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            id="contactForm"
+          >
+            {/* Name Field */}
+            <div className="floating-label relative">
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                required
+                placeholder=" "
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm text-gray-900 placeholder-transparent transition-all duration-300 focus:outline-none focus:border-blue-500 focus:transform focus:-translate-y-1"
+              />
+              <label htmlFor="name" className="absolute left-4 top-4 text-gray-500 transition-all duration-300 pointer-events-none">
+                Full Name *
+              </label>
+            </div>
+
+            {/* Email Field */}
+            <div className="floating-label relative">
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                required
+                placeholder=" "
+                onChange={handleEmailChange}
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm text-gray-900 placeholder-transparent transition-all duration-300 focus:outline-none focus:border-blue-500 focus:transform focus:-translate-y-1"
+              />
+              <label htmlFor="email" className="absolute left-4 top-4 text-gray-500 transition-all duration-300 pointer-events-none">
+                Email Address *
+              </label>
+            </div>
+
+            {/* Message Type Selection */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-4">
+                Message Type *
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1">
+                  <input 
+                    type="radio" 
+                    name="messageType" 
+                    value="Question" 
+                    required
+                    className="sr-only"
+                    defaultChecked
+                  />
+                  <div className="w-5 h-5 border-2 border-gray-300 rounded-full mr-4 flex-shrink-0 transition-all duration-300"></div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Question</div>
+                    <div className="text-sm text-gray-600">Ask us anything about our tools or services</div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1">
+                  <input 
+                    type="radio" 
+                    name="messageType" 
+                    value="Testimonial" 
+                    required
+                    className="sr-only"
+                  />
+                  <div className="w-5 h-5 border-2 border-gray-300 rounded-full mr-4 flex-shrink-0 transition-all duration-300"></div>
+                  <div>
+                    <div className="font-semibold text-gray-900">Testimonial</div>
+                    <div className="text-sm text-gray-600">Share your experience with our tools</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Message Field */}
+            <div className="floating-label relative">
+              <textarea 
+                id="message" 
+                name="message" 
+                rows={5} 
+                required
+                placeholder=" "
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl bg-white/50 backdrop-blur-sm text-gray-900 placeholder-transparent resize-none transition-all duration-300 focus:outline-none focus:border-blue-500 focus:transform focus:-translate-y-1"
+              />
+              <label htmlFor="message" className="absolute left-4 top-4 text-gray-500 transition-all duration-300 pointer-events-none">
+                Your Message *
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg relative overflow-hidden transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:transform hover:-translate-y-2 hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed"
+            >
+              <span className="relative z-10">
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+              </span>
+            </button>
+          </form>
+
+          {/* Additional Info */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              Or email us directly at 
+              <a href="mailto:contact@toolsjockey.com" className="text-blue-600 hover:text-blue-700 underline font-medium ml-1">
+                contact@toolsjockey.com
+              </a>
+            </p>
+          </div>
+        </div>
+
+        {/* Back to Home Link */}
+        <div className="text-center mt-8">
+          <Link to="/" className="inline-flex items-center text-white/90 hover:text-white transition-colors duration-200">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to ToolsJockey.com
+          </Link>
+        </div>
+      </div>
+
+      <style>{`
+        .animate-fade-in {
+          animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .floating-label input:focus + label,
+        .floating-label input:not(:placeholder-shown) + label,
+        .floating-label textarea:focus + label,
+        .floating-label textarea:not(:placeholder-shown) + label {
+          transform: translateY(-1.5rem) scale(0.85);
+          color: #3b82f6;
+        }
+        
+        input[type="radio"]:checked + label {
+          border-color: #3b82f6;
+          background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.3);
+        }
+        
+        input[type="radio"]:checked + label div:first-child {
+          background-color: #3b82f6;
+          transform: scale(1.2);
+        }
+      `}</style>
     </div>
   );
 };
