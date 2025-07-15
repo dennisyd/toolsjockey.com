@@ -152,14 +152,15 @@ const Contact: React.FC = () => {
             </div>
 
             {/* Message Type Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-4">
+            <fieldset className="space-y-3">
+              <legend className="block text-sm font-semibold text-gray-700 mb-4">
                 Message Type *
-              </label>
+              </legend>
+              
               <div className="space-y-3">
                 <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1 ${
                   selectedMessageType === 'Question' 
-                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100' 
+                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg' 
                     : 'border-gray-200'
                 }`}>
                   <input 
@@ -173,10 +174,10 @@ const Contact: React.FC = () => {
                   />
                   <div className={`w-5 h-5 border-2 rounded-full mr-4 flex-shrink-0 transition-all duration-300 ${
                     selectedMessageType === 'Question' 
-                      ? 'border-blue-500 bg-blue-500' 
+                      ? 'border-blue-500 bg-blue-500 scale-110' 
                       : 'border-gray-300'
                   }`}></div>
-                  <div>
+                  <div className="flex-1">
                     <div className="font-semibold text-gray-900">Question</div>
                     <div className="text-sm text-gray-600">Ask us anything about our tools or services</div>
                   </div>
@@ -184,7 +185,7 @@ const Contact: React.FC = () => {
                 
                 <label className={`flex items-center p-4 border-2 rounded-xl cursor-pointer bg-white/50 backdrop-blur-sm transition-all duration-300 hover:border-gray-300 hover:transform hover:-translate-y-1 ${
                   selectedMessageType === 'Testimonial' 
-                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100' 
+                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg' 
                     : 'border-gray-200'
                 }`}>
                   <input 
@@ -198,16 +199,16 @@ const Contact: React.FC = () => {
                   />
                   <div className={`w-5 h-5 border-2 rounded-full mr-4 flex-shrink-0 transition-all duration-300 ${
                     selectedMessageType === 'Testimonial' 
-                      ? 'border-blue-500 bg-blue-500' 
+                      ? 'border-blue-500 bg-blue-500 scale-110' 
                       : 'border-gray-300'
                   }`}></div>
-                  <div>
+                  <div className="flex-1">
                     <div className="font-semibold text-gray-900">Testimonial</div>
                     <div className="text-sm text-gray-600">Share your experience with our tools</div>
                   </div>
                 </label>
               </div>
-            </div>
+            </fieldset>
 
             {/* Message Field */}
             <div className="floating-label relative">
