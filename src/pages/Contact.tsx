@@ -4,15 +4,11 @@ import { useAnalytics } from '../hooks/useAnalytics';
 
 const Contact: React.FC = () => {
   const { trackEngagement } = useAnalytics();
-  const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMessageType, setSelectedMessageType] = useState('Question');
   
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Get form data
+  const handleSubmit = (e: React.FormEvent) => {
+    // Get form data for analytics
     const form = e.target as HTMLFormElement;
     const name = (form.elements.namedItem('name') as HTMLInputElement).value;
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
@@ -26,36 +22,12 @@ const Contact: React.FC = () => {
       message_type: messageType
     });
 
-    // Submit to FormSubmit.co
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('messageType', messageType);
-    formData.append('message', message);
-    formData.append('_next', 'https://toolsjockey.com/thank-you.html');
-    formData.append('_captcha', 'false');
-    formData.append('_template', 'table');
-
-    try {
-      const response = await fetch('https://formsubmit.co/contact@toolsjockey.com', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        setSubmitted(true);
-        // Redirect to thank you page
-        window.location.href = 'https://toolsjockey.com/thank-you.html';
-      } else {
-        throw new Error('Form submission failed');
-      }
-    } catch (error) {
-      console.error('Form submission error:', error);
-      // Fallback: show success message anyway
-      setSubmitted(true);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Let the form submit naturally to FormSubmit.co
+    // The form action and method will handle the submission
+    setIsSubmitting(true);
+    
+    // The form will redirect to the thank you page automatically
+    // via the _next parameter in the hidden fields
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,36 +40,7 @@ const Contact: React.FC = () => {
     setSelectedMessageType(value);
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
-        <div className="w-full max-w-lg animate-fade-in">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 text-center shadow-2xl border border-white/20">
-            <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Thank You!</h1>
-              <p className="text-gray-600 mb-6 text-lg">
-                Your message has been sent successfully. We'll get back to you as soon as possible!
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <Link 
-                to="/" 
-                className="inline-flex items-center justify-center w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:-translate-y-1"
-              >
-                Return to ToolsJockey.com
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800">
@@ -116,10 +59,16 @@ const Contact: React.FC = () => {
         {/* Contact Form */}
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20">
           <form 
+            action="https://formsubmit.co/contact@toolsjockey.com"
+            method="POST"
             onSubmit={handleSubmit}
             className="space-y-6"
             id="contactForm"
           >
+            {/* Hidden fields for FormSubmit.co configuration */}
+            <input type="hidden" name="_next" value="https://toolsjockey.com/thank-you.html" />
+            <input type="hidden" name="_captcha" value="false" />
+            <input type="hidden" name="_template" value="table" />
             {/* Name Field */}
             <div className="floating-label relative">
               <input 
