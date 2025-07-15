@@ -56,50 +56,151 @@ const ArchiveInspectorPage: React.FC = () => {
       setProgress(20);
       // Read file as ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
-      const zipData = new Uint8Array(arrayBuffer);
+      const fileData = new Uint8Array(arrayBuffer);
       setProgress(40);
-      // Unzip using fflate
-      const unzipped = unzipSync(zipData, { filter: () => true });
-      const files: ArchiveFile[] = [];
-      let totalSize = 0;
-      let compressedSize = 0;
-      let fileCount = 0;
-      let directoryCount = 0;
-      Object.entries(unzipped).forEach(([relativePath, entryRaw]) => {
-        const entry = entryRaw as Uint8Array & { originalSize?: number };
-        const isDirectory = false; // fflate does not expose directories in unzipSync
-        const date = new Date(); // fflate does not store file dates; fallback to now
-        const size = entry.length;
-        const compSize = typeof entry.originalSize === 'number' ? entry.originalSize : size;
-        fileCount++;
-        totalSize += size;
-        compressedSize += compSize;
-        files.push({
-          name: relativePath.split('/').pop() || '',
-          size,
-          compressedSize: compSize,
-          isDirectory,
-          date,
-          path: relativePath,
-        });
-      });
-      setArchiveFiles(files);
-      setArchiveInfo({
-        name: file.name,
-        size: file.size,
-        fileCount,
-        directoryCount,
-        totalSize,
-        compressedSize,
-        isPasswordProtected: false,
-        format: 'ZIP',
-      });
+      
+      // Detect file type and parse accordingly
+      const fileType = detectArchiveType(file.name, fileData);
+      
+      if (fileType === 'zip') {
+        await parseZipArchive(file, fileData);
+      } else if (fileType === 'tar') {
+        await parseTarArchive(file, fileData);
+      } else {
+        setError(`Unsupported archive format. Only ZIP and TAR files are supported.`);
+      }
+      
       setProgress(100);
     } catch (e: any) {
       setError('Failed to load archive: ' + e.message);
     }
     setIsProcessing(false);
     setTimeout(() => setProgress(0), 1000);
+  };
+
+  const detectArchiveType = (fileName: string, data: Uint8Array): string => {
+    const ext = fileName.toLowerCase().split('.').pop();
+    if (ext === 'zip') return 'zip';
+    if (ext === 'tar' || ext === 'gz' || ext === 'bz2' || ext === 'xz') {
+      // Check if it's a TAR file (TAR has a specific header structure)
+      if (data.length >= 512) {
+        // Check for TAR magic number (ustar)
+        const magic = new TextDecoder().decode(data.slice(257, 263));
+        if (magic === 'ustar ' || magic === 'ustar\0') {
+          return 'tar';
+        }
+      }
+      return 'tar'; // Assume TAR for .tar.gz, .tar.bz2, etc.
+    }
+    return 'zip'; // Default to ZIP
+  };
+
+  const parseZipArchive = async (file: File, fileData: Uint8Array) => {
+    // Unzip using fflate
+    const unzipped = unzipSync(fileData, { filter: () => true });
+    const files: ArchiveFile[] = [];
+    let totalSize = 0;
+    let compressedSize = 0;
+    let fileCount = 0;
+    let directoryCount = 0;
+    
+    Object.entries(unzipped).forEach(([relativePath, entryRaw]) => {
+      const entry = entryRaw as Uint8Array & { originalSize?: number };
+      const isDirectory = false; // fflate does not expose directories in unzipSync
+      const date = new Date(); // fflate does not store file dates; fallback to now
+      const size = entry.length;
+      const compSize = typeof entry.originalSize === 'number' ? entry.originalSize : size;
+      fileCount++;
+      totalSize += size;
+      compressedSize += compSize;
+      files.push({
+        name: relativePath.split('/').pop() || '',
+        size,
+        compressedSize: compSize,
+        isDirectory,
+        date,
+        path: relativePath,
+      });
+    });
+    
+    setArchiveFiles(files);
+    setArchiveInfo({
+      name: file.name,
+      size: file.size,
+      fileCount,
+      directoryCount,
+      totalSize,
+      compressedSize,
+      isPasswordProtected: false,
+      format: 'ZIP',
+    });
+  };
+
+  const parseTarArchive = async (file: File, fileData: Uint8Array) => {
+    const files: ArchiveFile[] = [];
+    let totalSize = 0;
+    let fileCount = 0;
+    let directoryCount = 0;
+    
+    let offset = 0;
+    const decoder = new TextDecoder();
+    
+    while (offset + 512 <= fileData.length) {
+      const header = fileData.slice(offset, offset + 512);
+      
+      // Check if this is the end of TAR (two empty blocks)
+      if (header.every(byte => byte === 0)) {
+        break;
+      }
+      
+      // Parse TAR header
+      const fileName = decoder.decode(header.slice(0, 100)).replace(/\0+$/, '');
+      const fileSize = parseInt(decoder.decode(header.slice(124, 136)).trim(), 8);
+      const fileTime = parseInt(decoder.decode(header.slice(136, 148)).trim(), 8);
+      const fileType = decoder.decode(header.slice(156, 157));
+      
+      if (fileName && fileName !== '././@LongLink') {
+        const isDirectory = fileType === '5' || fileName.endsWith('/');
+        const date = new Date(fileTime * 1000);
+        const size = fileSize || 0;
+        
+        if (isDirectory) {
+          directoryCount++;
+        } else {
+          fileCount++;
+          totalSize += size;
+        }
+        
+        files.push({
+          name: fileName.split('/').pop() || fileName,
+          size,
+          compressedSize: size, // TAR doesn't compress individual files
+          isDirectory,
+          date,
+          path: fileName,
+        });
+      }
+      
+      // Move to next block (file data + padding)
+      if (fileSize > 0) {
+        const dataBlocks = Math.ceil(fileSize / 512);
+        offset += 512 + (dataBlocks * 512);
+      } else {
+        offset += 512;
+      }
+    }
+    
+    setArchiveFiles(files);
+    setArchiveInfo({
+      name: file.name,
+      size: file.size,
+      fileCount,
+      directoryCount,
+      totalSize,
+      compressedSize: file.size, // TAR doesn't compress
+      isPasswordProtected: false,
+      format: 'TAR',
+    });
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -123,8 +224,9 @@ const ArchiveInspectorPage: React.FC = () => {
   };
 
   const getCompressionRatio = (compressed: number, uncompressed: number) => {
-    if (uncompressed === 0) return 0;
-    return ((uncompressed - compressed) / uncompressed * 100).toFixed(1);
+    if (uncompressed === 0) return '0.0';
+    const ratio = ((uncompressed - compressed) / uncompressed * 100);
+    return ratio.toFixed(1);
   };
 
   const filteredAndSortedFiles = archiveFiles
@@ -178,7 +280,7 @@ const ArchiveInspectorPage: React.FC = () => {
             Drag & drop archive file here, or click to select
           </p>
           <p className="text-sm text-gray-500">
-            Supports ZIP, 7z, TAR, and other archive formats
+            Supports ZIP and TAR archive formats
           </p>
         </div>
       </div>
@@ -263,7 +365,12 @@ const ArchiveInspectorPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Space Saved:</span>
-                  <span>{formatFileSize(archiveInfo.totalSize - archiveInfo.compressedSize)}</span>
+                  <span>
+                    {archiveInfo.totalSize >= archiveInfo.compressedSize 
+                      ? formatFileSize(archiveInfo.totalSize - archiveInfo.compressedSize)
+                      : `+${formatFileSize(archiveInfo.compressedSize - archiveInfo.totalSize)} (overhead)`
+                    }
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Compression Ratio:</span>

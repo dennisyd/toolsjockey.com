@@ -14,7 +14,7 @@ interface ArchiveFile {
   path: string;
 }
 
-type TargetFormat = 'zip' | 'tar.gz';
+type TargetFormat = 'zip' | 'tar' | 'tar.gz' | 'gz';
 
 const ArchiveConverterPage: React.FC = () => {
   const [sourceArchive, setSourceArchive] = useState<JSZip | null>(null);
@@ -122,6 +122,10 @@ const ArchiveConverterPage: React.FC = () => {
         await convertToZip();
       } else if (targetFormat === 'tar.gz') {
         await convertToTarGz();
+      } else if (targetFormat === 'tar') {
+        await convertToTar();
+      } else if (targetFormat === 'gz') {
+        await convertToGz();
       }
     } catch (e: any) {
       setError('Failed to convert archive: ' + e.message);
@@ -344,9 +348,45 @@ const ArchiveConverterPage: React.FC = () => {
   const getFormatInfo = (format: string) => {
     const info = {
       'zip': { name: 'ZIP', description: 'Universal archive format', compression: 'Good' },
-      'tar.gz': { name: 'TAR.GZ', description: 'Gzip compressed archive', compression: 'Better' }
+      'tar': { name: 'TAR', description: 'Uncompressed archive (no compression)', compression: 'None' },
+      'tar.gz': { name: 'TAR.GZ', description: 'Gzip compressed archive', compression: 'Better' },
+      'gz': { name: 'GZ', description: 'Gzip single file compression', compression: 'Good' },
     };
     return info[format as keyof typeof info] || { name: format.toUpperCase(), description: '', compression: '' };
+  };
+
+  // Add stubs for convertToTar and convertToGz if not present
+  const convertToTar = async () => {
+    // Reuse createTarFromZip logic
+    const tarData = await createTarFromZip();
+    setProgress(90);
+    const blob = new Blob([tarData], { type: 'application/x-tar' });
+    const url = URL.createObjectURL(blob);
+    setConvertedUrl(url);
+    setTargetSize(blob.size);
+    setProgress(100);
+  };
+  const convertToGz = async () => {
+    // Only support single file
+    if (archiveFiles.length !== 1 || archiveFiles[0].isDirectory) {
+      setError('GZ format only supports a single file.');
+      return;
+    }
+    const fileInfo = archiveFiles[0];
+    const zipEntry = sourceArchive!.file(fileInfo.path);
+    if (!zipEntry) {
+      setError('File not found in archive.');
+      return;
+    }
+    const fileData = await zipEntry.async('uint8array');
+    const compressedData = pako.gzip(fileData, {
+      level: Math.min(9, Math.max(1, compressionLevel)) as 0|1|2|3|4|5|6|7|8|9
+    });
+    const blob = new Blob([compressedData], { type: 'application/gzip' });
+    const url = URL.createObjectURL(blob);
+    setConvertedUrl(url);
+    setTargetSize(blob.size);
+    setProgress(100);
   };
 
   return (
@@ -439,7 +479,9 @@ const ArchiveConverterPage: React.FC = () => {
                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:border-accent"
               >
                 <option value="zip">ZIP</option>
+                <option value="tar">TAR</option>
                 <option value="tar.gz">TAR.GZ</option>
+                <option value="gz">GZ</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 {getFormatInfo(targetFormat).description}
