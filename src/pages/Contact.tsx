@@ -1,13 +1,58 @@
 // Yancy Dennis
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAnalytics } from '../hooks/useAnalytics';
+
+//Declare the global grecaptcha object
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => void;
+      render: (element: string | HTMLElement, options: any) => number;
+      getResponse: (widgetId: number) => string;
+      reset: (widgetId: number) => void;
+    };
+  }
+}
 
 const Contact: React.FC = () => {
   const { trackEngagement } = useAnalytics();
   const [selectedMessageType, setSelectedMessageType] = useState('Question');
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
+  const recaptchaRef = useRef<HTMLDivElement>(null);
 
+  // Load reCAPTCHA script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    script.onload = () => {
+      if (window.grecaptcha && recaptchaRef.current) {
+        window.grecaptcha.ready(() => {
+          const widgetId = window.grecaptcha.render(recaptchaRef.current!, {
+            sitekey: '6LdY7IUrAAAAALwwExeqGYYAgjIaOfzlAE4nnyUx', // Updated site key
+            theme: 'light',
+            size: 'normal',
+            callback: () => {
+              // reCAPTCHA completed
+            }
+          });
+          setRecaptchaWidgetId(widgetId);
+        });
+      }
+    };
+
+    return () => { // Cleanup script if component unmounts
+      const existingScript = document.querySelector('script[src*="recaptcha/api.js"]');
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, []);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value) {
@@ -19,6 +64,63 @@ const Contact: React.FC = () => {
     setSelectedMessageType(value);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+
+    // Check if reCAPTCHA is completed
+    if (!recaptchaWidgetId || !window.grecaptcha) {
+      alert('Please complete the reCAPTCHA verification.');
+      return;
+    }
+
+    const recaptchaResponse = window.grecaptcha.getResponse(recaptchaWidgetId);
+    if (!recaptchaResponse) {
+      alert('Please complete the reCAPTCHA verification.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const formObject = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        messageType: formData.get('messageType'),
+        message: formData.get('message'),
+        recaptchaResponse: recaptchaResponse
+      };
+
+      // Send to your PHP handler instead of FormSubmit.co
+      const response = await fetch('/server/contact-form-handler.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formObject)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Redirect to thank you page
+        window.location.href = '/thank-you';
+      } else {
+        alert(result.error || 'Failed to send message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+      // Reset reCAPTCHA
+      if (recaptchaWidgetId && window.grecaptcha) {
+        window.grecaptcha.reset(recaptchaWidgetId);
+      }
+    }
+  };
 
 
   return (
@@ -42,6 +144,7 @@ const Contact: React.FC = () => {
             method="POST"
             className="space-y-6"
             id="contactForm"
+            onSubmit={handleSubmit}
           >
             {/* Hidden fields for FormSubmit.co configuration */}
             <input type="hidden" name="_next" value="https://toolsjockey.com/thank-you" />
@@ -152,13 +255,17 @@ const Contact: React.FC = () => {
               </label>
             </div>
 
+            {/* reCAPTCHA */}
+            <div ref={recaptchaRef} className="g-recaptcha" data-sitekey="6LdY7IUrAAAAALwwExeqGYYAgjIaOfzlAE4nnyUx"></div>
+
             {/* Submit Button */}
             <button 
               type="submit" 
               className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg relative overflow-hidden transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:transform hover:-translate-y-2 hover:shadow-lg"
+              disabled={isSubmitting}
             >
               <span className="relative z-10">
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </span>
             </button>
           </form>

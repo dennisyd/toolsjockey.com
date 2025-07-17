@@ -23,9 +23,38 @@ $json = file_get_contents('php://input');
 $data = json_decode($json, true);
 
 // Validate required fields
-if (!isset($data['name']) || !isset($data['email']) || !isset($data['message'])) {
+if (!isset($data['name']) || !isset($data['email']) || !isset($data['message']) || !isset($data['recaptchaResponse'])) {
     http_response_code(400);
     echo json_encode(['error' => 'Missing required fields']);
+    exit();
+}
+
+// Verify reCAPTCHA
+$recaptcha_secret = '6LdY7IUrAAAAAFuo4chbEbL2JwbkrsR1-bYBL0_j'; // Updated secret key
+$recaptcha_response = $data['recaptchaResponse'];
+
+$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+$verify_data = [
+    'secret' => $recaptcha_secret,
+    'response' => $recaptcha_response,
+    'remoteip' => $_SERVER['REMOTE_ADDR']
+];
+
+$verify_options = [
+    'http' => [
+        'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+        'method' => 'POST',
+        'content' => http_build_query($verify_data)
+    ]
+];
+
+$verify_context = stream_context_create($verify_options);
+$verify_result = file_get_contents($verify_url, false, $verify_context);
+$verify_response = json_decode($verify_result, true);
+
+if (!$verify_response['success']) {
+    http_response_code(400);
+    echo json_encode(['error' => 'reCAPTCHA verification failed']);
     exit();
 }
 
@@ -33,6 +62,7 @@ if (!isset($data['name']) || !isset($data['email']) || !isset($data['message']))
 $name = filter_var($data['name'], FILTER_SANITIZE_STRING);
 $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
 $message = filter_var($data['message'], FILTER_SANITIZE_STRING);
+$messageType = isset($data['messageType']) ? filter_var($data['messageType'], FILTER_SANITIZE_STRING) : 'Question';
 $subject = isset($data['subject']) ? filter_var($data['subject'], FILTER_SANITIZE_STRING) : 'Contact Form Submission';
 
 // Validate email
@@ -43,7 +73,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Set up email details
-$to = 'your-email@your-other-domain.com'; // Your email address
+$to = 'contact@toolsjockey.com'; // Your email address
 $headers = "From: $name <$email>\r\n";
 $headers .= "Reply-To: $email\r\n";
 $headers .= "MIME-Version: 1.0\r\n";
@@ -59,6 +89,7 @@ $email_body = "
     <h2>Contact Form Submission from ToolsJockey.com</h2>
     <p><strong>Name:</strong> $name</p>
     <p><strong>Email:</strong> $email</p>
+    <p><strong>Message Type:</strong> $messageType</p>
     <p><strong>Message:</strong></p>
     <p>" . nl2br($message) . "</p>
 </body>
