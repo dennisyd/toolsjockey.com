@@ -87,7 +87,7 @@ const Contact: React.FC = () => {
     console.log('window.grecaptcha available:', !!window.grecaptcha);
 
     // Check if reCAPTCHA is completed
-    if (!recaptchaWidgetId || !window.grecaptcha) {
+    if (recaptchaWidgetId == null || !window.grecaptcha) {
       console.error('reCAPTCHA not initialized');
       alert('reCAPTCHA is not loaded. Please refresh the page and try again.');
       return;
