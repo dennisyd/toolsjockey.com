@@ -28,25 +28,39 @@ const Contact: React.FC = () => {
     script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
     script.async = true;
     script.defer = true;
-    document.head.appendChild(script);
-
+    
     script.onload = () => {
+      console.log('reCAPTCHA script loaded');
       if (window.grecaptcha && recaptchaRef.current) {
         window.grecaptcha.ready(() => {
-          const widgetId = window.grecaptcha.render(recaptchaRef.current!, {
-            sitekey: '6LdY7IUrAAAAALwwExeqGYYAgjIaOfzlAE4nnyUx', // Updated site key
-            theme: 'light',
-            size: 'normal',
-            callback: () => {
-              // reCAPTCHA completed
-            }
-          });
-          setRecaptchaWidgetId(widgetId);
+          console.log('reCAPTCHA ready, rendering widget');
+          try {
+            const widgetId = window.grecaptcha.render(recaptchaRef.current!, {
+              sitekey: '6LdY7IUrAAAAALwwExeqGYYAgjIaOfzlAE4nnyUx',
+              theme: 'light',
+              size: 'normal',
+              callback: () => {
+                console.log('reCAPTCHA completed');
+              }
+            });
+            console.log('reCAPTCHA widget rendered with ID:', widgetId);
+            setRecaptchaWidgetId(widgetId);
+          } catch (error) {
+            console.error('Error rendering reCAPTCHA:', error);
+          }
         });
+      } else {
+        console.error('reCAPTCHA not available or ref not ready');
       }
     };
 
-    return () => { // Cleanup script if component unmounts
+    script.onerror = () => {
+      console.error('Failed to load reCAPTCHA script');
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
       const existingScript = document.querySelector('script[src*="recaptcha/api.js"]');
       if (existingScript) {
         existingScript.remove();
@@ -69,15 +83,22 @@ const Contact: React.FC = () => {
     
     if (isSubmitting) return;
 
+    console.log('Form submission started');
+    console.log('reCAPTCHA widget ID:', recaptchaWidgetId);
+    console.log('window.grecaptcha available:', !!window.grecaptcha);
+
     // Check if reCAPTCHA is completed
     if (!recaptchaWidgetId || !window.grecaptcha) {
-      alert('Please complete the reCAPTCHA verification.');
+      console.error('reCAPTCHA not initialized');
+      alert('reCAPTCHA is not loaded. Please refresh the page and try again.');
       return;
     }
 
     const recaptchaResponse = window.grecaptcha.getResponse(recaptchaWidgetId);
+    console.log('reCAPTCHA response:', recaptchaResponse ? 'Present' : 'Missing');
+    
     if (!recaptchaResponse) {
-      alert('Please complete the reCAPTCHA verification.');
+      alert('Please complete the reCAPTCHA verification before submitting.');
       return;
     }
 
@@ -92,6 +113,8 @@ const Contact: React.FC = () => {
         message: formData.get('message'),
         recaptchaResponse: recaptchaResponse
       };
+
+      console.log('Sending form data to server');
 
       // Send to your PHP handler instead of FormSubmit.co
       const response = await fetch('/server/contact-form-handler.php', {
