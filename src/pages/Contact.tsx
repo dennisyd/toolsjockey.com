@@ -17,7 +17,6 @@ declare global {
 const Contact: React.FC = () => {
   const { trackEngagement } = useAnalytics();
   const [selectedMessageType, setSelectedMessageType] = useState('Question');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
   const recaptchaRef = useRef<HTMLDivElement>(null);
 
@@ -77,15 +76,13 @@ const Contact: React.FC = () => {
     setSelectedMessageType(value);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     
-    if (isSubmitting) return;
-
     console.log('Form submission started');
     console.log('reCAPTCHA widget ID:', recaptchaWidgetId);
     console.log('window.grecaptcha available:', !!window.grecaptcha);
-
+    
     // Check if reCAPTCHA is completed
     if (recaptchaWidgetId == null || !window.grecaptcha) {
       console.error('reCAPTCHA not initialized');
@@ -101,47 +98,22 @@ const Contact: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-      const formObject = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        messageType: formData.get('messageType'),
-        message: formData.get('message'),
-        recaptchaResponse: recaptchaResponse
-      };
-
-      console.log('Sending form data to server');
-
-      // Send to your PHP handler instead of FormSubmit.co
-      const response = await fetch('/server/contact-form-handler.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formObject)
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Redirect to thank you page
-        window.location.href = '/thank-you';
-      } else {
-        alert(result.error || 'Failed to send message. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('An error occurred. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-      // Reset reCAPTCHA
-      if (recaptchaWidgetId && window.grecaptcha) {
-        window.grecaptcha.reset(recaptchaWidgetId);
-      }
+    // Add reCAPTCHA response to form data
+    const form = e.currentTarget.closest('form');
+    if (!form) {
+      console.error('Form not found');
+      return;
     }
+    
+    const recaptchaInput = document.createElement('input');
+    recaptchaInput.type = 'hidden';
+    recaptchaInput.name = 'g-recaptcha-response';
+    recaptchaInput.value = recaptchaResponse;
+    form.appendChild(recaptchaInput);
+
+    // Let the form submit normally to FormSubmit.co
+    console.log('Submitting form to FormSubmit.co');
+    form.submit();
   };
 
 
@@ -166,7 +138,6 @@ const Contact: React.FC = () => {
             method="POST"
             className="space-y-6"
             id="contactForm"
-            onSubmit={handleSubmit}
           >
             {/* Hidden fields for FormSubmit.co configuration */}
             <input type="hidden" name="_next" value="https://toolsjockey.com/thank-you" />
@@ -284,10 +255,10 @@ const Contact: React.FC = () => {
             <button 
               type="submit" 
               className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl text-lg relative overflow-hidden transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:transform hover:-translate-y-2 hover:shadow-lg"
-              disabled={isSubmitting}
+              onClick={handleSubmit}
             >
               <span className="relative z-10">
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                Send Message
               </span>
             </button>
           </form>
