@@ -35,7 +35,7 @@ const Contact: React.FC = () => {
           console.log('reCAPTCHA ready, rendering widget');
           try {
             const widgetId = window.grecaptcha.render(recaptchaRef.current!, {
-              sitekey: '6LdY7IUrAAAAALwwExeqGYYAgjIaOfzlAE4nnyUx',
+              sitekey: '6LdT8IUrAAAAAFBaxIfSJ2Be9writ4fWHsve8zeG',
               theme: 'light',
               size: 'normal',
               callback: () => {
@@ -278,7 +278,7 @@ const Contact: React.FC = () => {
             </div>
 
             {/* reCAPTCHA */}
-            <div ref={recaptchaRef} className="g-recaptcha" data-sitekey="6LdY7IUrAAAAALwwExeqGYYAgjIaOfzlAE4nnyUx"></div>
+            <div ref={recaptchaRef} className="g-recaptcha" data-sitekey="6LdT8IUrAAAAAFBaxIfSJ2Be9writ4fWHsve8zeG"></div>
 
             {/* Submit Button */}
             <button 

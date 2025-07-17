@@ -30,7 +30,7 @@ if (!isset($data['name']) || !isset($data['email']) || !isset($data['message']) 
 }
 
 // Verify reCAPTCHA
-$recaptcha_secret = '6LdY7IUrAAAAAFuo4chbEbL2JwbkrsR1-bYBL0_j'; // Updated secret key
+$recaptcha_secret = '6LdT8IUrAAAAAOIHSDHp2DCIsUpZbK34N5zXNofi'; // Updated v2 secret key
 $recaptcha_response = $data['recaptchaResponse'];
 
 $verify_url = 'https://www.google.com/recaptcha/api/siteverify';
