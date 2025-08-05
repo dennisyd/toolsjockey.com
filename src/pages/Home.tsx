@@ -165,7 +165,7 @@ const Home = () => {
               Works Everywhere
             </h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Access all tools on any device - desktop, tablet, or mobile. No downloads or installations needed.
+              Access tools on desktop, tablet, and mobile. Some advanced tools may require desktop processing power for optimal performance.
             </p>
           </div>
 
