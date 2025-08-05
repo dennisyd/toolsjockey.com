@@ -1,95 +1,175 @@
 TOOLSJOCKEY - COMPLETE TOOLS LIST
 =====================================
 
-TOTAL TOOLS: 51
+TOTAL TOOLS: 95+
 
-VIDEO TOOLS (6)
----------------
-1. Video Converter - Convert videos between different formats
-2. Video Clipper - Cut and trim video clips
-3. Video Compressor - Reduce video file sizes
-4. Frame Extractor - Extract individual frames from videos
-5. Video Merger - Combine multiple videos into one
-6. Audio Extractor - Extract audio from video files
-
-PDF TOOLS (12)
+PDF TOOLS (13)
 --------------
-7. Merge PDF - Combine multiple PDF files
-8. Split PDF - Split PDF into separate files
-9. Reorder PDF - Rearrange PDF pages
-10. Rotate PDF - Rotate PDF pages
-11. Watermark PDF - Add watermarks to PDFs
-12. PDF to Images - Convert PDF pages to images
-13. Images to PDF - Convert images to PDF
-14. Extract Text from PDF - Extract text content from PDFs
-15. PDF to Word - Convert PDF to Word document
-16. Delete Pages - Remove specific pages from PDF
-17. Edit Metadata - Edit PDF document information
-18. Compress PDF - Reduce PDF file size
+1. Batch PDF Form Filler - Fill PDF forms in bulk using spreadsheet data
+2. Merge PDF - Combine multiple PDF files into one
+3. Split PDF - Extract specific pages or ranges from PDFs
+4. Reorder PDF Pages - Rearrange PDF pages with drag-and-drop
+5. Rotate PDF Pages - Rotate any page left/right in PDFs
+6. Watermark PDF - Add styled text overlays to every page
+7. PDF to Images - Export PDF pages as PNG or JPEG
+8. Images to PDF - Create PDF from multiple images
+9. Extract Text from PDF - Extract all text content from PDFs
+10. PDF to Word - Convert PDFs to editable Word documents
+11. Delete PDF Pages - Remove specific pages from PDFs
+12. Edit PDF Metadata - Modify PDF document properties
+13. Compress PDF - Reduce PDF file size (planned feature)
 
-IMAGE TOOLS (4)
----------------
-19. Image Sharpener - Enhance image sharpness
-20. Image Compressor - Reduce image file sizes
-21. Image Format Converter - Convert between image formats
-22. EXIF Remover - Remove metadata from images
+VIDEO & AUDIO TOOLS (14)
+--------------------------
+14. Video Converter - Convert videos between formats (MP4, WebM, AVI, etc.)
+15. Video Clipper - Trim and cut videos with frame-accurate precision
+16. Video Compressor - Reduce video file size while maintaining quality
+17. Frame Extractor - Extract still images from videos at specific timestamps
+18. Video Merger - Combine multiple videos into a single file
+19. Audio Extractor - Extract audio tracks from videos in multiple formats
+20. Audio Converter - Convert between audio formats (MP3, WAV, OGG)
+21. Audio Compressor - Reduce audio file sizes and bitrates
+22. Audio Merger - Combine multiple audio files into one
+23. Audio Clipper - Cut and trim audio segments easily
+24. Volume Normalizer - Adjust and normalize audio levels
+25. Audio Metadata Editor - Edit ID3 tags and audio properties
+26. Audio Speed Changer - Change playback speed without pitch change
+27. Silent Audio Generator - Create silent audio files of any duration
+
+EXCEL & CSV TOOLS (13)
+-----------------------
+28. Excel Merger & Splitter - Merge or split Excel sheets
+29. CSV Merger - Merge multiple CSV files by rows or columns
+30. CSV to JSON Converter - Convert CSV files to JSON format
+31. Excel to CSV Converter - Convert Excel (.xlsx) files to CSV format
+32. Excel to JSON Converter - Convert Excel (.xlsx) files to JSON format
+33. Excel to PDF Converter - Convert Excel (.xlsx) files to PDF format
+34. Excel to HTML Converter - Convert Excel (.xlsx) files to HTML format
+35. Excel to XML Converter - Convert Excel (.xlsx) files to XML format
+36. CSV to Excel Converter - Convert CSV files to Excel (.xlsx) format
+37. XML to Excel Converter - Convert XML files to Excel (.xlsx) format
+38. JSON to Excel Converter - Convert JSON files to Excel (.xlsx) format
+39. CSV/Excel Column Filter - Filter columns in CSV or Excel files
+40. CSV/Excel Duplicate Remover - Remove duplicate rows from CSV or Excel files
+
+IMAGE TOOLS (9)
+----------------
+41. Image Compressor - Compress images to reduce file size
+42. Image Sharpener - Enhance image sharpness and clarity
+43. Image Format Converter - Convert images between formats (JPG, PNG, WebP, etc.)
+44. EXIF Data Remover - Remove metadata from images for privacy
+45. EXIF Data Viewer - View detailed image metadata
+46. Watermark Adder - Add text or image watermarks to photos
+47. Text from Image (OCR) - Extract text from images using OCR
+48. Image Collage Maker - Combine multiple images into a single downloadable image
+49. Image Cropper - Crop images with freeform or aspect-ratio-locked selection
+50. Image Optimizer - Optimize images: compress, strip metadata, convert formats
 
 COLOR & DESIGN TOOLS (5)
-------------------------
-23. Color Palette Generator - Generate color palettes from images
-24. Color Picker - Pick and convert colors
-25. Contrast Checker - Check color contrast ratios
-26. Gradient Generator - Create color gradients
-27. Color Format Converter - Convert between color formats
-
-EXCEL & CSV TOOLS (4)
----------------------
-28. Excel Merger Splitter - Merge or split Excel files
-29. CSV to JSON Converter - Convert CSV to JSON format
-30. CSV Merger - Combine multiple CSV files
-31. Excel to Formats Converter - Convert Excel to various formats
-
-DOCUMENT & TEXT TOOLS (8)
 -------------------------
-32. Word to Markdown Converter - Convert Word docs to Markdown
-33. Word Counter - Count words, characters, and paragraphs
-34. Text from Image - Extract text from images (OCR)
-35. Text Case Converter - Convert text case (uppercase, lowercase, etc.)
-36. Text Diff Viewer - Compare text differences
-37. Markdown Table Generator - Create tables in Markdown format
-38. Mail Merge Tool - Create personalized documents
-39. Batch PDF Form Filler - Fill PDF forms in bulk
+51. Color Palette Generator - Generate color palettes from images or create custom ones
+52. Color Picker - Pick colors from images or create custom colors
+53. Color Format Converter - Convert between color formats (HEX, RGB, HSL, etc.)
+54. Contrast Checker - Check color contrast for accessibility compliance
+55. Gradient Generator - Create beautiful CSS gradients
 
-DEVELOPER TOOLS (6)
--------------------
-40. Hash Generator - Generate various hash types
-41. CSS Minifier - Compress CSS code
-42. Base64 Encoder - Encode/decode Base64
-43. Password Generator - Generate secure passwords
-44. Regex Tester - Test regular expressions
-45. JSON Formatter - Format and validate JSON
+DEVELOPER TOOLS (18)
+---------------------
+56. JSON Formatter - Format and validate JSON data
+57. Base64 Encoder/Decoder - Encode and decode Base64 strings
+58. Hash Generator - Generate MD5, SHA-1, SHA-256 hashes
+59. Regex Tester - Test and debug regular expressions
+60. CSS Minifier - Minify CSS code to reduce file size
+61. HTML Minifier - Compress and minify HTML code
+62. JavaScript Minifier - Compress and minify JavaScript code
+63. Text Case Converter - Convert text between different cases
+64. Text Diff Viewer - Compare and highlight differences between text files
+65. Code Diff Viewer - Compare code differences side-by-side
+66. Word Counter - Count words, characters, and paragraphs in text
+67. Password Generator - Generate secure random passwords
+68. QR Code Generator - Generate QR codes for URLs, text, or contact information
+69. Code Formatter - Format code in multiple languages using Prettier
+70. Syntax Highlighter - Highlight code with themes and line numbers
+71. URL Encoder/Decoder - Encode and decode URLs easily
+72. HTML Entity Converter - Convert text to and from HTML entities
+73. Lorem Ipsum Generator - Generate placeholder Lorem Ipsum text
 
-UTILITY TOOLS (6)
------------------
-46. Unit Converter - Convert between different units
-47. Currency Converter - Convert between currencies
-48. Column Filter Tool - Filter data columns
-49. Duplicate Remover - Remove duplicate entries
-50. QR Code Generator - Generate QR codes
-51. Watermark Adder - Add watermarks to images
+ARCHIVE TOOLS (8)
+------------------
+74. ZIP Creator - Create ZIP archives with compression options
+75. ZIP Extractor - Extract files from ZIP archives with selective extraction
+76. 7z Support - Handle 7z format compression and extraction
+77. File Archiver - Create various archive formats (tar, gz, bz2) with compression
+78. Archive Inspector - View archive contents without extracting
+79. Archive Converter - Convert between different archive formats
+80. Batch Compressor - Compress multiple files individually with progress tracking
+
+CALCULATION TOOLS (8)
+----------------------
+81. Scientific Calculator - Advanced mathematical operations with scientific functions
+82. Date Calculator - Calculate differences, add/subtract dates and time periods
+83. Loan Calculator - Mortgage, interest, and payment calculations with amortization
+84. Tax Calculator - Basic tax calculations and deductions for various scenarios
+85. Percentage Calculator - Various percentage calculations and conversions
+86. Statistics Calculator - Mean, median, standard deviation, and statistical analysis
+87. Investment Calculator - Compound interest, ROI, and investment growth calculations
+88. BMI Calculator - Health and fitness calculations including BMI and body metrics
+
+PRIVACY & SECURITY TOOLS (6)
+-----------------------------
+89. File Encryptor - Encrypt files with AES-256 encryption (100% client-side)
+90. File Decryptor - Decrypt files encrypted with AES-256
+91. Random Data Generator - Generate cryptographically secure random data
+92. Secure Notes - Create encrypted text notes with client-side encryption
+93. File Hash Verifier - Verify file integrity with SHA-256, MD5, and other hash algorithms
+
+EMAIL TOOLS (4)
+----------------
+94. Email Validator - Validate single emails or bulk validate via CSV upload
+95. Email Signature Generator - Create professional email signatures with multiple templates
+96. Email Template Tester - Test HTML emails across different devices and email clients
+97. Markdown to Email Converter - Convert Markdown to email-optimized HTML
+
+DOCUMENT & TEXT TOOLS (3)
+--------------------------
+98. Word to Markdown Converter - Convert Word documents (.docx) to Markdown format
+99. Markdown Table Generator - Generate Markdown tables from CSV or tabular data
+100. Mail Merge Tool - Merge CSV data with text templates to generate personalized documents
+
+UTILITY TOOLS (2)
+------------------
+101. Unit Converter - Convert between different units of measurement
+102. Currency Converter - Convert between different currencies with real-time rates
 
 FEATURES:
-- All tools work client-side (no server uploads)
+- All tools work 100% client-side (no server uploads)
 - Privacy-focused (files never leave your computer)
-- No registration required
-- Free to use
-- Built by MIT-trained engineer
+- No registration or signup required
+- Completely free to use
+- Professional-grade functionality
+- Cross-platform compatibility (Windows, Mac, Linux, iOS, Android)
+- Modern responsive design with dark mode
+- Built with enterprise-level security and performance
 
 TECHNOLOGIES USED:
-- React/TypeScript
-- FFmpeg (for video processing)
+- React 18 + TypeScript (modern framework)
+- FFmpeg.wasm (for video/audio processing)
 - PDF.js and pdf-lib (for PDF manipulation)
-- Canvas API (for image processing)
-- Web Workers (for performance)
+- Tesseract.js (for OCR functionality)
+- Canvas API and Web Workers (for image processing)
+- WebAssembly (for high-performance processing)
+- Modern ES2022+ JavaScript features
+- Progressive Web App capabilities
+- Advanced chunking and lazy loading for performance
 
-Last updated: 2024 
+ARCHITECTURE:
+- Component-based MVVM with React
+- Modular tool architecture with lazy loading
+- Client-side processing with Web Workers
+- No backend required (privacy-first architecture)
+- Advanced state management with Zustand
+- Comprehensive error handling and validation
+- Accessibility compliant (WCAG 2.1)
+
+Last updated: December 2024
+Total Tools: 102 (and growing)
