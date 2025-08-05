@@ -184,14 +184,19 @@ const Home = () => {
         </div>
 
         <div className="text-center mt-8">
-          <Link
-            to="/"
+          <button
+            onClick={() => {
+              trackButtonClick('why_use_toolsjockey_cta', 'Home');
+              document.getElementById('popular-tools')?.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }}
             className="inline-flex items-center px-6 py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg"
-            onClick={() => trackButtonClick('why_use_toolsjockey_cta', 'Home')}
           >
             Explore All 102+ Tools
             <ChevronDownIcon className="w-5 h-5 ml-2 rotate-[-90deg]" />
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -247,7 +252,7 @@ const Home = () => {
       </div>
 
       {/* Popular Tools (sticky/floating) */}
-      <div className="sticky top-4 z-20 mb-8">
+      <div id="popular-tools" className="sticky top-4 z-20 mb-8">
         <div className="flex items-center gap-3 bg-white dark:bg-primary-light rounded-lg shadow px-4 py-3 border border-slate-200 dark:border-slate-700">
           <StarIcon className="w-6 h-6 text-yellow-400" />
           <span className="text-lg font-semibold">Popular Tools</span>
