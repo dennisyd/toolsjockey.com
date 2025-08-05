@@ -118,6 +118,83 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Why Use ToolsJockey Section - Moved to top for new site */}
+      <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 mb-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Why Choose ToolsJockey?
+          </h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            Experience the future of online tools with our privacy-first, client-side approach that keeps your data secure and your workflow seamless.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Privacy & Security */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg mb-4">
+              <ShieldCheckIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              100% Private & Secure
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Your files never leave your device. All processing happens in your browser with military-grade encryption.
+            </p>
+          </div>
+
+          {/* No Uploads Required */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg mb-4">
+              <LockClosedIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              No Uploads Required
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Skip the upload queue! Process files instantly with zero waiting time and complete data privacy.
+            </p>
+          </div>
+
+          {/* Works Everywhere */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg mb-4">
+              <DevicePhoneMobileIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Works Everywhere
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Access all tools on any device - desktop, tablet, or mobile. No downloads or installations needed.
+            </p>
+          </div>
+
+          {/* Lightning Fast */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg mb-4">
+              <BoltIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Lightning Fast
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              Get results instantly with our optimized client-side processing. No server delays or bandwidth limits.
+            </p>
+          </div>
+        </div>
+
+        <div className="text-center mt-8">
+          <Link
+            to="/tools"
+            className="inline-flex items-center px-6 py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg"
+            onClick={() => trackButtonClick('why_use_toolsjockey_cta', 'Home')}
+          >
+            Explore All 102+ Tools
+            <ChevronDownIcon className="w-5 h-5 ml-2 rotate-[-90deg]" />
+          </Link>
+        </div>
+      </section>
+
       {/* Featured Tools Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
         {/* Excel & CSV Tools Suite featured card */}
@@ -259,83 +336,6 @@ const Home = () => {
             </div>
           );
         })}
-      </section>
-
-      {/* Why Use ToolsJockey Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 mb-8">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Why Choose ToolsJockey?
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Experience the future of online tools with our privacy-first, client-side approach that keeps your data secure and your workflow seamless.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Privacy & Security */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg mb-4">
-              <ShieldCheckIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              100% Private & Secure
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Your files never leave your device. All processing happens in your browser with military-grade encryption.
-            </p>
-          </div>
-
-          {/* No Uploads Required */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg mb-4">
-              <LockClosedIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No Uploads Required
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Skip the upload queue! Process files instantly with zero waiting time and complete data privacy.
-            </p>
-          </div>
-
-          {/* Works Everywhere */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg mb-4">
-              <DevicePhoneMobileIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Works Everywhere
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Access all tools on any device - desktop, tablet, or mobile. No downloads or installations needed.
-            </p>
-          </div>
-
-          {/* Lightning Fast */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg mb-4">
-              <BoltIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Lightning Fast
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Get results instantly with our optimized client-side processing. No server delays or bandwidth limits.
-            </p>
-          </div>
-        </div>
-
-        <div className="text-center mt-8">
-          <Link
-            to="/tools"
-            className="inline-flex items-center px-6 py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg"
-            onClick={() => trackButtonClick('why_use_toolsjockey_cta', 'Home')}
-          >
-            Explore All 102+ Tools
-            <ChevronDownIcon className="w-5 h-5 ml-2 rotate-[-90deg]" />
-          </Link>
-        </div>
       </section>
     </div>
   );
