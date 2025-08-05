@@ -185,7 +185,7 @@ const Home = () => {
 
         <div className="text-center mt-8">
           <Link
-            to="/tools"
+            to="/"
             className="inline-flex items-center px-6 py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg"
             onClick={() => trackButtonClick('why_use_toolsjockey_cta', 'Home')}
           >
