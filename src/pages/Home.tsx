@@ -56,7 +56,7 @@ const Home = () => {
     "102+ Pro Tools, Instantly in Your Browser",
     "Work Smarter: 102+ Instant Browser-Based Tools",
     "102+ Pro-Grade Tools. No Installs. Just Instant Results.",
-    "All-in-One Toolkit: 102+ Pro Tools, Right in Your Browser"
+    "One-Stop Toolkit: 102+ Pro Tools, Right in Your Browser"
   ];
 
   // Random headline selection with fade-in animation

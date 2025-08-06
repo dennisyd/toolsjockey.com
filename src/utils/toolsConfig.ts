@@ -357,10 +357,11 @@ export const toolsConfig: ToolMeta[] = [
   },
   {
     id: 'image-sharpener',
-    title: 'Image Sharpener',
+    title: 'Image Sharpener/Upscaler',
     path: '/tools/image-sharpener',
-    description: 'Enhance image sharpness and clarity.',
+    description: 'Enhance image sharpness and clarity with AI-powered upscaling.',
     icon: PhotoIcon,
+    badges: ['POPULAR'],
     group: 'image',
   },
   {
