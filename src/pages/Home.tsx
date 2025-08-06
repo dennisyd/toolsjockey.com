@@ -129,7 +129,7 @@ const Home = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mt-10 mb-8">
         <h1 
           id="headline"
-          className="text-4xl font-bold mb-4 md:mb-0"
+          className="text-4xl font-bold mb-4 md:mb-0 text-blue-700 dark:text-blue-300"
         >
           {headline}
         </h1>
@@ -184,6 +184,22 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="text-center mt-8">
+          <button
+            onClick={() => {
+              trackButtonClick('why_use_toolsjockey_cta', 'Home');
+              document.getElementById('popular-tools')?.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }}
+            className="inline-flex items-center px-8 py-4 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg text-lg"
+          >
+            Explore All 102+ Tools
+            <ChevronDownIcon className="w-6 h-6 ml-2 rotate-[-90deg]" />
+          </button>
         </div>
       </section>
 
