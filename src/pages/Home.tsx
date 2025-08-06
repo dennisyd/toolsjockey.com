@@ -118,67 +118,91 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Why Use ToolsJockey Section - Moved to top for new site */}
+      {/* Why Use ToolsJockey Section - Visual Redesign */}
       <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-8 mb-8">
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
             Why Choose ToolsJockey?
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Experience the future of online tools with our privacy-first, client-side approach that keeps your data secure and your workflow seamless.
+            Experience the future of online tools with our privacy-first, client-side approach
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Privacy & Security */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg mb-4">
-              <ShieldCheckIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+          {/* Privacy & Security - Visual Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700 text-center">
+            <div className="flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full mb-4 mx-auto">
+              <ShieldCheckIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
               100% Private & Secure
             </h3>
+            <div className="w-24 h-24 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-12 bg-white rounded shadow-sm flex items-center justify-center">
+                <div className="w-8 h-6 bg-green-500 rounded-sm"></div>
+              </div>
+            </div>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Your files never leave your device. All processing happens in your browser with military-grade encryption.
+              Your files never leave your device
             </p>
           </div>
 
-          {/* No Uploads Required */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg mb-4">
-              <LockClosedIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          {/* No Uploads Required - Visual Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700 text-center">
+            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4 mx-auto">
+              <LockClosedIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
               No Uploads Required
             </h3>
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-12 bg-white rounded shadow-sm flex items-center justify-center">
+                <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">×</span>
+                </div>
+              </div>
+            </div>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Skip the upload queue! Process files instantly with zero waiting time and complete data privacy.
+              Process files instantly
             </p>
           </div>
 
-          {/* Works Everywhere */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg mb-4">
-              <DevicePhoneMobileIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          {/* Works Everywhere - Visual Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700 text-center">
+            <div className="flex items-center justify-center w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full mb-4 mx-auto">
+              <DevicePhoneMobileIcon className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
               Works Everywhere
             </h3>
+            <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <div className="flex space-x-1">
+                <div className="w-8 h-10 bg-gray-300 rounded"></div>
+                <div className="w-6 h-8 bg-gray-400 rounded"></div>
+                <div className="w-4 h-6 bg-gray-500 rounded"></div>
+              </div>
+            </div>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Access tools on desktop, tablet, and mobile. Some advanced tools may require desktop processing power for optimal performance.
+              Desktop, tablet, mobile
             </p>
           </div>
 
-          {/* Lightning Fast */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700">
-            <div className="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg mb-4">
-              <BoltIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+          {/* Lightning Fast - Visual Card */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-slate-700 text-center">
+            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full mb-4 mx-auto">
+              <BoltIcon className="w-8 h-8 text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
               Lightning Fast
             </h3>
+            <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-white rounded-full"></div>
+              </div>
+            </div>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
-              Get results instantly with our optimized client-side processing. No server delays or bandwidth limits.
+              Get results instantly
             </p>
           </div>
         </div>
@@ -192,10 +216,10 @@ const Home = () => {
                 block: 'start'
               });
             }}
-            className="inline-flex items-center px-6 py-3 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg"
+            className="inline-flex items-center px-8 py-4 bg-accent text-white font-semibold rounded-lg hover:bg-accent-hover transition-colors shadow-lg text-lg"
           >
             Explore All 102+ Tools
-            <ChevronDownIcon className="w-5 h-5 ml-2 rotate-[-90deg]" />
+            <ChevronDownIcon className="w-6 h-6 ml-2 rotate-[-90deg]" />
           </button>
         </div>
       </section>
