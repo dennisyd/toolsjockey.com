@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon, StarIcon, MagnifyingGlassIcon, ShieldCheckIcon, LockClosedIcon, DevicePhoneMobileIcon, BoltIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, StarIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { toolsConfig, toolGroups } from '../utils/toolsConfig';
 import type { ToolMeta, ToolBadge } from '../utils/toolsConfig';
 import { useAnalytics } from '../hooks/useAnalytics';
